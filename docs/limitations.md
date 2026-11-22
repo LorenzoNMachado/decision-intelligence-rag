@@ -1,75 +1,101 @@
 # Limitations
 
-These limitations bound what the reported numbers can support. They are
-listed so that readers can weigh the results, not as a to-do list.
+These limitations bound what the reported numbers can support. They are listed
+so that readers can weigh the results, not as a to-do list.
+
+## Authorship and independence
+
+* **One author for system, data and questions.** The corpus generator, its
+  phrase pools, the rule lexicon, the question phrasings and the references
+  were all written by the same author. Protocol v2 reduces the coupling: the
+  lexicon was frozen before the v2 pools and questions were written, the pools
+  include cue-free paraphrases and distractors, and subjects and splits are
+  drawn at random. It does not remove the coupling. The v2 holdout was unseen
+  by the system but not independently authored, so **v2 results are
+  exploratory, not confirmatory.**
+* **References come from the generator.** Expected evidence is derived from the
+  generator's intended labels. Those labels are not independent annotations;
+  they are only as valid as the phrase pools that express them.
 
 ## Data
 
-* **Synthetic corpus.** Records are generated from phrase pools, and real
-  decision records are longer, noisier and less regular. Results here say
-  nothing about performance on organisational documents.
-* **References are not independent annotations.** Questions, expected evidence
-  and references are derived from the same generator as the corpus. This
-  guarantees that every reference is answerable from the corpus (a check that
-  `corpus-validate` enforces), but it also means that the questions follow the
-  same vocabulary as the documents.
-* **Unanswerable questions are out of domain.** All ten unanswerable questions
-  concern topics that no record touches (catering, parking, sponsorship…). They
-  test whether the gate rejects unrelated evidence, not whether a system resists
-  near-miss questions about subjects that *are* in the corpus. The perfect
-  abstention scores of A and B on the holdout should be read in that light.
-* **Small evaluation set.** There are 50 questions, of which 10 are unanswerable
-  and only 2 are in the dev split. Differences of a few percentage points between
-  configurations are within what chance alone can produce, and no significance
-  tests are reported.
+* **Synthetic corpus.** Records come from phrase pools and are shorter and more
+  regular than real decision records. Nothing here measures performance on
+  organisational documents.
+* **Small evaluation set.** There are 70 questions (50 in the holdout), and 3–10
+  holdout questions per category. A per-question sign test is reported, but most
+  differences between configurations are within what chance can produce. Category
+  breakdowns are descriptive.
+* **Hedged questions use a convention.** "Which decisions might involve a
+  vendor?" counts the records with the signal PRESENT as its answer. Another
+  reader could include hedged (UNCLEAR) records.
+* **Cosmetic generator flaw.** Titles derived from "usage-based pricing model"
+  read "an usage-based …". The flaw was found on dev and left in place, to avoid
+  regenerating data during development.
 
-## Signals
+## Signals and retrieval
 
-* **Lexicon and generator have the same author.** The rule lexicon was written
-  without reading the generator's phrase pools line by line, but both encode the
-  same intuitions about each signal. Its measured accuracy (93.9 % macro, see
-  `experiments/results/signal-classifier-rules.json`) is therefore an optimistic
-  estimate of what the same rules would achieve on real text.
-* **Known error sources are kept.** Job titles ("Chief Information Security
-  Officer"), department names ("People Operations", "Legal Operations") and
-  domain words trigger false PRESENT labels. They were not tuned away, because
-  doing so against the generator's labels would overfit the evaluation.
+* **The rule classifier is weak on v2 text** (78.3 % macro accuracy against the
+  generator's labels; 93.9 % on v1, where the lexicon matched the templates).
+  Cue-free paraphrases are missed (UNCLEAR), and distractor sentences produce
+  false PRESENT labels.
+* **PRESENT overrides ABSENT** when a record has both kinds of mention. Combined
+  with the contradiction penalty and the bonus for matching ABSENT, this makes
+  negated filters fail: on the v2 holdout, Strategy 2 drops their Recall@4 from
+  1.000 to 0.333 and admits records about other subjects. This was diagnosed
+  after the holdout run and is deliberately not fixed in v2.
+* **Retrieval weights were inherited** from v1 (bonus 0.06 / 0.02, penalty 0.12,
+  candidate pool 20) and never tuned on v2 data.
+* **The LLM signal classifier** (`signals-classify --classifier llm`) can be
+  evaluated against the generator's labels, but retrieval always uses the
+  rule-based index.
 
-## Embeddings
+## Embeddings and the evidence gate
 
 * **The offline embedder is lexical.** `hashing-v1` measures word and bigram
-  overlap, not meaning. Results obtained with it, including all results
-  currently published in this repository, are lexical-retrieval results. A dense
-  embedding model can be used through `DIRAG_EMBEDDING_BACKEND=openai-compatible`,
-  but needs its own dev calibration and its own freeze.
-* **Threshold calibrated on 10 questions.** The 0.18 threshold comes from a dev
-  split with two unanswerable questions. The optimal range on dev (0.11–0.25)
-  says little about how close holdout questions lie to the boundary.
+  overlap, not meaning, so every published result is a lexical-retrieval
+  result. A dense model can be used through
+  `DIRAG_EMBEDDING_BACKEND=openai-compatible`, but needs its own calibration and
+  freeze.
+* **The gate cannot detect in-domain unanswerable questions.** A question that
+  names a real record matches it lexically whatever it asks. On the v2 holdout,
+  A and B answered all six in-domain unanswerables. One out-of-domain question
+  ("What menu changes were approved…") was also admitted, through the words
+  "changes" and "approved". The gate was calibrated on four dev unanswerables.
 
-## Judging
+## Judging and metrics
 
-* **Lexical correctness is a proxy.** It requires literal key facts and forbids
-  literal mentions of non-expected records. Paraphrases are under-credited and
-  the extractive generator's multi-record answers are penalised by design.
-* **The LLM judge and claim verifier are single automated judges.** Neither has
-  been calibrated against human labels in this repository. The claim verifier
-  is an experimental extension and is reported separately.
+* **Lexical correctness is a proxy.** It requires the literal key facts and
+  forbids literal mentions of non-expected records. It under-credits paraphrases
+  and penalises, by design, the extractive generator's multi-record answers.
+* **Faithfulness of extractive quotes is not a measurement.** They are copied
+  from the record, so they are excluded from the metric (shown as "—").
+* **Traceability is not truth.** A valid citation plus a literally matched quote
+  shows that a claim points at admitted evidence. Only the experimental LLM claim
+  verifier assesses whether the statement is supported, and it has not been
+  validated against human labels.
+* **Latency** is measured on one machine within one run. A warm-up precedes
+  timing, but sub-millisecond differences remain noise and are not evidence that
+  one configuration is faster.
 
-## LLM configurations
+## LLM configurations and cost
 
-* **Not yet executed.** Configurations C–F, Strategy 3 and the LLM judge require
-  provider credentials. They are implemented and tested with scripted models,
-  but this repository does not yet contain any result measured with a real LLM.
+* **Not executed.** C–F, Strategy 3, the LLM judge and the claim verifier
+  require credentials. They are tested only with scripted models; no LLM result
+  exists in this repository.
+* **The spending limit has conditions.** It is enforced against an upper bound
+  computed from the configured prices and refuses to run without prices. It
+  holds only if those prices are correct and the provider counts at most one
+  token per byte and honours `max_tokens`. Requests rejected with an HTTP error
+  are assumed unbilled. The provider's billing is authoritative.
 * **Provider determinism.** Temperature 0 and a seed are requested when
   supported, but hosted models do not guarantee identical outputs, which is why
-  each configuration runs three repetitions.
+  LLM configurations run three repetitions.
 
 ## Scope
 
 * This is an independent implementation of concepts studied during applied
   research in Computer Science at PUCPR. It does not reproduce, and makes no
   claim about, the results of that earlier study.
-* Latency is measured on the machine that ran the experiment. It is comparable
-  between configurations of the same run, not across machines.
 * Cost per question excludes judge and claim-verification calls, which are
   evaluation overhead rather than system cost.
