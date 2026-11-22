@@ -123,6 +123,12 @@ def plain(text: str) -> str:
     return _MARKDOWN_SPECIAL.sub(r"\\\1", text)
 
 
+def format_p(p: float | None) -> str:
+    if p is None:
+        return "n/a, all tied"
+    return "< 0.001" if p < 0.001 else f"{p:.3f}"
+
+
 def format_cost(cost: float | None) -> str:
     return "cost unknown" if cost is None else f"${cost:.5f}"
 
@@ -253,7 +259,13 @@ def show_results() -> None:
         configs = summary["configs"]
         st.dataframe(
             [
-                {"metric": label, **{c: e["lexical_judge"].get(key) for c, e in configs.items()}}
+                {
+                    "metric": label,
+                    **{
+                        c: "—" if e["lexical_judge"].get(key) is None else e["lexical_judge"][key]
+                        for c, e in configs.items()
+                    },
+                }
                 for key, label in SHOWN_METRICS
             ],
             hide_index=True,
@@ -265,7 +277,7 @@ def show_results() -> None:
             c = summary["paired"][pair]["recall_at_k"]
             st.caption(
                 f"{pair}, Recall@4 per question: second better {c['second_better']}, first better "
-                f"{c['first_better']}, ties {c['ties']} (sign test p = {c['sign_test_p']})."
+                f"{c['first_better']}, ties {c['ties']} (sign test p {format_p(c['sign_test_p'])})."
             )
 
 
