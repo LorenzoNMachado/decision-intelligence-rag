@@ -22,6 +22,7 @@ from decision_intelligence.generation.prompts import load_prompt
 from decision_intelligence.llm.client import LLMClient, LLMError
 from decision_intelligence.models import DecisionDocument, Polarity, Signal, SignalLabel
 from decision_intelligence.semantic_signals.lexicon import analyse
+from decision_intelligence.semantic_signals.scope import Assertion, scoped_mentions
 
 _SENTENCES = re.compile(r"(?<=[.!?;])\s+")
 
@@ -75,6 +76,44 @@ class RuleBasedSignalClassifier:
                 if rank[label] > rank[labels[mention.signal]]:
                     labels[mention.signal] = label
                     evidence[mention.signal] = sentence
+        return ClassificationResult(labels=labels, evidence=evidence)
+
+
+class ScopedSignalClassifier:
+    """Protocol v3 classifier: aggregates *asserted* statements instead of letting PRESENT win.
+
+    Per signal, only FACTUAL (current, positive) and NEGATED (current, negative)
+    mentions count (``semantic_signals.scope``); hypothetical, historical and
+    contextual mentions do not. The label is PRESENT or ABSENT when the record
+    asserts only one polarity, CONTRADICTORY when it asserts both, and UNCLEAR
+    otherwise.
+    """
+
+    name = "rules-v3"
+
+    def __init__(self, entities: Iterable[str] = ()) -> None:
+        self.entities = tuple(entities)
+
+    def classify(self, doc: DecisionDocument) -> ClassificationResult:
+        positive: dict[Signal, str] = {}
+        negative: dict[Signal, str] = {}
+        for mention in scoped_mentions(_body_text(doc), self.entities):
+            if mention.assertion is Assertion.FACTUAL and mention.polarity is Polarity.PRESENT:
+                positive.setdefault(mention.signal, mention.sentence)
+            elif mention.assertion is Assertion.NEGATED:
+                negative.setdefault(mention.signal, mention.sentence)
+        labels: SignalLabels = {}
+        evidence: dict[Signal, str] = {}
+        for signal in Signal:
+            if signal in positive and signal in negative:
+                labels[signal] = SignalLabel.CONTRADICTORY
+                evidence[signal] = f"{positive[signal]} | {negative[signal]}"
+            elif signal in positive:
+                labels[signal], evidence[signal] = SignalLabel.PRESENT, positive[signal]
+            elif signal in negative:
+                labels[signal], evidence[signal] = SignalLabel.ABSENT, negative[signal]
+            else:
+                labels[signal] = SignalLabel.UNCLEAR
         return ClassificationResult(labels=labels, evidence=evidence)
 
 

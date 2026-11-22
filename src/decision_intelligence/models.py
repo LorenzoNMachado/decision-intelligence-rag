@@ -32,6 +32,8 @@ class SignalLabel(StrEnum):
     ABSENT = "ABSENT"
     UNCLEAR = "UNCLEAR"
     ERROR = "ERROR"
+    # Protocol v3: the record asserts both polarities as current facts. Neutral in ranking.
+    CONTRADICTORY = "CONTRADICTORY"
 
 
 class Polarity(StrEnum):
@@ -349,6 +351,7 @@ class Outcome(StrEnum):
     PROVIDER_ERROR = "PROVIDER_ERROR"  # timeout, network, HTTP, budget, unparsable response
     SCHEMA_ERROR = "SCHEMA_ERROR"  # parsable response that violates the answer schema
     PIPELINE_ERROR = "PIPELINE_ERROR"  # failure outside the generator (e.g. embedding)
+    INSUFFICIENT_EVIDENCE = "INSUFFICIENT_EVIDENCE"  # v3: no admitted record contains what is asked
 
 
 # Allowed final statuses per outcome. An ANSWER that loses every claim in validation
@@ -361,6 +364,7 @@ TRANSITIONS: dict[Outcome, frozenset[AnswerStatus]] = {
     Outcome.PROVIDER_ERROR: frozenset({AnswerStatus.ERROR}),
     Outcome.SCHEMA_ERROR: frozenset({AnswerStatus.ERROR}),
     Outcome.PIPELINE_ERROR: frozenset({AnswerStatus.ERROR}),
+    Outcome.INSUFFICIENT_EVIDENCE: frozenset({AnswerStatus.ABSTAIN}),
 }
 
 

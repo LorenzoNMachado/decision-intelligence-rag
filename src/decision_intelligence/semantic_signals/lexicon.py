@@ -32,7 +32,7 @@ from __future__ import annotations
 import itertools
 import re
 from collections.abc import Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from decision_intelligence.models import Polarity, Signal
 
@@ -187,7 +187,8 @@ BACKWARD_WINDOW = 8
 
 _FLAGS = re.IGNORECASE
 _CASE_SENSITIVE = frozenset({r"\bAct\b"})
-_TOKEN = re.compile(r"[A-Za-z0-9]+(?:[-'/][A-Za-z0-9]+)*|[,;:]")
+# Digit groups ("50,000") are one token, so their comma is not read as a clause boundary.
+_TOKEN = re.compile(r"\d{1,3}(?:,\d{3})+(?:\.\d+)?|[A-Za-z0-9]+(?:[-'/][A-Za-z0-9]+)*|[,;:]")
 ENTITY_PLACEHOLDER = "entityname"
 
 Tokens = list[tuple[str, int, int]]
@@ -197,11 +198,80 @@ def _compile(patterns: list[str]) -> list[re.Pattern[str]]:
     return [re.compile(p) if p in _CASE_SENSITIVE else re.compile(p, _FLAGS) for p in patterns]
 
 
-COMPILED_CUES = {signal: _compile(cues) for signal, cues in SIGNAL_CUES.items()}
-COMPILED_NEGATIVE_CUES = {signal: _compile(cues) for signal, cues in NEGATIVE_CUES.items()}
-COMPILED_NEGATORS = _compile(NEGATORS)
-COMPILED_PREDICATE_NEGATORS = _compile(PREDICATE_NEGATORS)
-COMPILED_HEDGES = _compile(HEDGE_CUES)
+@dataclass(frozen=True)
+class Lexicon:
+    """A versioned set of cues. ``LEXICON_V2`` is the protocol v2 lexicon, unchanged."""
+
+    name: str
+    signal_cues: dict[Signal, list[str]]
+    negative_cues: dict[Signal, list[str]]
+    negators: list[str]
+    predicate_negators: list[str]
+    hedges: list[str]
+    cues: dict[Signal, list[re.Pattern[str]]] = field(init=False, repr=False)
+    negative: dict[Signal, list[re.Pattern[str]]] = field(init=False, repr=False)
+    compiled_negators: list[re.Pattern[str]] = field(init=False, repr=False)
+    compiled_predicate_negators: list[re.Pattern[str]] = field(init=False, repr=False)
+    compiled_hedges: list[re.Pattern[str]] = field(init=False, repr=False)
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "cues", {s: _compile(c) for s, c in self.signal_cues.items()})
+        object.__setattr__(self, "negative", {s: _compile(c) for s, c in self.negative_cues.items()})
+        object.__setattr__(self, "compiled_negators", _compile(self.negators))
+        object.__setattr__(self, "compiled_predicate_negators", _compile(self.predicate_negators))
+        object.__setattr__(self, "compiled_hedges", _compile(self.hedges))
+
+
+LEXICON_V2 = Lexicon("rules-v2", SIGNAL_CUES, NEGATIVE_CUES, NEGATORS, PREDICATE_NEGATORS, HEDGE_CUES)
+
+# Protocol v3 additions, written before the v3 corpus and questions existed. They are
+# general constructions, not phrasings of any question set:
+# * implicit negation ("lacks", "free of", "excluded from", "exempt from", "no longer");
+# * exceptions ("except", "other than", "apart from", "excluding");
+# * conditional and modal hedging ("if", "unless", "would", "could", "considered", "proposed");
+# * third-party dependency stated through subcontracting or an operator ("subcontracted").
+LEXICON_V3 = Lexicon(
+    "rules-v3",
+    {
+        **SIGNAL_CUES,
+        Signal.THIRD_PARTY: [*SIGNAL_CUES[Signal.THIRD_PARTY], r"\bsubcontract\w*", r"\bthird parties\b"],
+    },
+    NEGATIVE_CUES,
+    [
+        *NEGATORS,
+        r"\black(?:s|ing|ed)?\b",
+        r"\bfree of\b",
+        r"\bno longer\b",
+        r"\bexcept(?: for)?\b",
+        r"\bother than\b",
+        r"\bapart from\b",
+        r"\bexcluding\b",
+    ],
+    [
+        *PREDICATE_NEGATORS,
+        r"\bexcluded from\b",
+        r"\bexempt from\b",
+        r"\bindependent of\b",
+        r"\bruled out\b",
+    ],
+    [
+        *HEDGE_CUES,
+        r"\bif\b",
+        r"\bunless\b",
+        r"\bwould\b",
+        r"\bcould\b",
+        r"\bconsidered\b",
+        r"\bproposed\b",
+        r"\bunder discussion\b",
+    ],
+)
+
+# Module-level aliases of the v2 compiled cues (kept for callers of the v2 API).
+COMPILED_CUES = LEXICON_V2.cues
+COMPILED_NEGATIVE_CUES = LEXICON_V2.negative
+COMPILED_NEGATORS = LEXICON_V2.compiled_negators
+COMPILED_PREDICATE_NEGATORS = LEXICON_V2.compiled_predicate_negators
+COMPILED_HEDGES = LEXICON_V2.compiled_hedges
 
 
 @dataclass(frozen=True)
@@ -272,15 +342,42 @@ def _segments(tokens: Tokens) -> list[int]:
     return ids
 
 
-def analyse(text: str, entities: Iterable[str] = ()) -> list[Mention]:
-    """Every signal mention in ``text`` with its local polarity and hedging."""
+def tokenize(text: str) -> Tokens:
+    """Lower-cased tokens with character spans (punctuation that ends a scope is kept)."""
 
+    return _tokens(text)
+
+
+def segments(tokens: Tokens) -> list[int]:
+    """Clause segment id per token (terminators and coordinators start a new segment)."""
+
+    return _segments(tokens)
+
+
+@dataclass(frozen=True)
+class ScopeFlags:
+    """Token-level scope of a text: clause segments, hedged segments and negation counts."""
+
+    masked: str
+    tokens: Tokens
+    segment: list[int]
+    hedged_segments: frozenset[int]
+    negated: dict[int, int]  # token index → number of negators governing it
+
+    def segment_of(self, position: int) -> int:
+        return self.segment[_token_index(self.tokens, position)] if self.tokens else 0
+
+    def is_negated(self, position: int) -> bool:
+        return bool(self.tokens) and self.negated.get(_token_index(self.tokens, position), 0) > 0
+
+
+def scope_flags(text: str, entities: Iterable[str] = (), lexicon: Lexicon = LEXICON_V2) -> ScopeFlags:
     masked = mask_entities(text, entities)
     tokens = _tokens(masked)
+    negated: dict[int, int] = {}
     if not tokens:
-        return []
-    negated: dict[int, int] = {}  # token → number of negators governing it
-    for pattern in COMPILED_NEGATORS:
+        return ScopeFlags(masked, tokens, [], frozenset(), negated)
+    for pattern in lexicon.compiled_negators:
         for match in pattern.finditer(masked):
             first, last = _span(tokens, match)
             word = tokens[first][0]
@@ -291,19 +388,29 @@ def analyse(text: str, entities: Iterable[str] = ()) -> list[Mention]:
             backward = "n't" in word or previous in _PREDICATE_HEADS
             for index in _scope(tokens, first, last, backward):
                 negated[index] = negated.get(index, 0) + 1
-    for pattern in COMPILED_PREDICATE_NEGATORS:
+    for pattern in lexicon.compiled_predicate_negators:
         for match in pattern.finditer(masked):
             first, last = _span(tokens, match)
             for index in _scope(tokens, first, last, backward=True):
                 negated[index] = negated.get(index, 0) + 1
     segment = _segments(tokens)
-    hedged_segments = {
-        segment[_token_index(tokens, m.start())] for p in COMPILED_HEDGES for m in p.finditer(masked)
-    }
+    hedged = frozenset(
+        segment[_token_index(tokens, m.start())] for p in lexicon.compiled_hedges for m in p.finditer(masked)
+    )
+    return ScopeFlags(masked, tokens, segment, hedged, negated)
+
+
+def analyse(text: str, entities: Iterable[str] = (), lexicon: Lexicon = LEXICON_V2) -> list[Mention]:
+    """Every signal mention in ``text`` with its local polarity and hedging."""
+
+    flags = scope_flags(text, entities, lexicon)
+    masked, tokens, negated, segment = flags.masked, flags.tokens, flags.negated, flags.segment
+    if not tokens:
+        return []
     mentions: list[Mention] = []
     for signal in Signal:
-        groups = [(p, False) for p in COMPILED_CUES[signal]]
-        groups += [(p, True) for p in COMPILED_NEGATIVE_CUES.get(signal, [])]
+        groups = [(p, False) for p in lexicon.cues[signal]]
+        groups += [(p, True) for p in lexicon.negative.get(signal, [])]
         for pattern, inherently_negative in groups:
             for match in pattern.finditer(masked):
                 first, _ = _span(tokens, match)
@@ -313,7 +420,7 @@ def analyse(text: str, entities: Iterable[str] = ()) -> list[Mention]:
                         signal=signal,
                         cue=match.group(0),
                         polarity=Polarity.ABSENT if flips % 2 else Polarity.PRESENT,
-                        hedged=segment[first] in hedged_segments,
+                        hedged=segment[first] in flags.hedged_segments,
                         token=first,
                     )
                 )

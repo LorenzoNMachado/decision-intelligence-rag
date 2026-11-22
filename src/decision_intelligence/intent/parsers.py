@@ -22,7 +22,7 @@ from typing import Any, Protocol
 from decision_intelligence.generation.prompts import load_prompt
 from decision_intelligence.llm.client import LLMClient, LLMError
 from decision_intelligence.models import IntentSignal, Polarity, QueryIntent, Requirement, Signal
-from decision_intelligence.semantic_signals.lexicon import analyse, disjunctive_signals
+from decision_intelligence.semantic_signals.lexicon import LEXICON_V2, Lexicon, analyse, disjunctive_signals
 
 MAX_REQUIRED = 2
 
@@ -67,13 +67,16 @@ class RuleBasedIntentParser:
       so words inside a name never become constraints.
     """
 
-    name = "rules-v2"
-
-    def __init__(self, entities: Iterable[str] = ()) -> None:
+    def __init__(self, entities: Iterable[str] = (), lexicon: Lexicon = LEXICON_V2) -> None:
         self.entities = tuple(entities)
+        self.lexicon = lexicon
+
+    @property
+    def name(self) -> str:
+        return self.lexicon.name
 
     def parse(self, question: str) -> QueryIntent:
-        mentions = analyse(question, self.entities)
+        mentions = analyse(question, self.entities, self.lexicon)
         if not mentions:
             return QueryIntent(parser=self.name, status="NONE")
         alternatives = disjunctive_signals(question, mentions, self.entities)
