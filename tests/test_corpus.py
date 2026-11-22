@@ -43,25 +43,37 @@ def test_long_sections_are_split_on_sentence_boundaries(corpus: list[DecisionDoc
     assert all(c.text.rstrip().endswith(".") for c in context_chunks)
 
 
-def test_question_set_shape(corpus: list[DecisionDocument], specs: list[dict[str, Any]]) -> None:
+def test_question_set_shape(corpus: list[DecisionDocument], specs: dict[str, Any]) -> None:
     questions = build_question_set(corpus, specs)
-    assert len(questions) == 70
-    splits = Counter((q.split, q.answerable) for q in questions)
-    assert splits == {("dev", True): 16, ("dev", False): 4, ("holdout", True): 40, ("holdout", False): 10}
-    assert all(1 <= len(q.expected_doc_ids) <= 4 for q in questions if q.answerable)
-    # Every category appears in both splits, in proportion.
+    assert len(questions) == 8 * 28  # sizes fixed in the specification: 8 dev + 20 holdout per category
     for category in CATEGORIES:
         counts = Counter(q.split for q in questions if q.category == category)
-        assert counts["dev"] >= 1 and counts["holdout"] > counts["dev"], category
-    # Phrasings are not reused, and in-domain unanswerables name a real record.
+        assert counts == {"dev": 8, "holdout": 20}, category
+    assert all(1 <= len(q.expected_doc_ids) <= 4 for q in questions if q.answerable)
+    assert all(not q.expected_doc_ids for q in questions if not q.answerable)
     assert len({q.text for q in questions}) == len(questions)
-    titles = {d.title[:1].lower() + d.title[1:] for d in corpus}
-    in_domain = [q for q in questions if q.category == "unanswerable_in_domain"]
-    assert in_domain and all(any(t in q.text for t in titles) for q in in_domain)
+
+
+def test_missing_information_questions_reuse_the_lookup_phrasings(
+    corpus: list[DecisionDocument], specs: dict[str, Any]
+) -> None:
+    """Answerability must depend on the evidence, not on the wording."""
+
+    questions = build_question_set(corpus, specs)
+    templates = [t["text"].split("{title}")[0] for t in specs["categories"]["fact_lookup"]["templates"]]
+    missing = [q for q in questions if q.category == "fact_missing"]
+    present = [q for q in questions if q.category == "fact_lookup"]
+    assert missing and present
+    for group in (missing, present):
+        assert all(any(q.text.startswith(t) for t in templates) for q in group)
+    by_id = {d.id: d for d in corpus}
+    for q in missing:
+        target, field = q.reference_answer.split()[1], q.reference_answer.split()[-1].rstrip(".")
+        assert field not in by_id[target].metadata and by_id[target].title[1:] in q.text
 
 
 def test_question_set_is_deterministic_and_split_is_disjoint(
-    corpus: list[DecisionDocument], specs: list[dict[str, Any]]
+    corpus: list[DecisionDocument], specs: dict[str, Any]
 ) -> None:
     first, second = build_question_set(corpus, specs), build_question_set(corpus, specs)
     assert first == second
@@ -70,22 +82,23 @@ def test_question_set_is_deterministic_and_split_is_disjoint(
     assert dev and holdout and not dev & holdout
 
 
-def test_question_specs_reject_reused_phrasings(
-    corpus: list[DecisionDocument], specs: list[dict[str, Any]]
+def test_question_specs_must_cover_exactly_the_categories(
+    corpus: list[DecisionDocument], specs: dict[str, Any]
 ) -> None:
+    broken = {**specs, "categories": {k: v for k, v in specs["categories"].items() if k != "out_of_domain"}}
     with pytest.raises(QuestionSpecError):
-        build_question_set(corpus, [specs[0], specs[0]])
+        build_question_set(corpus, broken)
 
 
 def test_validation_passes_on_generated_artefacts(
-    corpus: list[DecisionDocument], specs: list[dict[str, Any]]
+    corpus: list[DecisionDocument], specs: dict[str, Any]
 ) -> None:
     report = validate_corpus(corpus, chunk_corpus(corpus), build_question_set(corpus, specs))
     assert report.ok, report.errors
 
 
 def test_validation_detects_unreachable_key_facts(
-    corpus: list[DecisionDocument], specs: list[dict[str, Any]]
+    corpus: list[DecisionDocument], specs: dict[str, Any]
 ) -> None:
     questions = build_question_set(corpus, specs)
     broken = replace(next(q for q in questions if q.answerable), key_facts=("a fact that appears nowhere",))

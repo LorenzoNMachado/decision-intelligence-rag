@@ -1,0 +1,7 @@
+{
+  "id": "L",
+  "retrieval": "rules-v3",
+  "sufficiency": true,
+  "generator": "llm",
+  "description": "Corrected retrieval, sufficiency check and the LLM generator (needs a provider; pending)."
+}

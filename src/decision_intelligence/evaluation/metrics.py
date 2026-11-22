@@ -15,7 +15,13 @@ the runner. Definitions (see ``docs/evaluation.md``):
   in a cited source / model-written claims (``quote``); extracted quotes are
   verified by construction and excluded. With an LLM verifier: SUPPORTED /
   judged claims.
-* Correct abstention rate — unanswerable rows that abstained / unanswerable rows.
+* Correct abstention rate — unanswerable rows that abstained / unanswerable rows;
+  also split into in-domain (a real record, information not stated) and
+  out-of-domain rows.
+* Unsupported answer rate — ANSWER rows that cite no expected record (or answer
+  an unanswerable question) / ANSWER rows.
+* Intervals — 95 % Wilson intervals for proportions; a seeded percentile
+  bootstrap over questions for Recall@k.
 * False-answer rate — unanswerable rows that answered / unanswerable rows.
 * False-abstention rate — answerable rows that abstained / answerable rows.
 * Latency p50/p95 — end-to-end pipeline latency in milliseconds.
@@ -33,6 +39,7 @@ from typing import Any
 import numpy as np
 
 from decision_intelligence.evaluation.judges import LexicalJudge, grade
+from decision_intelligence.evaluation.statistics import bootstrap_interval, wilson_interval
 from decision_intelligence.models import ABSTAIN_TEXT, Question
 
 Row = dict[str, Any]
@@ -73,6 +80,15 @@ def enforce_quotes(row: Row) -> Row:
     return {**row, "answer": answer}
 
 
+def _per_question_means(rows: list[Row], value_by_row: dict[int, float]) -> list[float]:
+    """One value per question (mean over repetitions), so repetitions never count as observations."""
+
+    grouped: dict[str, list[float]] = {}
+    for row in rows:
+        grouped.setdefault(row["question_id"], []).append(value_by_row[id(row)])
+    return [sum(v) / len(v) for _, v in sorted(grouped.items())]
+
+
 def compute_metrics(
     rows: list[Row],
     questions: dict[str, Question],
@@ -85,6 +101,7 @@ def compute_metrics(
     unanswerable = [r for r in rows if not questions[r["question_id"]].answerable]
 
     recalls = []
+    recall_by_row: dict[int, float] = {}
     precisions = []
     coverages = []
     irrelevant_cited = 0
@@ -92,6 +109,7 @@ def compute_metrics(
         expected = set(questions[row["question_id"]].expected_doc_ids)
         top = [d["doc_id"] for d in row["retrieved"][:top_k]]
         recalls.append(len(expected & set(top)) / len(expected))
+        recall_by_row[id(row)] = recalls[-1]
         cited = cited_ids(row)
         if row["answer"]["status"] == "ANSWER" and cited:
             hits = len(expected & set(cited))
@@ -116,6 +134,20 @@ def compute_metrics(
 
     def status_count(subset: list[Row], status: str) -> int:
         return sum(r["answer"]["status"] == status for r in subset)
+
+    def is_out_of_domain(row: Row) -> bool:
+        return "out_of_domain" in questions[row["question_id"]].category
+
+    in_domain = [r for r in unanswerable if not is_out_of_domain(r)]
+    out_of_domain = [r for r in unanswerable if is_out_of_domain(r)]
+    answered = [r for r in rows if r["answer"]["status"] == "ANSWER"]
+    unsupported = sum(
+        1
+        for r in answered
+        if not questions[r["question_id"]].answerable
+        or not set(cited_ids(r)) & set(questions[r["question_id"]].expected_doc_ids)
+    )
+    correct_count = sum(label == "CORRECT" for label in judged)
 
     latencies = [float(r["latency_ms"]) for r in rows]
     costs = [r["cost_usd"] for r in rows]
@@ -142,6 +174,19 @@ def compute_metrics(
         else None,
         "claims": len(claims),
         "correct_abstention_rate": _rate(status_count(unanswerable, "ABSTAIN"), len(unanswerable)),
+        "correct_abstention_in_domain": _rate(status_count(in_domain, "ABSTAIN"), len(in_domain)),
+        "correct_abstention_out_of_domain": _rate(status_count(out_of_domain, "ABSTAIN"), len(out_of_domain)),
+        "unsupported_answer_rate": _rate(unsupported, len(answered)),
+        "answered_rows": len(answered),
+        "correctness_ci95": wilson_interval(correct_count, len(judged)),
+        "recall_at_k_ci95": bootstrap_interval(_per_question_means(answerable, recall_by_row)),
+        "correct_abstention_in_domain_ci95": wilson_interval(
+            status_count(in_domain, "ABSTAIN"), len(in_domain)
+        ),
+        "correct_abstention_out_of_domain_ci95": wilson_interval(
+            status_count(out_of_domain, "ABSTAIN"), len(out_of_domain)
+        ),
+        "false_abstention_ci95": wilson_interval(status_count(answerable, "ABSTAIN"), len(answerable)),
         "false_answer_rate": _rate(status_count(unanswerable, "ANSWER"), len(unanswerable)),
         "false_abstention_rate": _rate(status_count(answerable, "ABSTAIN"), len(answerable)),
         "operational_failures": sum(r["answer"]["status"] == "ERROR" for r in rows),

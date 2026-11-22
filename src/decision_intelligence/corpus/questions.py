@@ -1,21 +1,24 @@
-"""Construction of the protocol v2 evaluation set from hand-written specifications.
+"""Construction of the protocol v3 evaluation set.
 
-``data/v2/question_specs.json`` holds one hand-written phrasing per question
-(no phrasing is reused) with a category and, for filters, the constraint it
-expresses. ``build_question_set`` turns the specifications into questions:
+``data/v3/question_specs.json`` holds the phrasings per category and the set
+sizes, fixed before any run (8 dev + 20 holdout per category). The builder
+draws targets with a seeded generator and derives every expected answer from
+the generator's recorded facts (``metadata``) and intended labels
+(``ground_truth_signals``) — never from the system:
 
-* the subject (filters) or record (lookups, in-domain unanswerables) is drawn
-  with a seeded generator from the eligible ones, so the author did not choose
-  which records each question targets;
-* expected evidence is derived from the generator's intended labels: a filter
-  matches the records of the subject that satisfy ``all`` (conjunction) or
-  ``any`` (disjunction) of its (signal, label) constraints, and a filter is
-  eligible only if 1–4 records match (the top-k is 4);
-* the dev/holdout split is drawn per category in proportion (``DEV_FRACTION``,
-  at least one per category in each split), so both splits have the same mix.
+* ``entity_lookup`` / ``fact_lookup`` — a record that states the attribute;
+  the key fact is its value, the forbidden facts are the other values of the
+  same kind;
+* ``entity_missing`` / ``fact_missing`` — the *same phrasings* about a record
+  that does not state the attribute (for entities, also no statement either
+  way about the signal); these are in-domain unanswerable questions;
+* ``signal_filter`` / ``negated_filter`` / ``multi_condition`` — the records
+  of a subject whose intended labels satisfy every condition (1–4 records);
+* ``out_of_domain`` — hand-written questions about topics no record covers.
 
-Because references come from the same generator as the corpus, they are not
-independent annotations; ``docs/limitations.md`` discusses the consequences.
+Phrasings are used round-robin within a category, so each appears 2–3 times
+with different targets. Within each category the first 8 drafts of a seeded
+shuffle form the dev split and the rest the holdout.
 """
 
 from __future__ import annotations
@@ -24,16 +27,38 @@ import random
 from collections import defaultdict
 from typing import Any
 
-from decision_intelligence.corpus.generator import FRAMEWORKS, REGULATIONS, VENDORS
+from decision_intelligence.corpus.generator import (
+    AMOUNTS,
+    FRAMEWORKS,
+    PEOPLE,
+    REGULATIONS,
+    USER_COUNTS,
+    VENDORS,
+)
 from decision_intelligence.models import DecisionDocument, Question, Signal
 
-DEV_FRACTION = 0.3
 MAX_EXPECTED = 4
-UNANSWERABLE = ("unanswerable_in_domain", "unanswerable_out_of_domain")
-LOOKUPS = ("provider_lookup", "regulation_lookup", "framework_lookup")
-FILTERS = ("signal_filter", "negated_filter", "conjunction_filter", "disjunction_filter", "hedged_filter")
-CATEGORIES = LOOKUPS + FILTERS + UNANSWERABLE
-_FIELD_POOLS = {"vendor": VENDORS, "regulation": REGULATIONS, "framework": FRAMEWORKS}
+LOOKUPS = ("entity_lookup", "fact_lookup")
+MISSING = ("entity_missing", "fact_missing")
+FILTERS = ("signal_filter", "negated_filter", "multi_condition")
+CATEGORIES = (*LOOKUPS, *MISSING, *FILTERS, "out_of_domain")
+UNANSWERABLE = (*MISSING, "out_of_domain")
+IN_DOMAIN_UNANSWERABLE = MISSING
+_POOLS: dict[str, list[str]] = {
+    "vendor": VENDORS,
+    "regulation": REGULATIONS,
+    "framework": FRAMEWORKS,
+    "budget": AMOUNTS,
+    "go_live": [],
+    "lead": PEOPLE,
+    "users": USER_COUNTS,
+}
+# The signal whose explicit statement makes an entity question answerable ("none" would be an answer).
+_ENTITY_SIGNAL = {
+    "vendor": Signal.THIRD_PARTY,
+    "regulation": Signal.LEGAL,
+    "framework": Signal.COMPLIANCE,
+}
 
 
 class QuestionSpecError(ValueError):
@@ -44,120 +69,148 @@ def _lower_first(text: str) -> str:
     return text[:1].lower() + text[1:]
 
 
-def _list_reference(docs: list[DecisionDocument]) -> str:
-    return "; ".join(f"{d.title} ({d.id})" for d in docs)
+def _satisfies(doc: DecisionDocument, conditions: list[list[str]]) -> bool:
+    return all(doc.ground_truth_signals[Signal(signal).value] == label for signal, label in conditions)
 
 
-def _matches(doc: DecisionDocument, spec: dict[str, Any]) -> bool:
-    def holds(constraint: list[str]) -> bool:
-        signal, label = constraint
-        return doc.ground_truth_signals[Signal(signal).value] == label
+def _lookup_targets(documents: list[DecisionDocument], field: str, present: bool) -> list[DecisionDocument]:
+    if present:
+        return [d for d in documents if d.metadata.get(field)]
+    signal = _ENTITY_SIGNAL.get(field)
+    return [
+        d
+        for d in documents
+        if not d.metadata.get(field) and (signal is None or d.ground_truth_signals[signal.value] == "UNCLEAR")
+    ]
 
-    if "all" in spec:
-        return all(holds(c) for c in spec["all"])
-    return any(holds(c) for c in spec["any"])
 
-
-def _draft(
+def _drafts(
+    category: str,
     spec: dict[str, Any],
+    templates: list[dict[str, Any]],
     documents: list[DecisionDocument],
-    by_subject: dict[str, list[DecisionDocument]],
+    count: int,
     rng: random.Random,
-    used: set[str],
-) -> dict[str, Any]:
-    category = spec["category"]
-    titles = [d.title for d in documents]
-    if category in LOOKUPS:
-        field = spec["field"]
-        pool = [d for d in documents if d.metadata.get(field) and d.id not in used]
-        if not pool:
-            raise QuestionSpecError(f"no record left with {field} for: {spec['text']}")
-        doc = rng.choice(pool)
-        used.add(doc.id)
-        value = doc.metadata[field]
-        return {
-            "text": spec["text"].format(title=_lower_first(doc.title)),
-            "answerable": True,
-            "expected": [doc],
-            "key_facts": (value,),
-            "forbidden": tuple(v for v in _FIELD_POOLS[field] if v != value),
-            "reference": f"{value} ({doc.id})",
-        }
-    if category == "unanswerable_in_domain":
-        doc = rng.choice([d for d in documents if d.id not in used])
-        used.add(doc.id)
-        return {
-            "text": spec["text"].format(title=_lower_first(doc.title)),
-            "answerable": False,
-            "expected": [],
-        }
-    if category == "unanswerable_out_of_domain":
-        return {"text": spec["text"], "answerable": False, "expected": []}
-    if category not in FILTERS:
-        raise QuestionSpecError(f"unknown category {category!r}")
-    eligible = []
-    for subject in sorted(by_subject):
-        key = f"{subject}|{spec['text']}"
-        matches = [d for d in by_subject[subject] if _matches(d, spec)]
-        if 1 <= len(matches) <= MAX_EXPECTED and key not in used:
-            eligible.append((subject, matches))
-    if not eligible:
-        raise QuestionSpecError(f"no subject with 1-{MAX_EXPECTED} matching records for: {spec['text']}")
-    subject, matches = rng.choice(eligible)
-    used.add(f"{subject}|{spec['text']}")
-    expected_titles = {d.title for d in matches}
-    return {
-        "text": spec["text"].format(subject=subject),
-        "answerable": True,
-        "expected": matches,
-        "key_facts": tuple(d.title for d in matches),
-        "forbidden": tuple(t for t in titles if t not in expected_titles),
-        "reference": _list_reference(matches),
-    }
-
-
-def build_question_set(
-    documents: list[DecisionDocument], specs: list[dict[str, Any]], seed: int = 1717
-) -> list[Question]:
-    """Build the questions and assign the stratified dev/holdout split."""
-
-    texts = [s["text"] for s in specs]
-    if len(texts) != len(set(texts)):
-        raise QuestionSpecError("every specification must have its own phrasing")
-    rng = random.Random(seed)
+) -> list[dict[str, Any]]:
+    drafts: list[dict[str, Any]] = []
+    if category == "out_of_domain":
+        texts = list(spec["questions"])
+        if len(texts) < count:
+            raise QuestionSpecError("not enough out-of-domain questions")
+        return [{"text": t, "answerable": False, "expected": []} for t in texts[:count]]
     by_subject: dict[str, list[DecisionDocument]] = defaultdict(list)
     for doc in documents:
         by_subject[doc.subject].append(doc)
     used: set[str] = set()
-    drafts = []
-    for spec in specs:
-        draft = _draft(spec, documents, by_subject, rng, used)
-        drafts.append((spec["category"], draft))
+    order = list(templates)
+    rng.shuffle(order)
+    index = 0
+    attempts = 0
+    while len(drafts) < count:
+        attempts += 1
+        if attempts > 50 * count:
+            raise QuestionSpecError(f"cannot draw {count} questions for {category}")
+        template = order[index % len(order)]
+        index += 1
+        if category in LOOKUPS or category in MISSING:
+            field = template["field"]
+            pool = [
+                d
+                for d in _lookup_targets(documents, field, category in LOOKUPS)
+                if f"{d.id}|{field}" not in used
+            ]
+            if not pool:
+                continue
+            doc = rng.choice(pool)
+            used.add(f"{doc.id}|{field}")
+            text = template["text"].format(title=_lower_first(doc.title))
+            if category in MISSING:
+                # The target is recorded for auditing the gold standard; the system never reads it.
+                drafts.append(
+                    {
+                        "text": text,
+                        "answerable": False,
+                        "expected": [],
+                        "reference": f"ABSTAIN: {doc.id} states no {field}.",
+                    }
+                )
+                continue
+            value = doc.metadata[field]
+            drafts.append(
+                {
+                    "text": text,
+                    "answerable": True,
+                    "expected": [doc],
+                    "key_facts": (value,),
+                    "forbidden": tuple(v for v in _POOLS[field] if v != value),
+                    "reference": f"{value} ({doc.id})",
+                }
+            )
+            continue
+        eligible = []
+        for subject in sorted(by_subject):
+            matches = [d for d in by_subject[subject] if _satisfies(d, template["all"])]
+            if 1 <= len(matches) <= MAX_EXPECTED and f"{subject}|{template['text']}" not in used:
+                eligible.append((subject, matches))
+        if not eligible:
+            continue
+        subject, matches = rng.choice(eligible)
+        used.add(f"{subject}|{template['text']}")
+        titles = {d.title for d in matches}
+        drafts.append(
+            {
+                "text": template["text"].format(subject=subject),
+                "answerable": True,
+                "expected": matches,
+                "key_facts": tuple(d.title for d in matches),
+                "forbidden": tuple(d.title for d in documents if d.title not in titles),
+                "reference": "; ".join(f"{d.title} ({d.id})" for d in matches),
+            }
+        )
+    return drafts
 
-    by_category: dict[str, list[int]] = defaultdict(list)
-    for index, (category, _) in enumerate(drafts):
-        by_category[category].append(index)
-    dev: set[int] = set()
-    for category in sorted(by_category):
-        indices = by_category[category]
-        count = min(len(indices) - 1, max(1, round(len(indices) * DEV_FRACTION)))
-        dev.update(rng.sample(indices, count))
 
-    order = list(range(len(drafts)))
+def build_question_set(
+    documents: list[DecisionDocument], specs: dict[str, Any], seed: int = 2929
+) -> list[Question]:
+    """Build every category's drafts, then assign the dev/holdout split per category."""
+
+    rng = random.Random(seed)
+    sizes = specs["sizes"]
+    per_category = int(sizes["dev"]) + int(sizes["holdout"])
+    categories = specs["categories"]
+    if set(categories) != set(CATEGORIES):
+        raise QuestionSpecError(f"categories must be exactly {sorted(CATEGORIES)}")
+    all_drafts: list[tuple[str, str, dict[str, Any]]] = []
+    for category in CATEGORIES:
+        spec = categories[category]
+        templates = (
+            categories[spec["templates_from"]]["templates"]
+            if "templates_from" in spec
+            else spec.get("templates", [])
+        )
+        drafts = _drafts(category, spec, templates, documents, per_category, rng)
+        rng.shuffle(drafts)
+        for position, draft in enumerate(drafts):
+            all_drafts.append((category, "dev" if position < int(sizes["dev"]) else "holdout", draft))
+    texts = [d["text"] for _, _, d in all_drafts]
+    if len(texts) != len(set(texts)):
+        raise QuestionSpecError("two drafts produced the same question text")
+    order = list(range(len(all_drafts)))
     rng.shuffle(order)
     questions = []
     for number, index in enumerate(order, start=1):
-        category, draft = drafts[index]
+        category, split, draft = all_drafts[index]
         questions.append(
             Question(
                 id=f"Q-{number:03d}",
-                split="dev" if index in dev else "holdout",
+                split=split,
                 category=category,
                 text=draft["text"],
                 answerable=draft["answerable"],
                 expected_doc_ids=tuple(d.id for d in draft["expected"]),
                 reference_answer=draft.get(
-                    "reference", "ABSTAIN: the corpus contains no record with this information."
+                    "reference", "ABSTAIN: no record contains the requested information."
                 ),
                 key_facts=draft.get("key_facts", ()),
                 forbidden_facts=draft.get("forbidden", ()),

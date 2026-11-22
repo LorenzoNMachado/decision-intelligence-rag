@@ -1,0 +1,7 @@
+{
+  "id": "H",
+  "retrieval": "vector",
+  "sufficiency": true,
+  "generator": "extractive-v2",
+  "description": "Vector baseline with evidence sufficiency and the v2 extractive generator."
+}

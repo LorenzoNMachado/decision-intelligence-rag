@@ -1,0 +1,7 @@
+{
+  "id": "A",
+  "retrieval": "vector",
+  "sufficiency": false,
+  "generator": "extractive-v1",
+  "description": "Vector baseline, no sufficiency check, extractive generator v1 (overlap)."
+}

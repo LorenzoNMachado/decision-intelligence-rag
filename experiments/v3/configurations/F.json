@@ -1,0 +1,7 @@
+{
+  "id": "F",
+  "retrieval": "rules-v3",
+  "sufficiency": true,
+  "generator": "extractive-v2",
+  "description": "E with the v2 extractive generator (quotes the sentence the check found)."
+}

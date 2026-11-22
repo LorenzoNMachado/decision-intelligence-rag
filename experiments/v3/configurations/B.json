@@ -1,0 +1,7 @@
+{
+  "id": "B",
+  "retrieval": "rules-v2",
+  "sufficiency": false,
+  "generator": "extractive-v1",
+  "description": "Semantic retrieval as in protocol v2 (rules-v2 parser and classifier, flat ranking)."
+}
