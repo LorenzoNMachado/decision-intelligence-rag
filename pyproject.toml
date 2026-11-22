@@ -1,6 +1,6 @@
 [project]
 name = "decision-intelligence-rag"
-version = "0.2.0"
+version = "0.3.0"
 description = "An independent research implementation for evaluating evidence-grounded RAG architectures, semantic retrieval strategies, answer correctness, and citation faithfulness."
 readme = "README.md"
 license = "MIT"
