@@ -33,10 +33,17 @@ from enum import StrEnum
 from typing import Any
 
 from decision_intelligence.embeddings.hashing import tokenize
-from decision_intelligence.models import DecisionDocument, Polarity, Requirement, RetrievalResult
+from decision_intelligence.models import DecisionDocument, Polarity, Requirement, RetrievalResult, Signal
+from decision_intelligence.semantic_signals.lexicon import ENTITY_PLACEHOLDER, mask_entities
 from decision_intelligence.semantic_signals.scope import Assertion, scoped_mentions
 from decision_intelligence.sufficiency.facts import AnswerType, SentenceFacts, extract_facts
-from decision_intelligence.sufficiency.need import InformationNeed, analyse_need, lemmas, related
+from decision_intelligence.sufficiency.need import (
+    FUNCTION_WORDS,
+    InformationNeed,
+    analyse_need,
+    lemmas,
+    related,
+)
 
 # Generic value types need the sentence to name the requested attribute; named entities do not
 # when the record contains exactly one of them.
@@ -120,10 +127,18 @@ class EvidenceSufficiencyChecker:
 
     # -- attribute and reason questions ---------------------------------------------------------
 
-    @staticmethod
-    def _focus(need: InformationNeed, doc: DecisionDocument) -> list[str]:
-        title = set(lemmas(doc.title))
-        return [f for f in need.focus if f not in title]
+    def _focus(self, need: InformationNeed, doc: DecisionDocument) -> list[str]:
+        """Focus words of the question once this record's title (the reference) is masked as a phrase.
+
+        Masking the phrase, rather than removing every title word, keeps an attribute word that also
+        occurs in the title ("budget" in "the decision to introduce a budget planning tool").
+        """
+
+        masked = mask_entities(need.text, (doc.title, *self.entities))
+        words = [
+            w for w in lemmas(masked) if w not in FUNCTION_WORDS and len(w) > 2 and w != ENTITY_PLACEHOLDER
+        ]
+        return list(dict.fromkeys(words))
 
     @staticmethod
     def _overlap(focus: list[str], sentence: str) -> int:
@@ -133,14 +148,28 @@ class EvidenceSufficiencyChecker:
     def _attribute(self, need: InformationNeed, doc: DecisionDocument) -> DocumentSufficiency:
         facts = extract_facts(_body(doc), self.entities)
         focus = self._focus(need, doc)
+        # A capitalised name is weak evidence of an organisation (people's names look the same), so an
+        # ORGANIZATION only counts in a sentence about the question or one that asserts a third-party
+        # dependency (scoped signal analysis).
+        provision = {
+            m.sentence
+            for m in scoped_mentions(_body(doc), self.entities)
+            if m.signal is Signal.THIRD_PARTY
+            and m.assertion is Assertion.FACTUAL
+            and m.polarity is Polarity.PRESENT
+        }
         candidates: list[tuple[int, SentenceFacts]] = []
         partial = ""
         for sentence in facts:
-            typed = sentence.of_type(*need.accepted_types)
+            overlap = self._overlap(focus, sentence.text)
+            typed = [
+                m
+                for m in sentence.of_type(*need.accepted_types)
+                if m.type is not AnswerType.ORGANIZATION or overlap > 0 or sentence.text in provision
+            ]
             if not typed:
                 continue
             factual = [m for m in typed if m.assertion is Assertion.FACTUAL]
-            overlap = self._overlap(focus, sentence.text)
             if not factual:
                 partial = f"{typed[0].type.value} stated only as {typed[0].assertion.value.lower()}"
                 continue

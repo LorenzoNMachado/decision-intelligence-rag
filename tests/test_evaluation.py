@@ -119,6 +119,21 @@ def test_offline_run_report_and_resume(workspace: Workspace, offline_env: Enviro
     assert "api_key" not in json.dumps(metadata).replace("llm_api_key_configured", "")
 
 
+def test_configurations_with_sufficiency_run_the_check(
+    workspace: Workspace, offline_env: Environment
+) -> None:
+    # Regression: the runner once ignored ``sufficiency`` in the configuration.
+    run_experiment(workspace, offline_env, "dev", ["C", "E", "F"], name="suff")
+    rows = read_jsonl(workspace.results_dir / "suff" / "rows.jsonl")
+    by_config = {c: [r for r in rows if r["config"] == c] for c in ("C", "E", "F")}
+    assert all(r["sufficiency"] is None for r in by_config["C"])
+    assert all(r["sufficiency"] is not None for r in by_config["E"] + by_config["F"])
+    answered = [r for r in by_config["F"] if r["answer"]["status"] == "ANSWER"]
+    assert answered, "extractive-v2 must answer when the check finds sufficient evidence"
+    insufficient = [r for r in by_config["E"] if r["sufficiency"]["status"] != "SUFFICIENT"]
+    assert all(r["answer"]["outcome"] == "INSUFFICIENT_EVIDENCE" for r in insufficient)
+
+
 def test_deterministic_configurations_run_once_by_default(
     workspace: Workspace, offline_env: Environment
 ) -> None:

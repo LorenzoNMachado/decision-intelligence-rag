@@ -41,6 +41,7 @@ from decision_intelligence.config import (
     Workspace,
     build_llm,
     load_components,
+    make_checker,
     make_generator,
     make_retriever,
 )
@@ -190,7 +191,8 @@ def run_experiment(
         for config in configs:
             retriever = make_retriever(components, config.retrieval, llm)
             generator = make_generator(config.generator, llm, protocol)
-            pipeline = Pipeline(retriever, generator, components.documents)
+            checker = make_checker(components) if config.sufficiency else None
+            pipeline = Pipeline(retriever, generator, components.documents, checker=checker)
             # Untimed warm-up so the first timed row does not pay one-off costs. No model call.
             warm = retriever.retrieve(WARM_UP_QUESTION, intent=QueryIntent("warm-up", "NONE"))
             if config.generator == "extractive":

@@ -295,3 +295,39 @@ def test_focus_words_survive_when_they_also_occur_in_an_entity_name() -> None:
     # Regression: an entity called "budget planning tool" used to remove "budget" from every question.
     need = analyse_need(BUDGET_Q, entities=(*ENTITIES, "budget planning tool"))
     assert "budget" in need.focus
+
+
+def test_copular_who_question_asks_for_the_named_type() -> None:
+    need = analyse_need(
+        "Who is the external supplier behind the decision to adopt the payroll platform?", ENTITIES
+    )
+    assert need.answer_type is AnswerType.ORGANIZATION
+
+
+def test_an_attribute_word_that_also_occurs_in_the_title_stays_in_the_focus() -> None:
+    doc = DecisionDocument(
+        id="DEC-001",
+        title="Introduce a budget planning tool",
+        domain="Finance",
+        subject="budget planning tool",
+        date="2025-01-01",
+        status="approved",
+        owner_role="Controller",
+        decision="The Controller approved the proposal to introduce a budget planning tool.",
+        context="Usage doubled.",
+        rationale="The project budget is capped at €1.2 million.",
+    )
+    question = "What budget was approved for the decision to introduce a budget planning tool?"
+    checker = EvidenceSufficiencyChecker(entities=("budget planning tool",), scopes=("budget planning tool",))
+    report = checker.check(question, _retrieval(question, doc), {doc.id: doc})
+    assert report.status is Sufficiency.SUFFICIENT
+
+
+def test_a_person_named_in_passing_is_not_taken_for_an_organisation() -> None:
+    question = "Which company runs the service for the decision to adopt the payroll platform?"
+    consulted = _doc("DEC-001", "Adopt the", "Ines Marchetti from finance was consulted.", "Usage doubled.")
+    assert _check(question, consulted).status is Sufficiency.INSUFFICIENT
+    provided = _doc(
+        "DEC-001", "Adopt the", "The platform itself is provided by Arden Field Systems.", "Usage doubled."
+    )
+    assert _check(question, provided).status is Sufficiency.SUFFICIENT

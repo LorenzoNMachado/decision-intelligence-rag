@@ -114,5 +114,26 @@ results; defects found afterwards are documented as such.
 | Commit | Change | Found by |
 |---|---|---|
 | `4277b90` | Entity words no longer removed from the question focus ("budget planning tool" removed "budget") | interface smoke test on one corpus record, before calibration |
+| (dev wiring fix) | The runner now passes the sufficiency checker to the pipeline when a configuration enables it; before, D/E ran without the check and F/H abstained on everything | first dev run (D = B, E = C exactly; F, H false abstention 1.0); no system logic changed, the dev run was repeated |
 
-Any further change before the freeze is added to this table with its reason.
+| (dev fix) | A copular "who is the <type noun>" question asks for that type ("who is the external supplier" → organisation, not person) | dev-r2: false abstentions on two dev entity lookups |
+| (dev fix) | The checker masks the referenced record's title as a phrase instead of removing every title word from the focus, so "budget" survives in "the decision to introduce a budget planning tool" | dev-r2: false abstention on one dev budget lookup |
+| (dev fix) | A capitalised name counts as an organisation only in a sentence related to the question or asserting a third-party dependency (a consulted person's name had been accepted as "the" organisation) | dev-r3: one in-domain unanswerable vendor question answered with a person's name |
+
+Observed on dev and deliberately **not** fixed (fixing them would mean tuning
+the lexicon to the v3 phrasings; they are reported as limitations):
+
+* paraphrases without lexicon words ("because the current setup keeps
+  failing", "rely on another company") leave the condition not understood,
+  so the check abstains;
+* counterfactual modality ("without the change the organisation would
+  breach …") is read as hypothetical;
+* attribute synonyms ("staff" for "employees", "affects" for "use") do not
+  match the question's focus;
+* the cue "compliance" also occurs in legal sentences ("compliance with the
+  … Regulation"), which makes some records ambiguous on compliance.
+
+Dev runs are kept as they were produced: `dev` (runner wiring defect), `dev-r2`
+and `dev-r3` (before the dev fixes above) and `dev-r4`, the last dev iteration.
+The protocol was frozen right after `dev-r4`, whatever it showed, to stop
+iterating on dev.

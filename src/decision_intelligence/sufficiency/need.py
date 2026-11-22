@@ -156,6 +156,7 @@ _IRREGULAR = {
     "begun": "begin",
 }
 _REFERENCE = re.compile(r"\bdecision (?:to|on|about) (.+?)(?:\?|$)", re.IGNORECASE)
+FUNCTION_WORDS = _FUNCTION
 
 
 def lemma(token: str) -> str:
@@ -212,6 +213,11 @@ def _answer_type(words: list[str]) -> AnswerType:
         if word == "when":
             return AnswerType.DATE
         if word in {"who", "whom", "whose"}:
+            # A copular "who is the <type noun>" asks for that type ("who is the supplier").
+            for following in words[i + 1 : i + 5]:
+                kind = _type_of_noun(following)
+                if kind is not None:
+                    return kind
             return AnswerType.PERSON
         if word == "how" and i + 1 < len(words):
             if words[i + 1] == "many":
