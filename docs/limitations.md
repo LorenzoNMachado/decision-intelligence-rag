@@ -3,6 +3,34 @@
 These limitations bound what the reported numbers can support. They are listed
 so that readers can weigh the results, not as a to-do list.
 
+## Protocol v3 (current)
+
+* **One author for everything.** The sufficiency rules were committed before
+  the v3 corpus and questions, but the same person wrote all of them, knowing
+  the rules. The corpus' near misses (former contract values, planned review
+  dates, consulted people) are exactly the statements the rules reject, so
+  the 40/40 in-domain abstention is an optimistic estimate. No independent
+  human review or annotation exists. Results are exploratory.
+* **Paraphrase gaps cause false abstentions** (14 of 100 answerable holdout
+  questions with the check): the requested attribute in other words
+  ("funding", "capped" for budget; "staff" for employees), conditions stated
+  without lexicon words, and counterfactual modality ("would breach") read
+  as hypothetical.
+* **Known general defects found after the holdout**, not fixed in v3: an
+  answer-type noun inside a subject name ("budget planning tool") is taken as
+  the requested type; the cue "compliance" also occurs in legal sentences.
+* **Topical eligibility has no measured effect** on this corpus; it is kept
+  as a safeguard, not claimed as an improvement.
+* **The sufficiency check trusts the records.** It decides whether a record
+  states what is asked, not whether the statement is true.
+* **Template-based questions** (6–12 phrasings per category, each used 2–3
+  times) and synthetic records under-represent the variety of real text.
+* **20 holdout questions per category**; per-category differences are descriptive.
+* **No LLM configuration** has been run.
+
+The sections below were written for protocol v2 (historical); most still apply
+to the offline components.
+
 ## Authorship and independence
 
 * **One author for system, data and questions.** The corpus generator, its
