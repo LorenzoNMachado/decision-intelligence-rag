@@ -1,8 +1,9 @@
 """Document-level semantic signal classifiers.
 
-``RuleBasedSignalClassifier`` labels each signal sentence by sentence: a hedged
+``RuleBasedSignalClassifier`` labels each signal mention by mention, using the
+local negation and hedging scope of ``semantic_signals.lexicon``: a hedged
 mention gives UNCLEAR, a negated mention ABSENT and a plain mention PRESENT.
-Across sentences PRESENT wins over ABSENT, and ABSENT over UNCLEAR.
+Across mentions PRESENT wins over ABSENT, and ABSENT over UNCLEAR.
 
 ``LLMSignalClassifier`` asks an LLM for the five labels with a verbatim
 evidence quote. A label whose evidence is not found in the document is
@@ -13,13 +14,14 @@ which the ranking treats as neutral.
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Any, Protocol
 
 from decision_intelligence.generation.prompts import load_prompt
 from decision_intelligence.llm.client import LLMClient, LLMError
-from decision_intelligence.models import DecisionDocument, Signal, SignalLabel
-from decision_intelligence.semantic_signals.lexicon import is_hedged, is_negated, signals_mentioned
+from decision_intelligence.models import DecisionDocument, Polarity, Signal, SignalLabel
+from decision_intelligence.semantic_signals.lexicon import analyse
 
 _SENTENCES = re.compile(r"(?<=[.!?;])\s+")
 
@@ -46,24 +48,41 @@ def _body_text(doc: DecisionDocument) -> str:
 
 
 class RuleBasedSignalClassifier:
-    name = "rules-v1"
+    """Labels each signal from its mentions, with local negation and hedging.
+
+    A hedged mention gives UNCLEAR, a negated mention ABSENT and a plain mention
+    PRESENT. Across mentions PRESENT wins over ABSENT, and ABSENT over UNCLEAR.
+    ``entities`` (department names, job titles, subjects) are masked first.
+    """
+
+    name = "rules-v2"
+
+    def __init__(self, entities: Iterable[str] = ()) -> None:
+        self.entities = tuple(entities)
 
     def classify(self, doc: DecisionDocument) -> ClassificationResult:
         rank = {SignalLabel.UNCLEAR: 0, SignalLabel.ABSENT: 1, SignalLabel.PRESENT: 2}
         labels: SignalLabels = dict.fromkeys(Signal, SignalLabel.UNCLEAR)
         evidence: dict[Signal, str] = {}
         for sentence in _SENTENCES.split(_body_text(doc)):
-            for signal, _cue in signals_mentioned(sentence):
-                if is_hedged(sentence):
+            for mention in analyse(sentence, self.entities):
+                if mention.hedged:
                     label = SignalLabel.UNCLEAR
-                elif is_negated(sentence):
+                elif mention.polarity is Polarity.ABSENT:
                     label = SignalLabel.ABSENT
                 else:
                     label = SignalLabel.PRESENT
-                if rank[label] > rank[labels[signal]]:
-                    labels[signal] = label
-                    evidence[signal] = sentence
+                if rank[label] > rank[labels[mention.signal]]:
+                    labels[mention.signal] = label
+                    evidence[mention.signal] = sentence
         return ClassificationResult(labels=labels, evidence=evidence)
+
+
+def entity_names(documents: Iterable[DecisionDocument]) -> list[str]:
+    """Names that identify records rather than describe them: subjects, domains, owner roles."""
+
+    names = {name for d in documents for name in (d.subject, d.domain, d.owner_role)}
+    return sorted(n for n in names if n)
 
 
 SIGNAL_CLASSIFICATION_SCHEMA: dict[str, Any] = {
