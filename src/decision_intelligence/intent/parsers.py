@@ -151,6 +151,8 @@ class LLMIntentParser:
                 parser=self.name,
                 status="UNAVAILABLE",
                 notes=f"{exc.kind}: {exc}",
+                # Refused before sending: free. Otherwise it may have been billed: unknown.
+                cost_usd=0.0 if exc.kind in ("budget", "config") else None,
                 latency_ms=(time.perf_counter() - started) * 1000,
             )
         latency_ms = (time.perf_counter() - started) * 1000
@@ -158,7 +160,10 @@ class LLMIntentParser:
         accepted: list[IntentSignal] = []
         rejected: list[str] = []
         try:
-            for item in response.parsed.get("signals", []):
+            items = response.parsed.get("signals", [])
+            if not isinstance(items, list):
+                raise TypeError("signals is not a list")
+            for item in items:
                 evidence = str(item.get("evidence", ""))
                 span = _normalise(evidence)
                 if len(span.split()) < 2 or span not in normalised_question:

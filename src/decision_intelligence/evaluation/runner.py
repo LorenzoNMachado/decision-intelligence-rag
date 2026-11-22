@@ -34,12 +34,21 @@ from decision_intelligence.config import (
     make_retriever,
 )
 from decision_intelligence.corpus.io import read_json, read_jsonl, write_json
+from decision_intelligence.embeddings.base import EmbeddingError
 from decision_intelligence.evaluation import manifest as manifest_mod
 from decision_intelligence.evaluation.judges import LLMCorrectnessJudge
 from decision_intelligence.evaluation.metrics import Row, compute_metrics, enforce_quotes
 from decision_intelligence.grounding.claim_verification import ClaimVerifier
-from decision_intelligence.llm.client import Budget, LLMClient
-from decision_intelligence.models import QueryIntent, Question, add_costs
+from decision_intelligence.llm.client import Budget, LLMClient, LLMError, sanitise
+from decision_intelligence.models import (
+    AnswerStatus,
+    GeneratedAnswer,
+    Outcome,
+    QueryIntent,
+    Question,
+    RetrievalResult,
+    add_costs,
+)
 from decision_intelligence.pipeline import Pipeline
 
 SPLITS = ("dev", "holdout")
@@ -161,21 +170,43 @@ def _execute(
     question: Question,
     shared_intents: dict[tuple[str, int], QueryIntent],
 ) -> Row:
+    """Run one (configuration, repetition, question).
+
+    A failure anywhere in the pipeline becomes an ERROR row (outcome
+    ``PIPELINE_ERROR``) instead of ending the batch: it is counted as an
+    operational failure, never as an abstention, and the next row still runs.
+    """
+
     started = time.perf_counter()
-    intent = None
+    intent: QueryIntent | None = None
     reused = False
-    if config.retrieval == "llm_intent":
-        intent = shared_intents.get((question.id, rep))
-        reused = intent is not None
-        if intent is None:
-            intent = pipeline.retriever.intent_parser.parse(question.text)
-            shared_intents[(question.id, rep)] = intent
-    retrieval = pipeline.retriever.retrieve(question.text, intent=intent)
-    answer = pipeline.generator.generate(question.text, retrieval, pipeline.documents)
+    retrieval: RetrievalResult | None = None
+    try:
+        if config.retrieval == "llm_intent":
+            intent = shared_intents.get((question.id, rep))
+            reused = intent is not None
+            if intent is None:
+                intent = pipeline.retriever.intent_parser.parse(question.text)
+                shared_intents[(question.id, rep)] = intent
+        retrieval = pipeline.retriever.retrieve(question.text, intent=intent)
+        answer = pipeline.generator.generate(question.text, retrieval, pipeline.documents)
+    except Exception as exc:  # isolate the row; the error is recorded, not swallowed
+        kind = exc.kind if isinstance(exc, EmbeddingError | LLMError) else "internal"
+        answer = GeneratedAnswer(
+            generator=pipeline.generator.name,
+            status=AnswerStatus.ERROR,
+            text="",
+            error=f"{type(exc).__name__}: {sanitise(str(exc))}",
+            error_kind=kind,
+            outcome=Outcome.PIPELINE_ERROR,
+            cost_usd=None,
+        )
     elapsed_ms = (time.perf_counter() - started) * 1000
+    effective_intent = retrieval.intent if retrieval is not None else intent
     # A reused intent was computed by an earlier configuration; its latency and cost are
     # still attributed here, because a deployed system with this configuration pays them.
-    latency_ms = elapsed_ms + (retrieval.intent.latency_ms if reused else 0.0)
+    latency_ms = elapsed_ms + (effective_intent.latency_ms if reused and effective_intent else 0.0)
+    intent_cost = effective_intent.cost_usd if effective_intent is not None else 0.0
     return {
         "config": config.id,
         "retrieval_strategy": config.retrieval,
@@ -185,12 +216,12 @@ def _execute(
         "category": question.category,
         "answerable": question.answerable,
         "expected_doc_ids": list(question.expected_doc_ids),
-        "intent": retrieval.intent.to_dict(),
+        "intent": effective_intent.to_dict() if effective_intent is not None else {"status": "NOT_RUN"},
         "intent_reused": reused,
-        "retrieved": [d.to_dict() for d in retrieval.documents],
+        "retrieved": [d.to_dict() for d in retrieval.documents] if retrieval is not None else [],
         "answer": answer.to_dict(),
         "latency_ms": round(latency_ms, 2),
-        "cost_usd": _round_cost(add_costs(answer.cost_usd, retrieval.intent.cost_usd)),
+        "cost_usd": _round_cost(add_costs(answer.cost_usd, intent_cost)),
     }
 
 
