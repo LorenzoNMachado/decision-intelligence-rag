@@ -269,6 +269,7 @@ class RetrievedDocument:
     gate_reason: str
     matched_signals: tuple[str, ...] = ()
     contradicted_signals: tuple[str, ...] = ()
+    topical: bool = True  # v3: within the topical band (always True for flat ranking)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -281,6 +282,7 @@ class RetrievedDocument:
             "gate_reason": self.gate_reason,
             "matched_signals": list(self.matched_signals),
             "contradicted_signals": list(self.contradicted_signals),
+            "topical": self.topical,
         }
 
 

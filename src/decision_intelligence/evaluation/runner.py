@@ -62,6 +62,7 @@ from decision_intelligence.models import (
     add_costs,
 )
 from decision_intelligence.pipeline import Pipeline
+from decision_intelligence.sufficiency import SufficiencyReport
 
 SPLITS = ("dev", "holdout")
 WARM_UP_QUESTION = "warm-up query for the vector index"
@@ -255,6 +256,7 @@ def _execute(
     intent: QueryIntent | None = None
     reused = False
     retrieval: RetrievalResult | None = None
+    report: SufficiencyReport | None = None
     try:
         if config.retrieval == "llm_intent":
             intent = shared_intents.get((question.id, rep))
@@ -263,7 +265,7 @@ def _execute(
                 intent = pipeline.retriever.intent_parser.parse(question.text)
                 shared_intents[(question.id, rep)] = intent
         retrieval = pipeline.retriever.retrieve(question.text, intent=intent)
-        answer = pipeline.generator.generate(question.text, retrieval, pipeline.documents)
+        answer, report = pipeline.answer(question.text, retrieval)
     except Exception as exc:  # isolate the row; the error is recorded, not swallowed
         kind = exc.kind if isinstance(exc, EmbeddingError | LLMError) else "internal"
         answer = GeneratedAnswer(
@@ -293,6 +295,7 @@ def _execute(
         "intent": effective_intent.to_dict() if effective_intent is not None else {"status": "NOT_RUN"},
         "intent_reused": reused,
         "retrieved": [d.to_dict() for d in retrieval.documents] if retrieval is not None else [],
+        "sufficiency": report.to_dict() if report is not None else None,
         "answer": answer.to_dict(),
         "latency_ms": round(latency_ms, 2),
         "cost_usd": _round_cost(add_costs(answer.cost_usd, intent_cost)),

@@ -40,6 +40,7 @@ from decision_intelligence.models import (
     Outcome,
     RetrievalResult,
 )
+from decision_intelligence.sufficiency import SufficiencyReport
 
 _SENTENCES = re.compile(r"(?<=[.!?])\s+")
 MAX_DISCARDED_CHARS = 2000
@@ -52,14 +53,27 @@ class Generator(Protocol):
     def name(self) -> str: ...
 
     def generate(
-        self, question: str, retrieval: RetrievalResult, documents: dict[str, DecisionDocument]
+        self,
+        question: str,
+        retrieval: RetrievalResult,
+        documents: dict[str, DecisionDocument],
+        sufficiency: SufficiencyReport | None = None,
     ) -> GeneratedAnswer: ...
 
 
 def _admitted_documents(
-    retrieval: RetrievalResult, documents: dict[str, DecisionDocument]
+    retrieval: RetrievalResult,
+    documents: dict[str, DecisionDocument],
+    sufficiency: SufficiencyReport | None = None,
 ) -> list[DecisionDocument]:
-    return [documents[d.doc_id] for d in retrieval.admitted() if d.doc_id in documents]
+    """Records the generator may use: admitted ones, restricted to sufficient ones when checked (v3)."""
+
+    allowed = None if sufficiency is None else {d.doc_id for d in sufficiency.sufficient()}
+    return [
+        documents[d.doc_id]
+        for d in retrieval.admitted()
+        if d.doc_id in documents and (allowed is None or d.doc_id in allowed)
+    ]
 
 
 def _no_evidence(generator: str, started: float, prompt_version: str = "") -> GeneratedAnswer:
@@ -78,13 +92,17 @@ class ExtractiveGenerator:
     name = "extractive-v1"
 
     def generate(
-        self, question: str, retrieval: RetrievalResult, documents: dict[str, DecisionDocument]
+        self,
+        question: str,
+        retrieval: RetrievalResult,
+        documents: dict[str, DecisionDocument],
+        sufficiency: SufficiencyReport | None = None,
     ) -> GeneratedAnswer:
         started = time.perf_counter()
         query_tokens = set(tokenize(question))
         lines = []
         claims = []
-        for doc in _admitted_documents(retrieval, documents):
+        for doc in _admitted_documents(retrieval, documents, sufficiency):
             text = f"{doc.decision} {doc.context} {doc.rationale}"
             sentences = [s for s in _SENTENCES.split(text) if s.strip()]
             if not sentences:
@@ -102,6 +120,59 @@ class ExtractiveGenerator:
                     source_ids=(doc.id,),
                     quote=best,
                     quote_verified=True,
+                    quote_origin="extracted",
+                )
+            )
+        if not claims:
+            return _no_evidence(self.name, started)
+        return GeneratedAnswer(
+            generator=self.name,
+            status=AnswerStatus.ANSWER,
+            text="Relevant decisions:\n" + "\n".join(lines),
+            claims=tuple(claims),
+            latency_ms=(time.perf_counter() - started) * 1000,
+            outcome=Outcome.EXTRACTED,
+        )
+
+
+class ExtractiveGeneratorV2:
+    """Quotes, for each sufficient record, the sentence the sufficiency check found (protocol v3).
+
+    Instead of the sentence with the largest word overlap, it quotes the sentence
+    that contains the requested value or asserts the required condition, so a
+    valid citation is also one that answers. It needs a sufficiency report and
+    abstains without one, or when no record is sufficient. Quotes are copied
+    from the record (``quote_origin="extracted"``); whether the record supports
+    the statement remains ``NOT_CHECKED``.
+    """
+
+    name = "extractive-v2"
+
+    def generate(
+        self,
+        question: str,
+        retrieval: RetrievalResult,
+        documents: dict[str, DecisionDocument],
+        sufficiency: SufficiencyReport | None = None,
+    ) -> GeneratedAnswer:
+        started = time.perf_counter()
+        if sufficiency is None:
+            return _no_evidence(self.name, started)
+        admitted = {d.doc_id for d in retrieval.admitted()}
+        lines = []
+        claims = []
+        for item in sufficiency.sufficient():
+            doc = documents.get(item.doc_id)
+            if doc is None or item.doc_id not in admitted or not item.supporting:
+                continue
+            sentence = item.supporting[0]
+            lines.append(f"- {doc.title} ({doc.id}): {sentence}")
+            claims.append(
+                Claim(
+                    statement=sentence,
+                    source_ids=(doc.id,),
+                    quote=sentence,
+                    quote_verified=sentence in f"{doc.decision} {doc.context} {doc.rationale}",
                     quote_origin="extracted",
                 )
             )
@@ -168,10 +239,14 @@ class LLMGenerator:
         return f"llm-{self.prompt.version}:{self.llm.name}"
 
     def generate(
-        self, question: str, retrieval: RetrievalResult, documents: dict[str, DecisionDocument]
+        self,
+        question: str,
+        retrieval: RetrievalResult,
+        documents: dict[str, DecisionDocument],
+        sufficiency: SufficiencyReport | None = None,
     ) -> GeneratedAnswer:
         started = time.perf_counter()
-        admitted = _admitted_documents(retrieval, documents)
+        admitted = _admitted_documents(retrieval, documents, sufficiency)
         if not admitted:
             # Nothing to ground an answer in: abstain without spending a model call.
             return _no_evidence(self.name, started, self.prompt.version)
