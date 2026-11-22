@@ -11,6 +11,33 @@ describes protocol v2, which is the only protocol the current code runs.
 3. **RQ3.** How well do an evidence gate and citation validation prevent answers
    to questions that the corpus cannot answer?
 
+## Research method and relation to the earlier study
+
+The original applied research, carried out at PUCPR, followed **Design Science
+Research Methodology** (DSRM; Peffers et al., 2007). Its steps are: identify
+the problem, define objectives, design and develop an artefact, demonstrate it,
+evaluate it, and communicate. This repository is an **independent
+reimplementation** of the concepts studied there: semantic signals for
+decision records, evidence-gated answers, and citation grounding. It keeps the
+DSRM shape: the artefact is the pipeline, the demonstration is the CLI and the
+Streamlit app, and the evaluation is the frozen protocol below. However:
+
+* no code, data, prompt or result of the earlier study is reused;
+* the corpus is synthetic and generated here, not the study's data;
+* the numbers reported here measure this implementation only and make no claim
+  about, and are not comparable with, the earlier study's results.
+
+## Strategies A–F in one sentence each
+
+* **A**: vector similarity only, extractive answer. The baseline.
+* **B**: A plus the rule-based semantic layer. Isolates rule-based signals without an LLM.
+* **C**: A's retrieval with the LLM generator. Isolates the generator.
+* **D**: B's retrieval with the LLM generator. Rule-based signals combined with an LLM.
+* **E**: LLM intent interpretation and the LLM generator.
+* **F**: LLM intent with the extractive generator. Isolates LLM intent from LLM generation.
+
+Only A and B have been run. C–F need a provider and are pending.
+
 ## Why a second protocol
 
 The v1 holdout was run once and then inspected during an audit, so it can no
@@ -171,6 +198,22 @@ Four unanswerable dev questions make this a coarse calibration.
 6. Evaluation code may be corrected after a holdout run only with
    `dirag amend-evaluation --note …`, which logs the old and new hashes. The
    pipeline group cannot be amended; changing it requires a new protocol version.
+
+## Statistical limits
+
+* **Unit of analysis.** The question. There are 50 holdout questions and 3–10
+  per category, so category-level differences are descriptive.
+* **Test.** An exact two-sided sign test on per-question differences between
+  two configurations; ties are excluded. With 11 untied questions, as for A vs B
+  on Recall@4, only a split of 10–1 or more extreme would reach p < 0.05.
+* **No independent repetitions** for deterministic configurations. LLM
+  configurations will have three repetitions per question, which estimate
+  provider variability, not sampling variability over questions.
+* **No correction for multiple comparisons.** None is needed so far, since a
+  single pre-specified comparison (A vs B on Recall@4) was made. Per-category
+  comparisons are exploratory.
+* **No confidence intervals** are reported for the means. With this sample, an
+  interval on a per-category mean would span most of [0, 1].
 
 ## Repetitions and reproducibility
 

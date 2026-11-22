@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="378" viewBox="0 0 760 378" role="img" aria-labelledby="title desc">
+<title id="title">Protocol v2 holdout: A vs B</title>
+<desc id="desc">Recall@4, supporting-source precision, strict and partial correctness for configurations A and B on the 40 answerable holdout questions. Recall@4: A 0.865, B 0.81; Supporting-source precision: A 0.369, B 0.381; Strictly correct: A 0.05, B 0.1; Partially correct: A 0.675, B 0.525</desc>
+<style>.surface{fill:#fcfcfb}.frame{fill:none;stroke:rgba(11,11,11,0.10)}
+.ink{fill:#0b0b0b}.ink2{fill:#52514e}.muted{fill:#898781}
+.grid{stroke:#e1e0d9;stroke-width:1}.base{stroke:#c3c2b7;stroke-width:1}
+.sA{fill:#2a78d6}.sB{fill:#eb6834}
+text{font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+.t{font-size:15px;font-weight:600}.s{font-size:12px}.l{font-size:12px}.v{font-size:12px;font-weight:600}
+@media (prefers-color-scheme: dark){
+.surface{fill:#1a1a19}.frame{stroke:rgba(255,255,255,0.10)}
+.ink{fill:#f0efec}.ink2{fill:#c3c2b7}.muted{fill:#898781}
+.grid{stroke:#2c2c2a}.base{stroke:#383835}
+.sA{fill:#3987e5}.sB{fill:#d95926}}</style>
+<rect class="surface" x="0.5" y="0.5" width="759" height="377" rx="8"/>
+<rect class="frame" x="0.5" y="0.5" width="759" height="377" rx="8"/>
+<text class="ink t" x="24" y="32">Protocol v2 holdout: A vs B</text>
+<text class="ink2 s" x="24" y="52">Offline embedder, extractive generator, lexical correctness proxy · one deterministic run each</text>
+<rect class="sA" x="24" y="66" width="10" height="10" rx="2"/>
+<text class="ink2 l" x="40" y="75">A · vector baseline</text>
+<rect class="sB" x="197" y="66" width="10" height="10" rx="2"/>
+<text class="ink2 l" x="213" y="75">B · rule-based enrichment</text>
+<line class="base" x1="220.0" x2="220.0" y1="94" y2="338.0"/>
+<text class="muted l" x="220.0" y="356.0" text-anchor="middle">0</text>
+<line class="grid" x1="337.5" x2="337.5" y1="94" y2="338.0"/>
+<text class="muted l" x="337.5" y="356.0" text-anchor="middle">0.25</text>
+<line class="grid" x1="455.0" x2="455.0" y1="94" y2="338.0"/>
+<text class="muted l" x="455.0" y="356.0" text-anchor="middle">0.5</text>
+<line class="grid" x1="572.5" x2="572.5" y1="94" y2="338.0"/>
+<text class="muted l" x="572.5" y="356.0" text-anchor="middle">0.75</text>
+<line class="grid" x1="690.0" x2="690.0" y1="94" y2="338.0"/>
+<text class="muted l" x="690.0" y="356.0" text-anchor="middle">1</text>
+<text class="ink2 l" x="208" text-anchor="end" y="124.0">Recall@4</text>
+<text class="muted l" x="208" text-anchor="end" y="139.0">n = 40 answerable</text>
+<path class="sA" d="M220.0,100.0 L622.4,100.0 Q626.4,100.0 626.4,104.0 L626.4,118.0 Q626.4,122.0 622.4,122.0 L220.0,122.0 Z"/>
+<text class="ink v" x="632.4" y="115.0">0.865</text>
+<path class="sB" d="M220.0,124.0 L596.9,124.0 Q600.9,124.0 600.9,128.0 L600.9,142.0 Q600.9,146.0 596.9,146.0 L220.0,146.0 Z"/>
+<text class="ink v" x="606.9" y="139.0">0.81</text>
+<text class="ink2 l" x="208" text-anchor="end" y="186.0">Supporting-source precision</text>
+<text class="muted l" x="208" text-anchor="end" y="201.0">n = 40 answered</text>
+<path class="sA" d="M220.0,162.0 L389.3,162.0 Q393.3,162.0 393.3,166.0 L393.3,180.0 Q393.3,184.0 389.3,184.0 L220.0,184.0 Z"/>
+<text class="ink v" x="399.3" y="177.0">0.369</text>
+<path class="sB" d="M220.0,186.0 L395.2,186.0 Q399.2,186.0 399.2,190.0 L399.2,204.0 Q399.2,208.0 395.2,208.0 L220.0,208.0 Z"/>
+<text class="ink v" x="405.2" y="201.0">0.381</text>
+<text class="ink2 l" x="208" text-anchor="end" y="248.0">Strictly correct</text>
+<text class="muted l" x="208" text-anchor="end" y="263.0">n = 40 answerable</text>
+<path class="sA" d="M220.0,224.0 L239.5,224.0 Q243.5,224.0 243.5,228.0 L243.5,242.0 Q243.5,246.0 239.5,246.0 L220.0,246.0 Z"/>
+<text class="ink v" x="249.5" y="239.0">0.05</text>
+<path class="sB" d="M220.0,248.0 L263.0,248.0 Q267.0,248.0 267.0,252.0 L267.0,266.0 Q267.0,270.0 263.0,270.0 L220.0,270.0 Z"/>
+<text class="ink v" x="273.0" y="263.0">0.1</text>
+<text class="ink2 l" x="208" text-anchor="end" y="310.0">Partially correct</text>
+<text class="muted l" x="208" text-anchor="end" y="325.0">n = 40 answerable</text>
+<path class="sA" d="M220.0,286.0 L533.2,286.0 Q537.2,286.0 537.2,290.0 L537.2,304.0 Q537.2,308.0 533.2,308.0 L220.0,308.0 Z"/>
+<text class="ink v" x="543.2" y="301.0">0.675</text>
+<path class="sB" d="M220.0,310.0 L462.8,310.0 Q466.8,310.0 466.8,314.0 L466.8,328.0 Q466.8,332.0 462.8,332.0 L220.0,332.0 Z"/>
+<text class="ink v" x="472.8" y="325.0">0.525</text>
+</svg>

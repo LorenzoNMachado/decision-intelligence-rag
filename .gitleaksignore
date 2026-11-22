@@ -1,0 +1,6 @@
+# Reviewed false positives only. Each entry is one exact finding (commit:file:rule:line).
+#
+# Fictitious API key used as a test fixture ("sk-live-ABCDEFGH12345678", a
+# sequential placeholder that was never a credential). It was renamed to
+# "sk-fake-..." in 732e564; the old value remains in the history of b7b2c88.
+b7b2c88240f215d03a72f7724f4682728926f1ee:tests/test_robustness.py:generic-api-key:28

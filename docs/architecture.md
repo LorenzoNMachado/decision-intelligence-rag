@@ -2,41 +2,42 @@
 
 ## Overview
 
+Solid boxes run offline and are exercised by the measured configurations A and
+B. Boxes inside "Optional · LLM provider" and dashed edges are implemented and
+tested with scripted models only. They are not active unless `DIRAG_LLM_*` is
+configured, and no result from them has been measured.
+
+```mermaid
+flowchart TD
+    Q[Question] --> P1[S1 · no intent]
+    Q --> P2[S2 · rule lexicon<br/>local negation · coordination · hedging · entity masking]
+    subgraph LLM ["Optional · LLM provider"]
+        P3[S3 · LLM intent<br/>validated: verbatim evidence, ≤ 2 REQUIRED]
+        LG[LLM generator<br/>JSON claims with citations + quotes]
+        J[LLM judge / claim verifier<br/>evaluation only]
+    end
+    Q -.-> P3
+    SI[(Signal index · rules-v2<br/>180 records × 5 signals)] --> R
+    VI[(Vector index · hashing-v1<br/>540 chunks)] --> R
+    P1 --> R
+    P2 --> R
+    P3 -.-> R
+    R[Retrieval<br/>cosine → best chunk per record → pool of 20<br/>signal bonus / penalty → top-4] --> G{Evidence gate<br/>cosine ≥ 0.18 and no REQUIRED contradiction}
+    G -->|nothing admitted| ABS([ABSTAIN])
+    G -->|admitted records| EX[Extractive generator<br/>one quoted sentence per record]
+    G -.->|admitted records| LG
+    EX --> ANS([ANSWER])
+    LG -.-> CV[Citation + quote validation<br/>admitted ids · no stray ids · verbatim quote ≥ 4 words in record body]
+    CV -.->|validated claims| ANS
+    CV -.->|no valid claim| ABS
+    LG -.->|provider / schema failure| ERR([ERROR])
+    ANS -.-> J
 ```
-question
-   │
-   ▼
-┌──────────────────────┐   ┌──────────────────────────────┐
-│ Intent parser        │   │ Signal index (offline)       │
-│  S1 none             │   │  document × 5 signals →      │
-│  S2 rules (lexicon)  │   │  PRESENT / ABSENT / UNCLEAR / │
-│  S3 LLM + validation │   │  ERROR                        │
-└─────────┬────────────┘   └──────────────┬───────────────┘
-          │ constraints                    │ labels
-          ▼                                ▼
-┌──────────────────────────────────────────────────────────┐
-│ Retriever (shared by all strategies)                     │
-│  embed question → cosine vs 540 chunks → best chunk per  │
-│  document → candidate pool (20) → signal adjustment →    │
-│  top-k (4) → evidence gate (threshold + signal veto)     │
-└─────────────────────────┬────────────────────────────────┘
-                          │ admitted documents only
-                          ▼
-┌──────────────────────────────────────────────────────────┐
-│ Generator                                                │
-│  extractive: best sentence per document, quoted          │
-│  LLM: structured JSON, per-claim citations and quotes    │
-└─────────────────────────┬────────────────────────────────┘
-                          ▼
-┌──────────────────────────────────────────────────────────┐
-│ Grounding                                                │
-│  drop citations outside the admitted set · record leaked │
-│  ids · verify quotes literally · ANSWER with no grounded │
-│  claim → ABSTAIN · (experimental) LLM claim verification │
-└─────────────────────────┬────────────────────────────────┘
-                          ▼
-                answer + claims + evidence log
-```
+
+The final states follow `models.TRANSITIONS`. An answer exists only with
+claims. An abstention shows only the abstention message. An error is never an
+abstention. A failure anywhere in a run row (for example an embedding error) is
+recorded as ERROR and the batch continues.
 
 ## Packages
 

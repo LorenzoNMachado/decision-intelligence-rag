@@ -21,3 +21,12 @@ experiments/results/scratch-*/
 # Streamlit secrets (the app reads none, but never commit them)
 .streamlit/secrets.toml
 *.log
+
+# Temporary artefacts of local tooling
+experiments/v2/results/scratch-*/
+test-results/
+playwright-report/
+.coverage
+htmlcov/
+*.tmp
+.DS_Store
