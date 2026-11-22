@@ -1,0 +1,394 @@
+{
+  "dev_questions": 10,
+  "embedder": "hashing-v1:d2048:uni+bi",
+  "optimal_range": [
+    0.11,
+    0.25
+  ],
+  "suggested": {
+    "answerable_with_admission": 1.0,
+    "expected_admitted_rate": 1.0,
+    "non_expected_admitted": 20,
+    "threshold": 0.18,
+    "unanswerable_with_admission": 0.0,
+    "youden_j": 1.0
+  },
+  "sweep": [
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 1.0,
+      "non_expected_admitted": 28,
+      "threshold": 0.0,
+      "unanswerable_with_admission": 1.0,
+      "youden_j": 0.0
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 1.0,
+      "non_expected_admitted": 28,
+      "threshold": 0.01,
+      "unanswerable_with_admission": 1.0,
+      "youden_j": 0.0
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 1.0,
+      "non_expected_admitted": 28,
+      "threshold": 0.02,
+      "unanswerable_with_admission": 1.0,
+      "youden_j": 0.0
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 1.0,
+      "non_expected_admitted": 28,
+      "threshold": 0.03,
+      "unanswerable_with_admission": 1.0,
+      "youden_j": 0.0
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 1.0,
+      "non_expected_admitted": 28,
+      "threshold": 0.04,
+      "unanswerable_with_admission": 1.0,
+      "youden_j": 0.0
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 1.0,
+      "non_expected_admitted": 28,
+      "threshold": 0.05,
+      "unanswerable_with_admission": 1.0,
+      "youden_j": 0.0
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 1.0,
+      "non_expected_admitted": 24,
+      "threshold": 0.06,
+      "unanswerable_with_admission": 0.5,
+      "youden_j": 0.5
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 1.0,
+      "non_expected_admitted": 22,
+      "threshold": 0.07,
+      "unanswerable_with_admission": 0.5,
+      "youden_j": 0.5
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 1.0,
+      "non_expected_admitted": 22,
+      "threshold": 0.08,
+      "unanswerable_with_admission": 0.5,
+      "youden_j": 0.5
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 1.0,
+      "non_expected_admitted": 21,
+      "threshold": 0.09,
+      "unanswerable_with_admission": 0.5,
+      "youden_j": 0.5
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 1.0,
+      "non_expected_admitted": 21,
+      "threshold": 0.1,
+      "unanswerable_with_admission": 0.5,
+      "youden_j": 0.5
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 1.0,
+      "non_expected_admitted": 20,
+      "threshold": 0.11,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 1.0
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 1.0,
+      "non_expected_admitted": 20,
+      "threshold": 0.12,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 1.0
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 1.0,
+      "non_expected_admitted": 20,
+      "threshold": 0.13,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 1.0
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 1.0,
+      "non_expected_admitted": 20,
+      "threshold": 0.14,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 1.0
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 1.0,
+      "non_expected_admitted": 20,
+      "threshold": 0.15,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 1.0
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 1.0,
+      "non_expected_admitted": 20,
+      "threshold": 0.16,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 1.0
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 1.0,
+      "non_expected_admitted": 20,
+      "threshold": 0.17,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 1.0
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 1.0,
+      "non_expected_admitted": 20,
+      "threshold": 0.18,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 1.0
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 1.0,
+      "non_expected_admitted": 20,
+      "threshold": 0.19,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 1.0
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 1.0,
+      "non_expected_admitted": 20,
+      "threshold": 0.2,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 1.0
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 1.0,
+      "non_expected_admitted": 20,
+      "threshold": 0.21,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 1.0
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 1.0,
+      "non_expected_admitted": 20,
+      "threshold": 0.22,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 1.0
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 1.0,
+      "non_expected_admitted": 19,
+      "threshold": 0.23,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 1.0
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 1.0,
+      "non_expected_admitted": 18,
+      "threshold": 0.24,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 1.0
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 1.0,
+      "non_expected_admitted": 18,
+      "threshold": 0.25,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 1.0
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 0.875,
+      "non_expected_admitted": 18,
+      "threshold": 0.26,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 1.0
+    },
+    {
+      "answerable_with_admission": 1.0,
+      "expected_admitted_rate": 0.875,
+      "non_expected_admitted": 15,
+      "threshold": 0.27,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 1.0
+    },
+    {
+      "answerable_with_admission": 0.875,
+      "expected_admitted_rate": 0.875,
+      "non_expected_admitted": 12,
+      "threshold": 0.28,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 0.875
+    },
+    {
+      "answerable_with_admission": 0.875,
+      "expected_admitted_rate": 0.875,
+      "non_expected_admitted": 11,
+      "threshold": 0.29,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 0.875
+    },
+    {
+      "answerable_with_admission": 0.875,
+      "expected_admitted_rate": 0.875,
+      "non_expected_admitted": 8,
+      "threshold": 0.3,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 0.875
+    },
+    {
+      "answerable_with_admission": 0.875,
+      "expected_admitted_rate": 0.875,
+      "non_expected_admitted": 7,
+      "threshold": 0.31,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 0.875
+    },
+    {
+      "answerable_with_admission": 0.75,
+      "expected_admitted_rate": 0.667,
+      "non_expected_admitted": 7,
+      "threshold": 0.32,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 0.75
+    },
+    {
+      "answerable_with_admission": 0.625,
+      "expected_admitted_rate": 0.542,
+      "non_expected_admitted": 6,
+      "threshold": 0.33,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 0.625
+    },
+    {
+      "answerable_with_admission": 0.625,
+      "expected_admitted_rate": 0.542,
+      "non_expected_admitted": 6,
+      "threshold": 0.34,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 0.625
+    },
+    {
+      "answerable_with_admission": 0.5,
+      "expected_admitted_rate": 0.417,
+      "non_expected_admitted": 6,
+      "threshold": 0.35,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 0.5
+    },
+    {
+      "answerable_with_admission": 0.5,
+      "expected_admitted_rate": 0.417,
+      "non_expected_admitted": 5,
+      "threshold": 0.36,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 0.5
+    },
+    {
+      "answerable_with_admission": 0.5,
+      "expected_admitted_rate": 0.417,
+      "non_expected_admitted": 3,
+      "threshold": 0.37,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 0.5
+    },
+    {
+      "answerable_with_admission": 0.5,
+      "expected_admitted_rate": 0.417,
+      "non_expected_admitted": 3,
+      "threshold": 0.38,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 0.5
+    },
+    {
+      "answerable_with_admission": 0.375,
+      "expected_admitted_rate": 0.375,
+      "non_expected_admitted": 3,
+      "threshold": 0.39,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 0.375
+    },
+    {
+      "answerable_with_admission": 0.375,
+      "expected_admitted_rate": 0.375,
+      "non_expected_admitted": 1,
+      "threshold": 0.4,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 0.375
+    },
+    {
+      "answerable_with_admission": 0.25,
+      "expected_admitted_rate": 0.25,
+      "non_expected_admitted": 1,
+      "threshold": 0.41,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 0.25
+    },
+    {
+      "answerable_with_admission": 0.25,
+      "expected_admitted_rate": 0.25,
+      "non_expected_admitted": 1,
+      "threshold": 0.42,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 0.25
+    },
+    {
+      "answerable_with_admission": 0.25,
+      "expected_admitted_rate": 0.25,
+      "non_expected_admitted": 1,
+      "threshold": 0.43,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 0.25
+    },
+    {
+      "answerable_with_admission": 0.25,
+      "expected_admitted_rate": 0.25,
+      "non_expected_admitted": 0,
+      "threshold": 0.44,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 0.25
+    },
+    {
+      "answerable_with_admission": 0.25,
+      "expected_admitted_rate": 0.25,
+      "non_expected_admitted": 0,
+      "threshold": 0.45,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 0.25
+    },
+    {
+      "answerable_with_admission": 0.125,
+      "expected_admitted_rate": 0.125,
+      "non_expected_admitted": 0,
+      "threshold": 0.46,
+      "unanswerable_with_admission": 0.0,
+      "youden_j": 0.125
+    }
+  ]
+}

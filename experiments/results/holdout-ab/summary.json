@@ -1,0 +1,64 @@
+{
+  "configs": {
+    "A": {
+      "generator": "extractive",
+      "lexical_judge": {
+        "answerable_rows": 96,
+        "claims": 384,
+        "correct_abstention_rate": 1.0,
+        "correctness": 0.125,
+        "correctness_judge_errors": 0,
+        "correctness_partial": 0.6562,
+        "cost_per_question_usd": 0.0,
+        "expected_source_coverage": 0.9323,
+        "faithfulness_llm": null,
+        "faithfulness_quote": 1.0,
+        "false_abstention_rate": 0.0,
+        "false_answer_rate": 0.0,
+        "intent_failures": 0,
+        "irrelevant_sources_cited_per_rep": 87.0,
+        "latency_p50_ms": 7.8,
+        "latency_p95_ms": 12.9,
+        "operational_failures": 0,
+        "recall_at_k": 0.9323,
+        "rejected_citations": 0,
+        "rows": 120,
+        "supporting_source_precision": 0.3203,
+        "unanswerable_rows": 24
+      },
+      "retrieval": "vector"
+    },
+    "B": {
+      "generator": "extractive",
+      "lexical_judge": {
+        "answerable_rows": 96,
+        "claims": 357,
+        "correct_abstention_rate": 1.0,
+        "correctness": 0.0625,
+        "correctness_judge_errors": 0,
+        "correctness_partial": 0.6562,
+        "cost_per_question_usd": 0.0,
+        "expected_source_coverage": 0.9375,
+        "faithfulness_llm": null,
+        "faithfulness_quote": 1.0,
+        "false_abstention_rate": 0.0,
+        "false_answer_rate": 0.0,
+        "intent_failures": 0,
+        "irrelevant_sources_cited_per_rep": 78.0,
+        "latency_p50_ms": 4.5,
+        "latency_p95_ms": 10.1,
+        "operational_failures": 0,
+        "recall_at_k": 0.9479,
+        "rejected_citations": 0,
+        "rows": 120,
+        "supporting_source_precision": 0.349,
+        "unanswerable_rows": 24
+      },
+      "retrieval": "rules"
+    }
+  },
+  "embedder": "hashing-v1:d2048:uni+bi",
+  "evidence_threshold": 0.18,
+  "run": "holdout-ab",
+  "split": "holdout"
+}

@@ -1,0 +1,33 @@
+{
+  "amendments": [],
+  "frozen_at": "2026-11-22T16:46:38+00:00",
+  "git_commit": "74afce5f565f483a05d0c1bd32bffda31d0cb27c",
+  "inputs": {
+    "data/synthetic/chunks.jsonl": "e096b1884e12bd55c1e393b74327a8cdc94c7cff9d10d4e9d4326e85f0fa88d5",
+    "data/synthetic/corpus.jsonl": "5219c46345ab70fd737525ccadcb3f774b02d586375795fa14cf90d936d4365d",
+    "data/synthetic/questions.json": "88a87994724a96e44566cd5fb1182fccb742c0872ca588e459b618ac19c11cbc",
+    "data/synthetic/signal_index.rules.json": "152b9074bef16f9bf055f05e41eb22208f11fbfc26945810b0e73aa0e586c088",
+    "experiments/configurations/A.json": "007437731b3d1fc7423b26fe377ece31ee94aef07ed30bf04fb45a5848538d76",
+    "experiments/configurations/B.json": "d373a1156b02a88bc4ef3e61ecbbaa52cad11260b1af1e1248f27ab3cb01a9f4",
+    "experiments/configurations/C.json": "bc22db54c38eaa3d0e6be1861d1464e5b932ad7fd69716c26d32985ced1ec2fb",
+    "experiments/configurations/D.json": "9f0a23a368e69ec190746030b4ca432a053208e125ed7c44ef1b71cf87c5d448",
+    "experiments/configurations/E.json": "dbb5c779ef05832747f93f34c015b28992c1832d7f32b9767b399cb50566537f",
+    "experiments/configurations/F.json": "b1dcbea16405c5b6f0068cb7d4807245b4aedcd886505792eea936fc563df76f",
+    "experiments/configurations/protocol.json": "b5efebbeed4e281ba946d308e99640a5c0e6709eb36644d43173fb75a1f52c3e",
+    "prompt:answer_v1": "dce45690cb1665d99d687e2ab0f58d8f268499b2d0b796986c5b29cf6867eab7",
+    "prompt:claim_verification_v1": "6165482b34542fd3719fcde1d5bcc8cd9c51922494da927998a8360cf1370f72",
+    "prompt:intent_v1": "8589390ac5315463e42f4034f1a97d5954f74c24040c29f20768f04048ca73c3",
+    "prompt:judge_correctness_v1": "b60a41a1d2c6b940dcdafaf2d7b897b74d7c289335e26ba71f82552d420efd55",
+    "prompt:signal_classification_v1": "587683fa814f21f8031907b1be3b00eb0456fefb30108a54223064ed909eb972",
+    "source:decision_intelligence": "dc636f0f02e5b349ad304338107e2976f042244e711e3dcdd07f5af000a9b908"
+  },
+  "note": "Protocol v1 frozen after dev-only development and calibration (hashing-v1 threshold 0.18). LLM provider not yet configured; LLM configurations require a logged provider amendment.",
+  "providers": {
+    "embedding": {
+      "backend": "hashing",
+      "model": ""
+    },
+    "llm": null
+  },
+  "status": "frozen"
+}

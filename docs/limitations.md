@@ -13,6 +13,11 @@ listed so that readers can weigh the results, not as a to-do list.
   guarantees that every reference is answerable from the corpus (a check that
   `corpus-validate` enforces), but it also means that the questions follow the
   same vocabulary as the documents.
+* **Unanswerable questions are out of domain.** All ten unanswerable questions
+  concern topics that no record touches (catering, parking, sponsorship…). They
+  test whether the gate rejects unrelated evidence, not whether a system resists
+  near-miss questions about subjects that *are* in the corpus. The perfect
+  abstention scores of A and B on the holdout should be read in that light.
 * **Small evaluation set.** There are 50 questions, of which 10 are unanswerable
   and only 2 are in the dev split. Differences of a few percentage points between
   configurations are within what chance alone can produce, and no significance
