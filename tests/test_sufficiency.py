@@ -289,3 +289,9 @@ def test_nothing_admitted_is_insufficient() -> None:
 def test_checker_never_receives_reference_answers() -> None:
     parameters = set(inspect.signature(EvidenceSufficiencyChecker.check).parameters)
     assert parameters == {"self", "question", "retrieval", "documents"}
+
+
+def test_focus_words_survive_when_they_also_occur_in_an_entity_name() -> None:
+    # Regression: an entity called "budget planning tool" used to remove "budget" from every question.
+    need = analyse_need(BUDGET_Q, entities=(*ENTITIES, "budget planning tool"))
+    assert "budget" in need.focus

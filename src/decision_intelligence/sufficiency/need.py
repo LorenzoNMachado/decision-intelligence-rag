@@ -238,15 +238,15 @@ def analyse_need(question: str, entities: Iterable[str] = ()) -> InformationNeed
     answer_type = _answer_type(words)
     reference_match = _REFERENCE.search(question)
     reference = reference_match.group(1).strip() if reference_match else ""
-    # The reference's end is unknown without the records (titles vary), so only entity names are
-    # removed here; the checker removes each record's own title words from the focus.
-    excluded = set(lemmas(" ".join(entities)))
+    # Entity names are masked as whole phrases; their individual words stay available as focus
+    # ("budget" must remain the focus even when a subject is called "budget planning tool"). The
+    # reference's end is unknown without the records, so the checker removes each record's title words.
     masked = mask_entities(question, entities)
     focus = tuple(
         dict.fromkeys(
             word
             for word in lemmas(masked)
-            if word not in excluded and word not in _FUNCTION and len(word) > 2 and word != "entityname"
+            if word not in _FUNCTION and len(word) > 2 and word != "entityname"
         )
     )
     if answer_type is AnswerType.DECISIONS:
