@@ -20,6 +20,11 @@ dependencies = [
     "httpx>=0.28",
 ]
 
+[project.urls]
+Repository = "https://github.com/LorenzoNMachado/decision-intelligence-rag"
+Documentation = "https://github.com/LorenzoNMachado/decision-intelligence-rag/tree/main/docs"
+Changelog = "https://github.com/LorenzoNMachado/decision-intelligence-rag/blob/main/CHANGELOG.md"
+
 [project.optional-dependencies]
 app = ["streamlit>=1.40"]
 

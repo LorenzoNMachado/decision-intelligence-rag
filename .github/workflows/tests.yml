@@ -4,9 +4,14 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -20,19 +25,22 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0 # verify-v1 reads the protocol v1 commit
+          persist-credentials: false
       - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
         with:
           enable-cache: true
-      - name: Install dependencies
+      - name: Install dependencies (locked)
         run: uv sync --locked --extra app --python ${{ matrix.python-version }}
       - name: Lint
         run: |
-          uv run ruff check src tests app
-          uv run ruff format --check src tests app
+          uv run ruff check src tests app scripts
+          uv run ruff format --check src tests app scripts
       - name: Type check
         run: uv run mypy
-      - name: Tests
+      - name: Tests (includes the figure and v1-preservation checks)
         run: uv run pytest
+      - name: Build sdist and wheel
+        run: uv build
       - name: Corpus integrity (protocol v2)
         run: uv run dirag corpus-validate
       - name: Committed v2 data is reproducible from the generator
