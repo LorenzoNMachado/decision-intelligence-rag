@@ -1,0 +1,18 @@
+{
+  "protocol_version": 1,
+  "repetitions": 3,
+  "corpus": {"size": "experimental", "seed": 2026, "question_seed": 909},
+  "retrieval": {
+    "top_k": 4,
+    "candidate_pool": 20,
+    "required_bonus": 0.06,
+    "preferred_bonus": 0.02,
+    "contradiction_penalty": 0.12,
+    "veto_contradictions": true
+  },
+  "evidence_threshold": {
+    "default": 0.65,
+    "hashing-v1": 0.18
+  },
+  "generation": {"quote_policy": "record", "max_tokens": 1500}
+}

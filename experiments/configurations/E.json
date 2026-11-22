@@ -1,0 +1,6 @@
+{
+  "id": "E",
+  "retrieval": "llm_intent",
+  "generator": "llm",
+  "description": "LLM-based semantic intent with the LLM generator."
+}

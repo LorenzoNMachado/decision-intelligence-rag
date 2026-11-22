@@ -1,0 +1,6 @@
+{
+  "id": "F",
+  "retrieval": "llm_intent",
+  "generator": "extractive",
+  "description": "LLM-based semantic intent with the deterministic extractive generator."
+}

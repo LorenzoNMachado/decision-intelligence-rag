@@ -1,0 +1,6 @@
+{
+  "id": "B",
+  "retrieval": "rules",
+  "generator": "extractive",
+  "description": "Rule-based semantic enrichment with the deterministic extractive generator."
+}
