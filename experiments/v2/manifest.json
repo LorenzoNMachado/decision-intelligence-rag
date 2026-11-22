@@ -1,0 +1,51 @@
+{
+  "amendments": [],
+  "environment": {
+    "implementation": "CPython",
+    "packages": {
+      "httpx": "0.28.1",
+      "numpy": "2.5.5"
+    },
+    "platform": "linux",
+    "python": "3.12.16",
+    "uv_lock_sha256": "5893949ba3da8fe27bff8e2014a13711d1783279262f037de42f9b99c5b68378"
+  },
+  "frozen_at": "2026-11-22T20:37:57+00:00",
+  "git_commit": "58f57ba97c48d7bd2b4f4f1e36148cfc0c4a150a",
+  "inputs": {
+    "evaluation": {
+      "prompt:claim_verification_v1": "6165482b34542fd3719fcde1d5bcc8cd9c51922494da927998a8360cf1370f72",
+      "prompt:judge_correctness_v2": "e5309219705e8130a8e2f9b860cfe993c0ae132eb070339ee5001254a99049b7",
+      "source:evaluation": "1d98b7601588a033cfdb690fc82b222aebc454c4b071177acc53547669a008bb"
+    },
+    "pipeline": {
+      "data/v2/chunks.jsonl": "ccbc0c23e2b530d5f6c668130ba27281e915294e1b34d701086b259d5409b510",
+      "data/v2/corpus.jsonl": "4f1d83c5706af21f803405e6acc23e884142e095ef6ff79fafa8d861e3b3dfbc",
+      "data/v2/question_specs.json": "c4ad5440ed0910a1190311c943a032df54296822ab7cb121996ed0e34aff6190",
+      "data/v2/questions.json": "9dfb713302e7b112829c426f5640cd3bde59f865c50b80dd92323075afccff7a",
+      "data/v2/signal_index.rules.json": "9b6ce322b89182c9f05fd608a78b8ea343d421f173d27a27243556cec25c5def",
+      "experiments/v2/configurations/A.json": "007437731b3d1fc7423b26fe377ece31ee94aef07ed30bf04fb45a5848538d76",
+      "experiments/v2/configurations/B.json": "d373a1156b02a88bc4ef3e61ecbbaa52cad11260b1af1e1248f27ab3cb01a9f4",
+      "experiments/v2/configurations/C.json": "bc22db54c38eaa3d0e6be1861d1464e5b932ad7fd69716c26d32985ced1ec2fb",
+      "experiments/v2/configurations/D.json": "9f0a23a368e69ec190746030b4ca432a053208e125ed7c44ef1b71cf87c5d448",
+      "experiments/v2/configurations/E.json": "dbb5c779ef05832747f93f34c015b28992c1832d7f32b9767b399cb50566537f",
+      "experiments/v2/configurations/F.json": "b1dcbea16405c5b6f0068cb7d4807245b4aedcd886505792eea936fc563df76f",
+      "experiments/v2/configurations/protocol.json": "0b98dcba55cb0ec48b7916a5e85e6e66011432e126d78862debfa9099b73b189",
+      "prompt:answer_v2": "3a8068cc2357a30b98342534269cf2741a50fcc3ab5f047f8434ddcf4e8595ce",
+      "prompt:intent_v1": "8589390ac5315463e42f4034f1a97d5954f74c24040c29f20768f04048ca73c3",
+      "prompt:signal_classification_v1": "587683fa814f21f8031907b1be3b00eb0456fefb30108a54223064ed909eb972",
+      "source:pipeline": "8338ad3149d12a89dddc9d4a36305abf436d2cb650f4029c7f3e8a0e0c515b38"
+    }
+  },
+  "note": "Protocol v2 frozen after dev-only development and calibration (hashing-v1 threshold 0.18, unchanged from dev calibration). The questions and corpus were written for v2 by the author of the system; the holdout is unseen by the system but not independently authored, so v2 results are exploratory. No LLM provider configured; LLM configurations need a logged provider amendment.",
+  "protocol": "v2",
+  "providers": {
+    "embedding": {
+      "backend": "hashing",
+      "model": ""
+    },
+    "llm": null
+  },
+  "schema": 2,
+  "status": "frozen"
+}
