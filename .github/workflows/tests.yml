@@ -41,16 +41,18 @@ jobs:
         run: uv run pytest
       - name: Build sdist and wheel
         run: uv build
-      - name: Corpus integrity (protocol v2)
+      - name: Corpus integrity (protocol v3)
         run: uv run dirag corpus-validate
-      - name: Committed v2 data is reproducible from the generator
+      - name: Committed v3 data is reproducible from the generator
         run: |
           uv run dirag corpus-generate --out "$RUNNER_TEMP/regen"
-          for f in corpus.jsonl chunks.jsonl questions.json signal_index.rules.json; do
-            diff -q "data/v2/$f" "$RUNNER_TEMP/regen/$f"
+          for f in corpus.jsonl chunks.jsonl questions.json signal_index.rules-v2.json signal_index.rules-v3.json; do
+            diff -q "data/v3/$f" "$RUNNER_TEMP/regen/$f"
           done
-      - name: Frozen protocol v2 is intact
+      - name: Frozen protocol v3 is intact
         # Python patch versions may differ from the freeze; they are reported as warnings.
         run: uv run dirag verify-manifest
-      - name: Historical protocol v1 is intact
-        run: uv run dirag verify-v1
+      - name: Historical protocols v1 and v2 are intact
+        run: |
+          uv run dirag verify-v1
+          uv run dirag verify-v2
