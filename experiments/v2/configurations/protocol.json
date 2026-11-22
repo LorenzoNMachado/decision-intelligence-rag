@@ -1,0 +1,19 @@
+{
+  "protocol_version": 2,
+  "repetitions": 3,
+  "deterministic_repetitions": 1,
+  "corpus": {"version": "v2", "size": "experimental", "seed": 4242, "question_seed": 1717},
+  "retrieval": {
+    "top_k": 4,
+    "candidate_pool": 20,
+    "required_bonus": 0.06,
+    "preferred_bonus": 0.02,
+    "contradiction_penalty": 0.12,
+    "veto_contradictions": true
+  },
+  "evidence_threshold": {
+    "default": 0.65,
+    "hashing-v1": 0.18
+  },
+  "generation": {"quote_policy": "enforce", "max_tokens": 1500}
+}

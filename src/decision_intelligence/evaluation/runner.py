@@ -1,18 +1,29 @@
-"""Experiment execution, judging and reporting.
+"""Experiment execution and LLM judging (protocol v2).
 
 ``run_experiment`` executes configurations × repetitions × questions and
-appends one JSON row per execution to ``rows.jsonl`` (resumable: rows already
-present are skipped). Configurations E and F share one intent interpretation
-per (question, repetition), so the generator is the only difference between them.
+appends one JSON row per execution to ``rows.jsonl``.
 
-``judge_run`` adds LLM correctness verdicts and claim verifications in
-``judgements.jsonl``. ``report_run`` computes the metrics per configuration and
-writes ``summary.json``, ``summary.csv`` and ``summary.md``.
+Safeguards:
+
+* a results directory is never reused by accident: an existing run is only
+  continued with ``resume=True``, and only if its split, embedder, threshold,
+  pipeline fingerprint and manifest are the ones recorded when it started;
+  every continuation is logged as a session in ``metadata.json``;
+* LLM intent interpretations are stored in ``intents.jsonl``, so a resumed run
+  and configurations E and F reuse exactly the same interpretation per
+  (question, repetition) instead of asking the model again;
+* the holdout split requires an intact manifest (``manifest.verify``), and LLM
+  configurations additionally a frozen LLM provider;
+* one failing row becomes an ERROR row and never ends the batch.
+
+``judge_run`` adds LLM correctness verdicts (answered answerable rows only) and
+claim verifications in ``judgements.jsonl``. Reports are written by
+``evaluation.report``.
 """
 
 from __future__ import annotations
 
-import csv
+import hashlib
 import json
 import platform
 import time
@@ -37,7 +48,8 @@ from decision_intelligence.corpus.io import read_json, read_jsonl, write_json
 from decision_intelligence.embeddings.base import EmbeddingError
 from decision_intelligence.evaluation import manifest as manifest_mod
 from decision_intelligence.evaluation.judges import LLMCorrectnessJudge
-from decision_intelligence.evaluation.metrics import Row, compute_metrics, enforce_quotes
+from decision_intelligence.evaluation.metrics import Row
+from decision_intelligence.evaluation.report import row_key
 from decision_intelligence.grounding.claim_verification import ClaimVerifier
 from decision_intelligence.llm.client import Budget, LLMClient, LLMError, sanitise
 from decision_intelligence.models import (
@@ -52,14 +64,16 @@ from decision_intelligence.models import (
 from decision_intelligence.pipeline import Pipeline
 
 SPLITS = ("dev", "holdout")
+WARM_UP_QUESTION = "warm-up query for the vector index"
 
 
 class ProtocolViolation(RuntimeError):
     pass
 
 
-def row_key(row: Row) -> str:
-    return f"{row['config']}|{row['rep']}|{row['question_id']}"
+def pipeline_fingerprint(workspace: Workspace) -> str:
+    inputs = manifest_mod.tracked_inputs(workspace)["pipeline"]
+    return hashlib.sha256(json.dumps(inputs, sort_keys=True).encode()).hexdigest()
 
 
 def check_split_allowed(
@@ -69,9 +83,9 @@ def check_split_allowed(
         raise ConfigurationError(f"unknown split {split!r}")
     if split == "dev":
         return {"status": "not required for dev"}
-    problems = manifest_mod.verify(workspace, env)
-    if problems:
-        raise ProtocolViolation("holdout is locked: " + "; ".join(problems))
+    check = manifest_mod.verify(workspace, env)
+    if not check.ok:
+        raise ProtocolViolation("holdout is locked: " + "; ".join(check.problems))
     if needs_llm and not manifest_mod.llm_frozen(workspace):
         raise ProtocolViolation(
             "holdout is locked for LLM configurations: the manifest has no frozen LLM provider "
@@ -81,7 +95,8 @@ def check_split_allowed(
     return {
         "status": data["status"],
         "frozen_at": data["frozen_at"],
-        "sha256": manifest_mod.sha256_file(workspace.manifest_path),
+        "sha256": manifest_mod.manifest_sha(workspace),
+        "warnings": check.warnings,
     }
 
 
@@ -90,7 +105,18 @@ class RunSummary:
     directory: Path
     new_rows: int
     skipped_rows: int
+    error_rows: int
     spent_usd: float
+    unknown_cost_calls: int
+
+
+_COMPATIBILITY_KEYS = ("split", "embedder", "evidence_threshold", "pipeline_fingerprint", "protocol")
+
+
+def _load_intents(path: Path) -> dict[tuple[str, int], QueryIntent]:
+    if not path.exists():
+        return {}
+    return {(r["question_id"], int(r["rep"])): QueryIntent.from_record(r["intent"]) for r in read_jsonl(path)}
 
 
 def run_experiment(
@@ -102,65 +128,113 @@ def run_experiment(
     repetitions: int | None = None,
     llm: LLMClient | None = None,
     progress: Callable[[str], None] | None = None,
+    resume: bool = False,
 ) -> RunSummary:
     configs = workspace.load_configs(config_ids)
     manifest_info = check_split_allowed(split, workspace, env, needs_llm=any(c.needs_llm for c in configs))
     components = load_components(workspace, env)
     protocol = components.protocol
-    reps = repetitions or protocol.repetitions
     budget = Budget(env.budget_usd)
     if any(c.needs_llm for c in configs) and llm is None:
         llm = build_llm(env, budget=budget)
     questions = [q for q in workspace.load_questions() if q.split == split]
 
     directory = workspace.results_dir / name
-    directory.mkdir(parents=True, exist_ok=True)
     rows_path = directory / "rows.jsonl"
-    existing = {row_key(r) for r in read_jsonl(rows_path)} if rows_path.exists() else set()
-    metadata = {
-        "run": name,
+    metadata_path = directory / "metadata.json"
+    identity = {
         "split": split,
-        "configs": [c.id for c in configs],
-        "repetitions": reps,
-        "protocol": protocol.data,
         "embedder": components.embedder.name,
         "evidence_threshold": protocol.threshold_for(components.embedder),
-        "signal_index": components.signal_index.classifier,
-        "providers": env.public(),
+        "pipeline_fingerprint": pipeline_fingerprint(workspace),
+        "protocol": protocol.data,
+    }
+    session: dict[str, Any] = {
+        "started_at": datetime.now(UTC).isoformat(timespec="seconds"),
+        "configs": [c.id for c in configs],
         "manifest": manifest_info,
+        "providers": env.public(),
         "package_version": __version__,
         "python": platform.python_version(),
-        "started_at": datetime.now(UTC).isoformat(timespec="seconds"),
     }
-    write_json(directory / "metadata.json", metadata)
+    if directory.exists() and any(directory.iterdir()):
+        if not resume:
+            raise ProtocolViolation(
+                f"results already exist in {directory.relative_to(workspace.root)}; "
+                "pass --resume to continue that run, or choose a new --name"
+            )
+        metadata = read_json(metadata_path)
+        mismatched = [k for k in _COMPATIBILITY_KEYS if metadata.get(k) != identity[k]]
+        if (
+            split == "holdout"
+            and metadata["sessions"][0]["manifest"].get("sha256") != manifest_info["sha256"]
+        ):
+            mismatched.append("manifest")
+        if mismatched:
+            raise ProtocolViolation(f"cannot resume {name}: {', '.join(mismatched)} changed since it started")
+        metadata["sessions"].append(session)
+    else:
+        directory.mkdir(parents=True, exist_ok=True)
+        metadata = {"run": name, **identity, "sessions": [session]}
+    write_json(metadata_path, metadata)
 
-    shared_intents: dict[tuple[str, int], QueryIntent] = {}
-    new_rows = 0
-    skipped = 0
-    with rows_path.open("a", encoding="utf-8") as handle:
+    existing = {row_key(r) for r in read_jsonl(rows_path)} if rows_path.exists() else set()
+    intents_path = directory / "intents.jsonl"
+    shared_intents = _load_intents(intents_path)
+    new_rows = skipped = errors = 0
+    with (
+        rows_path.open("a", encoding="utf-8") as rows_handle,
+        intents_path.open("a", encoding="utf-8") as intents,
+    ):
         for config in configs:
             retriever = make_retriever(components, config.retrieval, llm)
             generator = make_generator(config.generator, llm, protocol)
             pipeline = Pipeline(retriever, generator, components.documents)
+            # Untimed warm-up so the first timed row does not pay one-off costs. No model call.
+            warm = retriever.retrieve(WARM_UP_QUESTION, intent=QueryIntent("warm-up", "NONE"))
+            if config.generator == "extractive":
+                generator.generate(WARM_UP_QUESTION, warm, components.documents)
+            reps = repetitions or protocol.repetitions_for(config)
             for rep in range(1, reps + 1):
                 for question in questions:
                     key = f"{config.id}|{rep}|{question.id}"
                     if key in existing:
                         skipped += 1
                         continue
+                    had_intent = (question.id, rep) in shared_intents
                     row = _execute(pipeline, config, rep, question, shared_intents)
+                    if (
+                        config.retrieval == "llm_intent"
+                        and not had_intent
+                        and (question.id, rep) in shared_intents
+                    ):
+                        record = {
+                            "question_id": question.id,
+                            "rep": rep,
+                            "intent": shared_intents[(question.id, rep)].to_record(),
+                        }
+                        intents.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
+                        intents.flush()
                     row.update({"run": name, "split": split})
-                    handle.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
-                    handle.flush()
+                    rows_handle.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
+                    rows_handle.flush()
+                    existing.add(key)
                     new_rows += 1
+                    errors += row["answer"]["status"] == "ERROR"
                     if progress is not None:
                         progress(f"{key} {row['answer']['status']}")
-    metadata["finished_at"] = datetime.now(UTC).isoformat(timespec="seconds")
-    metadata["spent_usd"] = round(budget.spent_usd, 6)
-    write_json(directory / "metadata.json", metadata)
-    return RunSummary(
-        directory=directory, new_rows=new_rows, skipped_rows=skipped, spent_usd=budget.spent_usd
+    session.update(
+        {
+            "finished_at": datetime.now(UTC).isoformat(timespec="seconds"),
+            "new_rows": new_rows,
+            "error_rows": errors,
+            "spent_usd": round(budget.spent_usd, 6),
+            "spent_confirmed_usd": round(budget.confirmed_usd, 6),
+            "unknown_cost_calls": budget.unknown_cost_calls,
+        }
     )
+    write_json(metadata_path, metadata)
+    return RunSummary(directory, new_rows, skipped, errors, budget.spent_usd, budget.unknown_cost_calls)
 
 
 def _execute(
@@ -203,8 +277,8 @@ def _execute(
         )
     elapsed_ms = (time.perf_counter() - started) * 1000
     effective_intent = retrieval.intent if retrieval is not None else intent
-    # A reused intent was computed by an earlier configuration; its latency and cost are
-    # still attributed here, because a deployed system with this configuration pays them.
+    # A reused intent was computed by an earlier configuration or session; its latency and
+    # cost are still attributed here, because a deployed system with this configuration pays them.
     latency_ms = elapsed_ms + (effective_intent.latency_ms if reused and effective_intent else 0.0)
     intent_cost = effective_intent.cost_usd if effective_intent is not None else 0.0
     return {
@@ -239,6 +313,14 @@ def judge_run(
 ) -> Path:
     directory = workspace.results_dir / name
     rows = read_jsonl(directory / "rows.jsonl")
+    if read_json(directory / "metadata.json")["split"] == "holdout":
+        check = manifest_mod.verify(workspace, env)
+        if not check.ok:
+            raise ProtocolViolation(
+                "judging a holdout run needs an intact manifest: " + "; ".join(check.problems)
+            )
+        if llm is None and not manifest_mod.llm_frozen(workspace):
+            raise ProtocolViolation("judging a holdout run needs the judge provider frozen in the manifest")
     questions = {q.id: q for q in workspace.load_questions()}
     documents = {d.id: d for d in workspace.load_documents()}
     if llm is None:
@@ -287,162 +369,3 @@ def judge_run(
                 }
                 handle.write(json.dumps(record, ensure_ascii=False) + "\n")
     return path
-
-
-def _latest_judgements(path: Path) -> tuple[dict[str, str], dict[str, dict[tuple[str, int], str]]]:
-    correctness: dict[str, str] = {}
-    claims: dict[str, dict[tuple[str, int], str]] = {}
-    if not path.exists():
-        return correctness, claims
-    for j in read_jsonl(path):
-        if j["kind"] == "correctness":
-            if j["label"] != "ERROR" or j["key"] not in correctness:
-                correctness[j["key"]] = j["label"]
-        else:
-            config = j["key"].split("|", 1)[0]
-            bucket = claims.setdefault(config, {})
-            if j["label"] != "ERROR" or (j["key"], j["claim"]) not in bucket:
-                bucket[(j["key"], j["claim"])] = j["label"]
-    return correctness, claims
-
-
-SUMMARY_COLUMNS = [
-    "recall_at_k",
-    "supporting_source_precision",
-    "expected_source_coverage",
-    "correctness",
-    "correctness_partial",
-    "faithfulness_quote",
-    "faithfulness_llm",
-    "correct_abstention_rate",
-    "false_answer_rate",
-    "false_abstention_rate",
-    "operational_failures",
-    "intent_failures",
-    "rejected_citations",
-    "irrelevant_sources_cited_per_rep",
-    "latency_p50_ms",
-    "latency_p95_ms",
-    "cost_per_question_usd",
-]
-
-
-def report_run(workspace: Workspace, name: str) -> dict[str, Any]:
-    directory = workspace.results_dir / name
-    rows = read_jsonl(directory / "rows.jsonl")
-    metadata = read_json(directory / "metadata.json")
-    questions = {q.id: q for q in workspace.load_questions()}
-    llm_correctness, llm_claims = _latest_judgements(directory / "judgements.jsonl")
-    top_k = int(metadata["protocol"]["retrieval"]["top_k"])
-    summary: dict[str, Any] = {
-        "run": name,
-        "split": metadata["split"],
-        "embedder": metadata["embedder"],
-        "evidence_threshold": metadata["evidence_threshold"],
-        "configs": {},
-    }
-    for config in sorted({r["config"] for r in rows}):
-        subset = [r for r in rows if r["config"] == config]
-        entry: dict[str, Any] = {
-            "retrieval": subset[0]["retrieval_strategy"],
-            "generator": subset[0]["generator"],
-            "lexical_judge": compute_metrics(subset, questions, top_k=top_k),
-        }
-        if any(row_key(r) in llm_correctness for r in subset):
-            entry["llm_judge"] = compute_metrics(
-                subset,
-                questions,
-                correctness=lambda r: llm_correctness.get(row_key(r), "ERROR"),
-                claim_labels=llm_claims.get(config, {}),
-                top_k=top_k,
-            )
-        if subset[0]["generator"] == "llm":
-            entry["quote_enforce_replay"] = compute_metrics(
-                [enforce_quotes(r) for r in subset], questions, top_k=top_k
-            )
-        summary["configs"][config] = entry
-    write_json(directory / "summary.json", summary)
-    _write_csv(directory / "summary.csv", summary)
-    (directory / "summary.md").write_text(render_markdown(summary), encoding="utf-8")
-    return summary
-
-
-def _write_csv(path: Path, summary: dict[str, Any]) -> None:
-    with path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.writer(handle)
-        writer.writerow(["config", "retrieval", "generator", "judge", *SUMMARY_COLUMNS])
-        for config, entry in summary["configs"].items():
-            for judge in ("lexical_judge", "llm_judge", "quote_enforce_replay"):
-                if judge in entry:
-                    metrics = entry[judge]
-                    writer.writerow(
-                        [
-                            config,
-                            entry["retrieval"],
-                            entry["generator"],
-                            judge,
-                            *[metrics[c] for c in SUMMARY_COLUMNS],
-                        ]
-                    )
-
-
-def _fmt(value: Any) -> str:
-    if value is None:
-        return "—"
-    if isinstance(value, float):
-        return f"{value:.3f}" if abs(value) < 10 else f"{value:.1f}"
-    return str(value)
-
-
-def render_markdown(summary: dict[str, Any]) -> str:
-    configs = summary["configs"]
-    lines = [
-        f"# Results: {summary['run']} ({summary['split']} split)",
-        "",
-        f"Embedder: `{summary['embedder']}` · evidence threshold: {summary['evidence_threshold']}",
-        "",
-        "Correctness in this table uses the **lexical key-fact proxy** unless an LLM-judge table follows.",
-        "",
-        "| Metric | " + " | ".join(configs) + " |",
-        "|---|" + "---:|" * len(configs),
-        "| Retrieval | " + " | ".join(e["retrieval"] for e in configs.values()) + " |",
-        "| Generator | " + " | ".join(e["generator"] for e in configs.values()) + " |",
-    ]
-    for column in SUMMARY_COLUMNS:
-        lines.append(
-            f"| {column} | " + " | ".join(_fmt(e["lexical_judge"][column]) for e in configs.values()) + " |"
-        )
-    judged = {c: e for c, e in configs.items() if "llm_judge" in e}
-    if judged:
-        lines += [
-            "",
-            "## LLM judge",
-            "",
-            "| Metric | " + " | ".join(judged) + " |",
-            "|---|" + "---:|" * len(judged),
-        ]
-        for column in ("correctness", "correctness_partial", "correctness_judge_errors", "faithfulness_llm"):
-            lines.append(
-                f"| {column} | " + " | ".join(_fmt(e["llm_judge"][column]) for e in judged.values()) + " |"
-            )
-    replay = {c: e for c, e in configs.items() if "quote_enforce_replay" in e}
-    if replay:
-        lines += [
-            "",
-            "## Quote gate replay (enforce)",
-            "",
-            "| Metric | " + " | ".join(replay) + " |",
-            "|---|" + "---:|" * len(replay),
-        ]
-        for column in (
-            "correctness",
-            "false_answer_rate",
-            "false_abstention_rate",
-            "supporting_source_precision",
-        ):
-            lines.append(
-                f"| {column} | "
-                + " | ".join(_fmt(e["quote_enforce_replay"][column]) for e in replay.values())
-                + " |"
-            )
-    return "\n".join(lines) + "\n"

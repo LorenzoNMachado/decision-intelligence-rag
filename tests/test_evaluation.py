@@ -11,8 +11,9 @@ from decision_intelligence.corpus.io import read_jsonl
 from decision_intelligence.evaluation import manifest
 from decision_intelligence.evaluation.judges import LexicalJudge
 from decision_intelligence.evaluation.metrics import compute_metrics, enforce_quotes
-from decision_intelligence.evaluation.runner import ProtocolViolation, judge_run, report_run, run_experiment
-from decision_intelligence.llm.client import ScriptedLLM
+from decision_intelligence.evaluation.report import report_run
+from decision_intelligence.evaluation.runner import ProtocolViolation, judge_run, run_experiment
+from decision_intelligence.llm.client import LLMError, ScriptedLLM
 from decision_intelligence.models import Question
 
 
@@ -96,17 +97,42 @@ def test_abstention_metrics_and_operational_failures() -> None:
     assert m["operational_failures"] == 1
 
 
+def _dev_count(workspace: Workspace) -> int:
+    return sum(q.split == "dev" for q in workspace.load_questions())
+
+
 def test_offline_run_report_and_resume(workspace: Workspace, offline_env: Environment) -> None:
+    dev = _dev_count(workspace)
     summary = run_experiment(workspace, offline_env, "dev", ["A", "B"], name="t", repetitions=2)
-    assert summary.new_rows == 2 * 2 * 10
-    again = run_experiment(workspace, offline_env, "dev", ["A", "B"], name="t", repetitions=2)
-    assert again.new_rows == 0 and again.skipped_rows == 40
+    assert summary.new_rows == 2 * 2 * dev
+    with pytest.raises(ProtocolViolation, match="--resume"):
+        run_experiment(workspace, offline_env, "dev", ["A", "B"], name="t", repetitions=2)
+    again = run_experiment(workspace, offline_env, "dev", ["A", "B"], name="t", repetitions=2, resume=True)
+    assert again.new_rows == 0 and again.skipped_rows == 4 * dev
     report = report_run(workspace, "t")
     assert set(report["configs"]) == {"A", "B"}
+    assert report["paired"]["A->B"]["recall_at_k"]["questions"] > 0
     for name in ("summary.json", "summary.csv", "summary.md", "metadata.json"):
         assert (workspace.results_dir / "t" / name).exists()
     metadata = json.loads((workspace.results_dir / "t" / "metadata.json").read_text())
+    assert len(metadata["sessions"]) == 2
     assert "api_key" not in json.dumps(metadata).replace("llm_api_key_configured", "")
+
+
+def test_deterministic_configurations_run_once_by_default(
+    workspace: Workspace, offline_env: Environment
+) -> None:
+    summary = run_experiment(workspace, offline_env, "dev", ["A"], name="once")
+    assert summary.new_rows == _dev_count(workspace)
+
+
+def test_resume_refuses_a_changed_pipeline(workspace: Workspace, offline_env: Environment) -> None:
+    run_experiment(workspace, offline_env, "dev", ["A"], name="r", repetitions=1)
+    data = json.loads(workspace.protocol_path.read_text())
+    data["retrieval"]["candidate_pool"] = 21
+    workspace.protocol_path.write_text(json.dumps(data))
+    with pytest.raises(ProtocolViolation, match="pipeline_fingerprint"):
+        run_experiment(workspace, offline_env, "dev", ["B"], name="r", repetitions=1, resume=True)
 
 
 def test_holdout_requires_frozen_and_untampered_manifest(
@@ -115,16 +141,63 @@ def test_holdout_requires_frozen_and_untampered_manifest(
     with pytest.raises(ProtocolViolation):
         run_experiment(workspace, offline_env, "holdout", ["A"], name="h", repetitions=1)
     manifest.freeze(workspace, offline_env)
-    assert manifest.verify(workspace, offline_env) == []
+    assert manifest.verify(workspace, offline_env).ok
     run_experiment(workspace, offline_env, "holdout", ["A"], name="h", repetitions=1)
 
     data = json.loads(workspace.protocol_path.read_text())
     data["retrieval"]["top_k"] = 5
     workspace.protocol_path.write_text(json.dumps(data))
-    problems = manifest.verify(workspace, offline_env)
-    assert any("protocol.json" in p for p in problems)
+    check = manifest.verify(workspace, offline_env)
+    assert any("protocol.json" in p for p in check.problems)
     with pytest.raises(ProtocolViolation):
         run_experiment(workspace, offline_env, "holdout", ["A"], name="h2", repetitions=1)
+
+
+def test_manifest_records_environment_and_flags_dependency_changes(
+    workspace: Workspace, offline_env: Environment
+) -> None:
+    frozen = manifest.freeze(workspace, offline_env)
+    assert set(frozen.data["inputs"]) == {"pipeline", "evaluation"}
+    assert frozen.data["environment"]["uv_lock_sha256"] and frozen.data["environment"]["packages"]["numpy"]
+    data = json.loads(workspace.manifest_path.read_text())
+    data["environment"]["python"] = "0.0.0"
+    workspace.manifest_path.write_text(json.dumps(data))
+    check = manifest.verify(workspace, offline_env)
+    assert check.ok and any("python" in w for w in check.warnings)
+    (workspace.root / "uv.lock").write_text("changed")
+    assert "environment: uv.lock changed after freeze" in manifest.verify(workspace, offline_env).problems
+
+
+def test_freeze_never_replaces_a_manifest_used_by_a_holdout_run(
+    workspace: Workspace, offline_env: Environment
+) -> None:
+    manifest.freeze(workspace, offline_env)
+    with pytest.raises(manifest.ManifestError, match="already exists"):
+        manifest.freeze(workspace, offline_env)
+    manifest.freeze(workspace, offline_env, force=True)  # allowed: no holdout result yet
+    run_experiment(workspace, offline_env, "holdout", ["A"], name="h", repetitions=1)
+    with pytest.raises(manifest.ManifestError, match="holdout results"):
+        manifest.freeze(workspace, offline_env, force=True)
+
+
+def test_evaluation_code_changes_need_a_logged_amendment(
+    workspace: Workspace, offline_env: Environment, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    manifest.freeze(workspace, offline_env)
+    run_experiment(workspace, offline_env, "holdout", ["A"], name="h", repetitions=1)
+    real = manifest.source_hashes()
+    monkeypatch.setattr(manifest, "source_hashes", lambda: {**real, "evaluation": "f" * 64})
+    with pytest.raises(manifest.ManifestError, match="amend-evaluation"):
+        report_run(workspace, "h")
+    with pytest.raises(manifest.ManifestError, match="note"):
+        manifest.amend_evaluation(workspace, offline_env, note=" ")
+    amended = manifest.amend_evaluation(workspace, offline_env, note="fix a metric denominator")
+    entry = amended.data["amendments"][-1]
+    assert entry["field"] == "inputs.evaluation" and entry["previous"] != entry["new"]
+    assert report_run(workspace, "h")["configs"]
+    monkeypatch.setattr(manifest, "source_hashes", lambda: {"pipeline": "0" * 64, "evaluation": "e" * 64})
+    with pytest.raises(manifest.ManifestError, match="new protocol version"):
+        manifest.amend_evaluation(workspace, offline_env, note="also change the pipeline")
 
 
 def test_llm_configurations_need_a_frozen_provider(workspace: Workspace, offline_env: Environment) -> None:
@@ -139,6 +212,31 @@ def test_llm_configurations_need_a_frozen_provider(workspace: Workspace, offline
             repetitions=1,
             llm=ScriptedLLM(lambda s, u: {}),
         )
+
+
+def test_llm_intents_are_persisted_and_reused_after_resume(
+    workspace: Workspace, offline_env: Environment
+) -> None:
+    calls = {"intent": 0}
+
+    def first(system: str, user: str) -> dict[str, Any]:
+        calls["intent"] += 1
+        return {"signals": [], "notes": f"call {calls['intent']}"}
+
+    run_experiment(workspace, offline_env, "dev", ["F"], name="i", repetitions=1, llm=ScriptedLLM(first))
+    assert calls["intent"] == _dev_count(workspace)
+
+    def never(system: str, user: str) -> LLMError:
+        return LLMError("must not be called for intents", kind="network")
+
+    run_experiment(
+        workspace, offline_env, "dev", ["F"], name="i", repetitions=2, llm=ScriptedLLM(never), resume=True
+    )
+    rows = read_jsonl(workspace.results_dir / "i" / "rows.jsonl")
+    second = [r for r in rows if r["rep"] == 2]
+    assert second and all(r["intent"]["status"] == "UNAVAILABLE" for r in second)  # rep 2 was new
+    stored = read_jsonl(workspace.results_dir / "i" / "intents.jsonl")
+    assert {(r["question_id"], r["rep"]) for r in stored} >= {(r["question_id"], 1) for r in rows}
 
 
 def test_scripted_llm_run_and_judge(workspace: Workspace, offline_env: Environment) -> None:
@@ -161,6 +259,7 @@ def test_scripted_llm_run_and_judge(workspace: Workspace, offline_env: Environme
 
     llm = ScriptedLLM(responder)
     run_experiment(workspace, offline_env, "dev", ["C", "E", "F"], name="s", repetitions=1, llm=llm)
+    assert (workspace.results_dir / "s" / "intents.jsonl").exists()
     rows = read_jsonl(workspace.results_dir / "s" / "rows.jsonl")
     e_rows = {r["question_id"]: r for r in rows if r["config"] == "E"}
     f_rows = {r["question_id"]: r for r in rows if r["config"] == "F"}
@@ -193,6 +292,10 @@ def test_cli_offline_commands(workspace: Workspace, capsys: pytest.CaptureFixtur
     assert output["strategy"] == "rules" and output["answer"]["status"] in {"ANSWER", "ABSTAIN"}
     assert main(["--root", root, "run", "--split", "holdout", "--configs", "A", "--name", "x"]) == 2
     assert main(["--root", root, "ask", "q", "--generator", "llm"]) == 2  # no credentials configured
+    assert main(["--root", root, "ablation", "--split", "dev"]) == 0
+    capsys.readouterr()
+    assert main(["--root", root, "ablation", "--split", "dev"]) == 2  # never overwrites a result
+    assert "never overwritten" in capsys.readouterr().err
 
 
 def test_missing_llm_provider_is_reported_clearly_without_side_effects(

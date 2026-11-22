@@ -1,0 +1,562 @@
+{
+  "version": 2,
+  "note": "Hand-written question specifications for protocol v2. Every phrasing is used once. Subjects and records are assigned by a seeded draw (corpus.questions), not chosen by the author; expected evidence is derived from the generator's intended labels. Hedged questions ('might', 'may', 'perhaps') count records with the signal PRESENT as the answer.",
+  "specs": [
+    {
+      "category": "provider_lookup",
+      "text": "Which company provides the service behind the decision to {title}?",
+      "field": "vendor"
+    },
+    {
+      "category": "provider_lookup",
+      "text": "Who is the outside firm involved in the decision to {title}?",
+      "field": "vendor"
+    },
+    {
+      "category": "provider_lookup",
+      "text": "Name the supplier that the decision to {title} depends on.",
+      "field": "vendor"
+    },
+    {
+      "category": "provider_lookup",
+      "text": "Which organisation will deliver the work for the decision to {title}?",
+      "field": "vendor"
+    },
+    {
+      "category": "provider_lookup",
+      "text": "Who operates the solution chosen in the decision to {title}?",
+      "field": "vendor"
+    },
+    {
+      "category": "provider_lookup",
+      "text": "Which external provider is engaged for the decision to {title}?",
+      "field": "vendor"
+    },
+    {
+      "category": "provider_lookup",
+      "text": "The decision to {title} relies on another company. Which one?",
+      "field": "vendor"
+    },
+    {
+      "category": "provider_lookup",
+      "text": "Who was contracted for the decision to {title}?",
+      "field": "vendor"
+    },
+    {
+      "category": "regulation_lookup",
+      "text": "Which law makes the decision to {title} necessary?",
+      "field": "regulation"
+    },
+    {
+      "category": "regulation_lookup",
+      "text": "Under which piece of legislation was the decision to {title} required?",
+      "field": "regulation"
+    },
+    {
+      "category": "regulation_lookup",
+      "text": "What legal instrument drives the decision to {title}?",
+      "field": "regulation"
+    },
+    {
+      "category": "regulation_lookup",
+      "text": "Which rule imposed by lawmakers applies to the decision to {title}?",
+      "field": "regulation"
+    },
+    {
+      "category": "regulation_lookup",
+      "text": "The decision to {title} is mandatory under which regulation?",
+      "field": "regulation"
+    },
+    {
+      "category": "regulation_lookup",
+      "text": "What statute does the decision to {title} have to satisfy?",
+      "field": "regulation"
+    },
+    {
+      "category": "framework_lookup",
+      "text": "Which audit framework is relevant to the decision to {title}?",
+      "field": "framework"
+    },
+    {
+      "category": "framework_lookup",
+      "text": "For which certification does the decision to {title} produce evidence?",
+      "field": "framework"
+    },
+    {
+      "category": "framework_lookup",
+      "text": "Which assurance standard covers the decision to {title}?",
+      "field": "framework"
+    },
+    {
+      "category": "framework_lookup",
+      "text": "Auditors check the decision to {title} against which framework?",
+      "field": "framework"
+    },
+    {
+      "category": "framework_lookup",
+      "text": "Which control framework does the decision to {title} feed into?",
+      "field": "framework"
+    },
+    {
+      "category": "framework_lookup",
+      "text": "Name the attestation that the decision to {title} supports.",
+      "field": "framework"
+    },
+    {
+      "category": "signal_filter",
+      "text": "Which decisions about the {subject} hinge on an outside firm?",
+      "all": [
+        [
+          "third_party_dependency",
+          "PRESENT"
+        ]
+      ]
+    },
+    {
+      "category": "signal_filter",
+      "text": "Which {subject} decisions rely on another company to deliver the work?",
+      "all": [
+        [
+          "third_party_dependency",
+          "PRESENT"
+        ]
+      ]
+    },
+    {
+      "category": "signal_filter",
+      "text": "Which decisions about the {subject} involve a vendor?",
+      "all": [
+        [
+          "third_party_dependency",
+          "PRESENT"
+        ]
+      ]
+    },
+    {
+      "category": "signal_filter",
+      "text": "Which decisions about the {subject} were prompted by problems in day-to-day running?",
+      "all": [
+        [
+          "operational_motivation",
+          "PRESENT"
+        ]
+      ]
+    },
+    {
+      "category": "signal_filter",
+      "text": "Which {subject} decisions aim to reduce outages or repetitive manual work?",
+      "all": [
+        [
+          "operational_motivation",
+          "PRESENT"
+        ]
+      ]
+    },
+    {
+      "category": "signal_filter",
+      "text": "Which decisions about the {subject} came from staff losing time to the current process?",
+      "all": [
+        [
+          "operational_motivation",
+          "PRESENT"
+        ]
+      ]
+    },
+    {
+      "category": "signal_filter",
+      "text": "Which decisions about the {subject} were forced by legislation?",
+      "all": [
+        [
+          "legal_dependency",
+          "PRESENT"
+        ]
+      ]
+    },
+    {
+      "category": "signal_filter",
+      "text": "Which {subject} decisions have to satisfy a legal requirement?",
+      "all": [
+        [
+          "legal_dependency",
+          "PRESENT"
+        ]
+      ]
+    },
+    {
+      "category": "signal_filter",
+      "text": "Which decisions about the {subject} were imposed by lawmakers?",
+      "all": [
+        [
+          "legal_dependency",
+          "PRESENT"
+        ]
+      ]
+    },
+    {
+      "category": "signal_filter",
+      "text": "Which decisions about the {subject} protect data against intruders?",
+      "all": [
+        [
+          "security_dependency",
+          "PRESENT"
+        ]
+      ]
+    },
+    {
+      "category": "signal_filter",
+      "text": "Which {subject} decisions depend on encryption or tighter access control?",
+      "all": [
+        [
+          "security_dependency",
+          "PRESENT"
+        ]
+      ]
+    },
+    {
+      "category": "signal_filter",
+      "text": "Which decisions about the {subject} fix weaknesses that attackers could exploit?",
+      "all": [
+        [
+          "security_dependency",
+          "PRESENT"
+        ]
+      ]
+    },
+    {
+      "category": "signal_filter",
+      "text": "Which decisions about the {subject} matter to the auditors?",
+      "all": [
+        [
+          "compliance_relevance",
+          "PRESENT"
+        ]
+      ]
+    },
+    {
+      "category": "signal_filter",
+      "text": "Which {subject} decisions produce evidence for an external certification?",
+      "all": [
+        [
+          "compliance_relevance",
+          "PRESENT"
+        ]
+      ]
+    },
+    {
+      "category": "negated_filter",
+      "text": "Which decisions about the {subject} were made without any outside firm?",
+      "all": [
+        [
+          "third_party_dependency",
+          "ABSENT"
+        ]
+      ]
+    },
+    {
+      "category": "negated_filter",
+      "text": "Which {subject} decisions state that no external vendor is involved?",
+      "all": [
+        [
+          "third_party_dependency",
+          "ABSENT"
+        ]
+      ]
+    },
+    {
+      "category": "negated_filter",
+      "text": "Which decisions about the {subject} say that operational concerns played no part?",
+      "all": [
+        [
+          "operational_motivation",
+          "ABSENT"
+        ]
+      ]
+    },
+    {
+      "category": "negated_filter",
+      "text": "Which {subject} decisions explicitly have no legal basis behind them?",
+      "all": [
+        [
+          "legal_dependency",
+          "ABSENT"
+        ]
+      ]
+    },
+    {
+      "category": "negated_filter",
+      "text": "Which decisions about the {subject} were found to have no security implications?",
+      "all": [
+        [
+          "security_dependency",
+          "ABSENT"
+        ]
+      ]
+    },
+    {
+      "category": "negated_filter",
+      "text": "Which {subject} decisions are excluded from audit work?",
+      "all": [
+        [
+          "compliance_relevance",
+          "ABSENT"
+        ]
+      ]
+    },
+    {
+      "category": "negated_filter",
+      "text": "Which decisions about the {subject} are not covered by any audit framework?",
+      "all": [
+        [
+          "compliance_relevance",
+          "ABSENT"
+        ]
+      ]
+    },
+    {
+      "category": "negated_filter",
+      "text": "Which {subject} decisions keep all of the work in-house?",
+      "all": [
+        [
+          "third_party_dependency",
+          "ABSENT"
+        ]
+      ]
+    },
+    {
+      "category": "conjunction_filter",
+      "text": "Which decisions about the {subject} depend on a vendor and also have security dependencies?",
+      "all": [
+        [
+          "third_party_dependency",
+          "PRESENT"
+        ],
+        [
+          "security_dependency",
+          "PRESENT"
+        ]
+      ]
+    },
+    {
+      "category": "conjunction_filter",
+      "text": "Which {subject} decisions are required by law but involve no outside supplier?",
+      "all": [
+        [
+          "legal_dependency",
+          "PRESENT"
+        ],
+        [
+          "third_party_dependency",
+          "ABSENT"
+        ]
+      ]
+    },
+    {
+      "category": "conjunction_filter",
+      "text": "Which decisions about the {subject} matter for audits and were driven by operational problems?",
+      "all": [
+        [
+          "compliance_relevance",
+          "PRESENT"
+        ],
+        [
+          "operational_motivation",
+          "PRESENT"
+        ]
+      ]
+    },
+    {
+      "category": "conjunction_filter",
+      "text": "Which decisions about the {subject} have security dependencies but no legal requirement?",
+      "all": [
+        [
+          "security_dependency",
+          "PRESENT"
+        ],
+        [
+          "legal_dependency",
+          "ABSENT"
+        ]
+      ]
+    },
+    {
+      "category": "conjunction_filter",
+      "text": "Which {subject} decisions rely on an outside company while also feeding an audit?",
+      "all": [
+        [
+          "third_party_dependency",
+          "PRESENT"
+        ],
+        [
+          "compliance_relevance",
+          "PRESENT"
+        ]
+      ]
+    },
+    {
+      "category": "conjunction_filter",
+      "text": "Which decisions about the {subject} were motivated by reliability concerns and are subject to regulation?",
+      "all": [
+        [
+          "operational_motivation",
+          "PRESENT"
+        ],
+        [
+          "legal_dependency",
+          "PRESENT"
+        ]
+      ]
+    },
+    {
+      "category": "disjunction_filter",
+      "text": "Which decisions about the {subject} involve a vendor or a legal obligation?",
+      "any": [
+        [
+          "third_party_dependency",
+          "PRESENT"
+        ],
+        [
+          "legal_dependency",
+          "PRESENT"
+        ]
+      ]
+    },
+    {
+      "category": "disjunction_filter",
+      "text": "Which {subject} decisions concern either security or compliance?",
+      "any": [
+        [
+          "security_dependency",
+          "PRESENT"
+        ],
+        [
+          "compliance_relevance",
+          "PRESENT"
+        ]
+      ]
+    },
+    {
+      "category": "disjunction_filter",
+      "text": "Which decisions about the {subject} were driven by operational problems or by a statute?",
+      "any": [
+        [
+          "operational_motivation",
+          "PRESENT"
+        ],
+        [
+          "legal_dependency",
+          "PRESENT"
+        ]
+      ]
+    },
+    {
+      "category": "disjunction_filter",
+      "text": "Which {subject} decisions depend on an outside firm or on encryption?",
+      "any": [
+        [
+          "third_party_dependency",
+          "PRESENT"
+        ],
+        [
+          "security_dependency",
+          "PRESENT"
+        ]
+      ]
+    },
+    {
+      "category": "hedged_filter",
+      "text": "Which decisions about the {subject} might involve an external vendor?",
+      "all": [
+        [
+          "third_party_dependency",
+          "PRESENT"
+        ]
+      ]
+    },
+    {
+      "category": "hedged_filter",
+      "text": "Which {subject} decisions could possibly have security implications?",
+      "all": [
+        [
+          "security_dependency",
+          "PRESENT"
+        ]
+      ]
+    },
+    {
+      "category": "hedged_filter",
+      "text": "Which decisions about the {subject} may be relevant for an audit?",
+      "all": [
+        [
+          "compliance_relevance",
+          "PRESENT"
+        ]
+      ]
+    },
+    {
+      "category": "hedged_filter",
+      "text": "Which {subject} decisions are perhaps driven by operational issues?",
+      "all": [
+        [
+          "operational_motivation",
+          "PRESENT"
+        ]
+      ]
+    },
+    {
+      "category": "unanswerable_in_domain",
+      "text": "What budget was approved for the decision to {title}?"
+    },
+    {
+      "category": "unanswerable_in_domain",
+      "text": "Who is the project manager responsible for the decision to {title}?"
+    },
+    {
+      "category": "unanswerable_in_domain",
+      "text": "How many employees will use the result of the decision to {title}?"
+    },
+    {
+      "category": "unanswerable_in_domain",
+      "text": "What was the contract value agreed for the decision to {title}?"
+    },
+    {
+      "category": "unanswerable_in_domain",
+      "text": "Which consultancy wrote the business case for the decision to {title}?"
+    },
+    {
+      "category": "unanswerable_in_domain",
+      "text": "On what date is the decision to {title} planned to go live?"
+    },
+    {
+      "category": "unanswerable_in_domain",
+      "text": "How much money will the decision to {title} save each year?"
+    },
+    {
+      "category": "unanswerable_in_domain",
+      "text": "Who chaired the steering group that discussed the decision to {title}?"
+    },
+    {
+      "category": "unanswerable_out_of_domain",
+      "text": "Which architecture firm designed the new headquarters lobby?"
+    },
+    {
+      "category": "unanswerable_out_of_domain",
+      "text": "What did the organisation decide about its employee volunteering days?"
+    },
+    {
+      "category": "unanswerable_out_of_domain",
+      "text": "Which charity was chosen for the annual fundraising campaign?"
+    },
+    {
+      "category": "unanswerable_out_of_domain",
+      "text": "What menu changes were approved for the staff canteen?"
+    },
+    {
+      "category": "unanswerable_out_of_domain",
+      "text": "Which airline was selected for executive travel?"
+    },
+    {
+      "category": "unanswerable_out_of_domain",
+      "text": "What was decided about the company football tournament?"
+    }
+  ]
+}

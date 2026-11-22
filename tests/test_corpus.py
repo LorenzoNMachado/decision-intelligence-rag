@@ -2,10 +2,13 @@ from __future__ import annotations
 
 from collections import Counter
 from dataclasses import replace
+from typing import Any
+
+import pytest
 
 from decision_intelligence.corpus.chunking import chunk_corpus, chunk_document
 from decision_intelligence.corpus.generator import generate_corpus
-from decision_intelligence.corpus.questions import build_question_set
+from decision_intelligence.corpus.questions import CATEGORIES, QuestionSpecError, build_question_set
 from decision_intelligence.corpus.validation import validate_corpus
 from decision_intelligence.models import DecisionDocument
 
@@ -15,11 +18,13 @@ def test_generator_is_deterministic() -> None:
     assert generate_corpus("demo", seed=1)[0].to_dict() != generate_corpus("demo", seed=2)[0].to_dict()
 
 
-def test_experimental_corpus_has_150_documents_and_450_chunks(corpus: list[DecisionDocument]) -> None:
+def test_experimental_corpus_has_180_documents_and_540_chunks(corpus: list[DecisionDocument]) -> None:
     chunks = chunk_corpus(corpus)
-    assert len(corpus) == 150
-    assert len(chunks) == 450
-    assert len(generate_corpus("demo")) == 30
+    assert len(corpus) == 180
+    assert len(chunks) == 540
+    assert len(generate_corpus("demo")) == 36
+    subjects = Counter(d.subject for d in corpus)
+    assert set(subjects.values()) == {6}  # six records per subject
 
 
 def test_chunking_is_deterministic_and_prefixes_the_title(corpus: list[DecisionDocument]) -> None:
@@ -38,21 +43,51 @@ def test_long_sections_are_split_on_sentence_boundaries(corpus: list[DecisionDoc
     assert all(c.text.rstrip().endswith(".") for c in context_chunks)
 
 
-def test_question_set_shape(corpus: list[DecisionDocument]) -> None:
-    questions = build_question_set(corpus)
-    assert len(questions) == 50
+def test_question_set_shape(corpus: list[DecisionDocument], specs: list[dict[str, Any]]) -> None:
+    questions = build_question_set(corpus, specs)
+    assert len(questions) == 70
     splits = Counter((q.split, q.answerable) for q in questions)
-    assert splits == {("dev", True): 8, ("dev", False): 2, ("holdout", True): 32, ("holdout", False): 8}
+    assert splits == {("dev", True): 16, ("dev", False): 4, ("holdout", True): 40, ("holdout", False): 10}
     assert all(1 <= len(q.expected_doc_ids) <= 4 for q in questions if q.answerable)
+    # Every category appears in both splits, in proportion.
+    for category in CATEGORIES:
+        counts = Counter(q.split for q in questions if q.category == category)
+        assert counts["dev"] >= 1 and counts["holdout"] > counts["dev"], category
+    # Phrasings are not reused, and in-domain unanswerables name a real record.
+    assert len({q.text for q in questions}) == len(questions)
+    titles = {d.title[:1].lower() + d.title[1:] for d in corpus}
+    in_domain = [q for q in questions if q.category == "unanswerable_in_domain"]
+    assert in_domain and all(any(t in q.text for t in titles) for q in in_domain)
 
 
-def test_validation_passes_on_generated_artefacts(corpus: list[DecisionDocument]) -> None:
-    report = validate_corpus(corpus, chunk_corpus(corpus), build_question_set(corpus))
+def test_question_set_is_deterministic_and_split_is_disjoint(
+    corpus: list[DecisionDocument], specs: list[dict[str, Any]]
+) -> None:
+    first, second = build_question_set(corpus, specs), build_question_set(corpus, specs)
+    assert first == second
+    dev = {q.text for q in first if q.split == "dev"}
+    holdout = {q.text for q in first if q.split == "holdout"}
+    assert dev and holdout and not dev & holdout
+
+
+def test_question_specs_reject_reused_phrasings(
+    corpus: list[DecisionDocument], specs: list[dict[str, Any]]
+) -> None:
+    with pytest.raises(QuestionSpecError):
+        build_question_set(corpus, [specs[0], specs[0]])
+
+
+def test_validation_passes_on_generated_artefacts(
+    corpus: list[DecisionDocument], specs: list[dict[str, Any]]
+) -> None:
+    report = validate_corpus(corpus, chunk_corpus(corpus), build_question_set(corpus, specs))
     assert report.ok, report.errors
 
 
-def test_validation_detects_unreachable_key_facts(corpus: list[DecisionDocument]) -> None:
-    questions = build_question_set(corpus)
+def test_validation_detects_unreachable_key_facts(
+    corpus: list[DecisionDocument], specs: list[dict[str, Any]]
+) -> None:
+    questions = build_question_set(corpus, specs)
     broken = replace(next(q for q in questions if q.answerable), key_facts=("a fact that appears nowhere",))
     report = validate_corpus(corpus, chunk_corpus(corpus), [broken])
     assert any("key fact" in e for e in report.errors)

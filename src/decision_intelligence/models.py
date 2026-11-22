@@ -231,6 +231,30 @@ class QueryIntent:
             "notes": self.notes,
         }
 
+    @classmethod
+    def from_record(cls, data: dict[str, Any]) -> QueryIntent:
+        """Inverse of ``to_record`` (used to resume runs with the same interpretation)."""
+
+        return cls(
+            parser=data["parser"],
+            status=data["status"],
+            signals=tuple(
+                IntentSignal(
+                    signal=Signal(s["signal"]),
+                    requirement=Requirement(s["requirement"]),
+                    polarity=Polarity(s["polarity"]),
+                    evidence=s.get("evidence", ""),
+                )
+                for s in data["signals"]
+            ),
+            notes=data.get("notes", ""),
+            cost_usd=data.get("cost_usd"),
+            latency_ms=float(data.get("latency_ms", 0.0)),
+        )
+
+    def to_record(self) -> dict[str, Any]:
+        return {**self.to_dict(), "cost_usd": self.cost_usd, "latency_ms": round(self.latency_ms, 2)}
+
 
 @dataclass(frozen=True)
 class RetrievedDocument:
