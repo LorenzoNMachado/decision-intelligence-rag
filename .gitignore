@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+build/
+*.egg-info/
+
+# Local configuration and caches (never commit secrets)
+.env
+.env.*
+!.env.example
+.cache/
+
+# Scratch experiment runs; curated results are committed explicitly
+experiments/results/scratch-*/
