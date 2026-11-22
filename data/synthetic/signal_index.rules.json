@@ -1,0 +1,1056 @@
+{
+  "classifier": "rules-v1",
+  "errors": {},
+  "labels": {
+    "DEC-001": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "ABSENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-002": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-003": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-004": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "ABSENT",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-005": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-006": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-007": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-008": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-009": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-010": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-011": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-012": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "ABSENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-013": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "ABSENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-014": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "ABSENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-015": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-016": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-017": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-018": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-019": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-020": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-021": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-022": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-023": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "ABSENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-024": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-025": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-026": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-027": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-028": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-029": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-030": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-031": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-032": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-033": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-034": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-035": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-036": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "ABSENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-037": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-038": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-039": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "ABSENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-040": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-041": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-042": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-043": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-044": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-045": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-046": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-047": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-048": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-049": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-050": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-051": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-052": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-053": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-054": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-055": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-056": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-057": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-058": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-059": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-060": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-061": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-062": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-063": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-064": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-065": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "ABSENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-066": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-067": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-068": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-069": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "ABSENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-070": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-071": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-072": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-073": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "ABSENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-074": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-075": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "ABSENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-076": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-077": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "ABSENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-078": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-079": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-080": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-081": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-082": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-083": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-084": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "ABSENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-085": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-086": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-087": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-088": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-089": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-090": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-091": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-092": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "ABSENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-093": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "ABSENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-094": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-095": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "ABSENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-096": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-097": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-098": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-099": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-100": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-101": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "ABSENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-102": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-103": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-104": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-105": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-106": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-107": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-108": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-109": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "ABSENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-110": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-111": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-112": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-113": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-114": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-115": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "ABSENT",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-116": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-117": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-118": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-119": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "ABSENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-120": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-121": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-122": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-123": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-124": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-125": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-126": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-127": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-128": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-129": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "ABSENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-130": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-131": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "ABSENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-132": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "UNCLEAR",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-133": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-134": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "ABSENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-135": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "UNCLEAR",
+      "operational_motivation": "ABSENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-136": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-137": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-138": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-139": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-140": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-141": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-142": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-143": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-144": {
+      "compliance_relevance": "PRESENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-145": {
+      "compliance_relevance": "ABSENT",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-146": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-147": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "UNCLEAR",
+      "third_party_dependency": "UNCLEAR"
+    },
+    "DEC-148": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "ABSENT",
+      "third_party_dependency": "ABSENT"
+    },
+    "DEC-149": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "PRESENT"
+    },
+    "DEC-150": {
+      "compliance_relevance": "UNCLEAR",
+      "legal_dependency": "PRESENT",
+      "operational_motivation": "PRESENT",
+      "security_dependency": "PRESENT",
+      "third_party_dependency": "UNCLEAR"
+    }
+  }
+}
