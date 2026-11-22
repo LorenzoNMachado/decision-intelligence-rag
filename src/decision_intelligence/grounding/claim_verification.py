@@ -31,7 +31,7 @@ CLAIM_SCHEMA: dict[str, Any] = {
 class ClaimVerdict:
     label: str  # one of CLAIM_LABELS, or "ERROR"
     rationale: str
-    cost_usd: float = 0.0
+    cost_usd: float | None = 0.0
 
 
 class ClaimVerifier:

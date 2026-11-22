@@ -111,7 +111,8 @@ def compute_metrics(
         return sum(r["answer"]["status"] == status for r in subset)
 
     latencies = [float(r["latency_ms"]) for r in rows]
-    costs = [float(r["cost_usd"]) for r in rows]
+    costs = [r["cost_usd"] for r in rows]
+    known_costs = [float(c) for c in costs if c is not None]
     repetitions = len({r["rep"] for r in rows}) or 1
     return {
         "rows": len(rows),
@@ -139,5 +140,8 @@ def compute_metrics(
         "irrelevant_sources_cited_per_rep": round(irrelevant_cited / repetitions, 2),
         "latency_p50_ms": _percentile(latencies, 50),
         "latency_p95_ms": _percentile(latencies, 95),
-        "cost_per_question_usd": round(float(np.mean(costs)), 6) if costs else None,
+        "cost_per_question_usd": round(float(np.mean(known_costs)), 6)
+        if costs and len(known_costs) == len(costs)
+        else None,
+        "cost_unknown_rows": len(costs) - len(known_costs),
     }

@@ -39,7 +39,7 @@ from decision_intelligence.evaluation.judges import LLMCorrectnessJudge
 from decision_intelligence.evaluation.metrics import Row, compute_metrics, enforce_quotes
 from decision_intelligence.grounding.claim_verification import ClaimVerifier
 from decision_intelligence.llm.client import Budget, LLMClient
-from decision_intelligence.models import QueryIntent, Question
+from decision_intelligence.models import QueryIntent, Question, add_costs
 from decision_intelligence.pipeline import Pipeline
 
 SPLITS = ("dev", "holdout")
@@ -190,8 +190,12 @@ def _execute(
         "retrieved": [d.to_dict() for d in retrieval.documents],
         "answer": answer.to_dict(),
         "latency_ms": round(latency_ms, 2),
-        "cost_usd": round(answer.cost_usd + retrieval.intent.cost_usd, 8),
+        "cost_usd": _round_cost(add_costs(answer.cost_usd, retrieval.intent.cost_usd)),
     }
+
+
+def _round_cost(value: float | None) -> float | None:
+    return None if value is None else round(value, 8)
 
 
 def judge_run(

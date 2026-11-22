@@ -97,6 +97,21 @@ class ExperimentProtocol:
         return int(self.data["repetitions"])
 
 
+def _pricing(prompt: float | None, completion: float | None) -> Pricing:
+    try:
+        return Pricing(prompt, completion)
+    except ValueError as exc:
+        raise ConfigurationError(f"DIRAG_PRICE_*: {exc}") from exc
+
+
+def _budget_limit(value: float | None) -> float | None:
+    try:
+        Budget(value)
+    except ValueError as exc:
+        raise ConfigurationError(f"DIRAG_BUDGET_USD: {exc}") from exc
+    return value
+
+
 @dataclass
 class Environment:
     """Provider settings read from environment variables."""
@@ -111,9 +126,8 @@ class Environment:
     llm_seed: int | None = None
     llm_response_format: str = "json_schema"
     llm_timeout_s: float = 60.0
-    prompt_price: float = 0.0
-    completion_price: float = 0.0
-    budget_usd: float = 1.0
+    pricing: Pricing = field(default_factory=Pricing)
+    budget_usd: float | None = 1.0  # None: no limit (explicit DIRAG_BUDGET_USD=none)
     _llm_api_key: str | None = field(default=None, repr=False)
     _embedding_api_key: str | None = field(default=None, repr=False)
 
@@ -121,9 +135,14 @@ class Environment:
     def from_env(cls) -> Environment:
         def opt_float(name: str, default: float | None) -> float | None:
             raw = os.environ.get(name)
-            if raw is None or raw == "":
+            if raw is None or raw.strip() == "":
                 return default
-            return None if raw.lower() == "none" else float(raw)
+            if raw.strip().lower() == "none":
+                return None
+            try:
+                return float(raw)
+            except ValueError as exc:
+                raise ConfigurationError(f"{name} must be a number or 'none'") from exc
 
         seed = os.environ.get("DIRAG_LLM_SEED")
         return cls(
@@ -139,9 +158,11 @@ class Environment:
             llm_seed=int(seed) if seed else None,
             llm_response_format=os.environ.get("DIRAG_LLM_RESPONSE_FORMAT", "json_schema"),
             llm_timeout_s=float(os.environ.get("DIRAG_LLM_TIMEOUT_S", "60")),
-            prompt_price=float(os.environ.get("DIRAG_PRICE_PROMPT_PER_MTOK", "0")),
-            completion_price=float(os.environ.get("DIRAG_PRICE_COMPLETION_PER_MTOK", "0")),
-            budget_usd=float(os.environ.get("DIRAG_BUDGET_USD", "1.0")),
+            pricing=_pricing(
+                opt_float("DIRAG_PRICE_PROMPT_PER_MTOK", None),
+                opt_float("DIRAG_PRICE_COMPLETION_PER_MTOK", None),
+            ),
+            budget_usd=_budget_limit(opt_float("DIRAG_BUDGET_USD", 1.0)),
             _llm_api_key=os.environ.get("DIRAG_LLM_API_KEY") or None,
             _embedding_api_key=os.environ.get("DIRAG_EMBEDDING_API_KEY")
             or os.environ.get("DIRAG_LLM_API_KEY")
@@ -267,8 +288,8 @@ def build_llm(env: Environment, model: str | None = None, budget: Budget | None 
         seed=env.llm_seed,
         response_format=env.llm_response_format,
         timeout_s=env.llm_timeout_s,
-        pricing=Pricing(env.prompt_price, env.completion_price),
-        budget=budget,
+        pricing=env.pricing,
+        budget=budget if budget is not None else Budget(env.budget_usd),
     )
 
 

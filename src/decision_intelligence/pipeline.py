@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from decision_intelligence.generation.generators import Generator
-from decision_intelligence.models import DecisionDocument, GeneratedAnswer, RetrievalResult
+from decision_intelligence.models import DecisionDocument, GeneratedAnswer, RetrievalResult, add_costs
 from decision_intelligence.retrieval.retriever import Retriever
 
 
@@ -17,7 +17,7 @@ class PipelineResult:
     retrieval: RetrievalResult
     answer: GeneratedAnswer
     latency_ms: float
-    cost_usd: float
+    cost_usd: float | None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -48,5 +48,5 @@ class Pipeline:
             retrieval=retrieval,
             answer=answer,
             latency_ms=(time.perf_counter() - started) * 1000,
-            cost_usd=retrieval.intent.cost_usd + answer.cost_usd,
+            cost_usd=add_costs(retrieval.intent.cost_usd, answer.cost_usd),
         )

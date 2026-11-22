@@ -33,7 +33,7 @@ class ClassificationResult:
     labels: SignalLabels
     evidence: dict[Signal, str]
     error: str = ""
-    cost_usd: float = 0.0
+    cost_usd: float | None = 0.0
 
 
 class SignalClassifier(Protocol):

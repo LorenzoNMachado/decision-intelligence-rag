@@ -44,6 +44,17 @@ class Requirement(StrEnum):
     PREFERRED = "PREFERRED"
 
 
+def add_costs(*values: float | None) -> float | None:
+    """Sum costs in USD; ``None`` (unknown) is absorbing, so unknown never becomes zero."""
+
+    total = 0.0
+    for value in values:
+        if value is None:
+            return None
+        total += value
+    return total
+
+
 class AnswerStatus(StrEnum):
     ANSWER = "ANSWER"
     ABSTAIN = "ABSTAIN"
@@ -195,7 +206,7 @@ class QueryIntent:
     status: str
     signals: tuple[IntentSignal, ...] = ()
     notes: str = ""
-    cost_usd: float = 0.0
+    cost_usd: float | None = 0.0
     latency_ms: float = 0.0
 
     def required(self) -> tuple[IntentSignal, ...]:
@@ -288,7 +299,7 @@ class GeneratedAnswer:
     error: str = ""
     error_kind: str = ""
     latency_ms: float = 0.0
-    cost_usd: float = 0.0
+    cost_usd: float | None = 0.0
     prompt_version: str = ""
 
     def cited_ids(self) -> list[str]:

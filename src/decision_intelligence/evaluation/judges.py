@@ -26,7 +26,7 @@ LABELS = ("CORRECT", "PARTIAL", "INCORRECT")
 class Verdict:
     label: str  # CORRECT | PARTIAL | INCORRECT | ERROR
     rationale: str = ""
-    cost_usd: float = 0.0
+    cost_usd: float | None = 0.0
 
 
 def _contains(haystack: str, needle: str) -> bool:
