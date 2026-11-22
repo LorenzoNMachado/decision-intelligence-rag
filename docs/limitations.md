@@ -94,6 +94,10 @@ so that readers can weigh the results, not as a to-do list.
 
 ## Scope
 
+* The built package (`uv build`) contains the code only. The corpus, the
+  questions, the manifests and the results live in the repository, so the
+  commands are meant to be run from a checkout.
+
 * This is an independent implementation of concepts studied during applied
   research in Computer Science at PUCPR. It does not reproduce, and makes no
   claim about, the results of that earlier study.

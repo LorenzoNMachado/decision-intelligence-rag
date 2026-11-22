@@ -1,213 +1,195 @@
-# Decision Intelligence RAG: Evidence-Grounded Retrieval and Answer Generation
+# Decision Intelligence RAG
 
-An independent research implementation for evaluating evidence-grounded RAG architectures, semantic retrieval strategies, answer correctness, and citation faithfulness.
+*Evidence-grounded retrieval, answer generation, and reproducible RAG evaluation.*
 
-The project is a reproducible experimental platform built around one question: when a retrieval-augmented system answers questions about organisational decisions, which components actually make the answers more correct and better grounded? The candidates are the retriever, a semantic interpretation of the question, and the generator.
+[![tests](https://github.com/LorenzoNMachado/decision-intelligence-rag/actions/workflows/tests.yml/badge.svg)](https://github.com/LorenzoNMachado/decision-intelligence-rag/actions/workflows/tests.yml)
+[![Python 3.12 | 3.13](https://img.shields.io/badge/python-3.12%20%7C%203.13-blue)](pyproject.toml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-> **Status.** The current protocol is **v2**. It has been frozen, and its holdout was run once for the offline configurations A and B. The v2 results are **exploratory**: the system never saw the holdout before the freeze, but the questions and corpus were written by the author of the system. **Protocol v1** is kept as a historical record only, because its holdout was inspected during an audit and its rule parser had defects that v2 fixes. Configurations C–F need an LLM. They are implemented and tested with scripted models but **have not been executed**, and this repository reports no LLM result. See [`experiments/README.md`](experiments/README.md).
+## Project overview
 
-## Problem
+Decision Intelligence RAG is a research testbed for retrieval-augmented generation over organisational decision records. You can try different retrieval and generation mechanisms on a synthetic corpus and measure how each one affects retrieval quality, answer correctness, citation grounding and abstention. The mechanisms are a vector baseline, a rule-based semantic layer, an optional LLM intent parser, an extractive generator and an optional LLM generator.
 
-Organisations record decisions together with the reasons behind them: a vendor dependency, a legal obligation, a security requirement. Questions about those records are often constraints rather than topics, for example *"which decisions about the payroll system depend on an outside firm?"* or *"…explicitly have no legal basis?"*. Vector similarity finds records about the right subject, but it cannot tell whether a record satisfies, contradicts or ignores the constraint. A generator can then cite irrelevant records, or answer questions that the corpus cannot answer.
+It is **a research implementation, not a production system**. It runs fully offline, needs no API key, and every reported number comes from a frozen, verifiable protocol.
 
-## Research questions
+![The Streamlit demo answering a question offline, with per-claim citation and quote status](docs/assets/demo-overview.png)
 
-1. **RQ1.** Does a semantic-signal layer, using rule-based or LLM-based question interpretation, improve retrieval over a pure vector baseline?
-2. **RQ2.** How much of answer quality comes from the generator rather than from the retriever?
+> **Status.** Protocol **v2** is frozen, and its holdout was run once for the two offline configurations (A, B). Those results are **exploratory**: the system never saw the holdout before the freeze, but the same author wrote the system, the corpus and the questions. The four configurations that need an LLM (C–F) are implemented and tested with scripted models, but **have not been executed**. No LLM result is reported anywhere.
+
+## Research problem
+
+Questions about decisions are often constraints rather than topics: *"which decisions about the payroll system depend on an outside firm?"* or *"…explicitly have no legal basis?"*. Vector similarity finds records about the right subject, but it cannot tell whether a record satisfies, contradicts or ignores the constraint. A generator may then cite irrelevant records, or answer questions that the records cannot answer. The project asks:
+
+1. **RQ1.** Does a semantic-signal layer (rule-based or LLM-based question interpretation) improve retrieval over a pure vector baseline?
+2. **RQ2.** How much of answer quality comes from the generator rather than the retriever?
 3. **RQ3.** How well do an evidence gate and citation validation prevent answers to unanswerable questions?
+
+## Key features
+
+- **Three retrieval strategies behind one ranker.** A vector baseline, a rule-based semantic layer (local negation scope, coordination, hedging, entity masking), and LLM intent with deterministic validation.
+- **Evidence gate and grounding.** Only admitted records reach the generator. An answer is composed only of claims whose citations are admitted records and whose quotes occur verbatim in the record body.
+- **Explicit answer states.** ANSWER, ABSTAIN and ERROR. Provider failures are never counted as abstentions, and an abstention is never graded as correct.
+- **Reproducible evaluation.**
+  - A dev/holdout split, with calibration on dev only.
+  - A frozen manifest that hashes data, prompts, parameters, code, the dependency lock and provider identity.
+  - Per-question paired sign tests.
+  - Runs that refuse to overwrite results.
+- **Fail-closed cost control** for optional providers. The client refuses a request whose worst-case cost cannot be bounded.
+- **Fully offline by default.** A deterministic feature-hashing embedder, a synthetic corpus and no network calls.
 
 ## Architecture
 
 ```mermaid
-flowchart TD
-    Q[Question] --> I{Intent parser}
-    I -->|S1: none| R
-    I -->|S2: lexicon, local negation, coordination, hedging| R
-    I -->|S3: LLM + deterministic validation| R
-    SI[(Signal index<br/>180 records × 5 signals)] --> R
-    V[(Vector index<br/>540 chunks)] --> R
-    R[Retriever<br/>cosine → best chunk per record → signal adjustment → top-4] --> G[Evidence gate<br/>similarity threshold + signal veto]
-    G -->|admitted records only| GEN{Generator}
-    GEN -->|extractive| GR
-    GEN -->|LLM, JSON with claims + quotes| GR
-    GR[Grounding<br/>valid citations · statement references · literal quotes in the record body<br/>answer = validated claims only · nothing valid ⇒ ABSTAIN · failures ⇒ ERROR] --> A[Answer + claims + evidence log]
+flowchart LR
+    Q[Question] --> I{Intent}
+    I --> R[Retrieval<br/>cosine · signal adjustment · top-4]
+    R --> G[Evidence gate]
+    G -->|nothing admitted| AB([ABSTAIN])
+    G -->|admitted records| GEN{Generation}
+    GEN --> V[Citation + quote validation]
+    V -->|validated claims| AN([ANSWER])
+    V -->|no valid claim| AB
+    GEN -. provider / schema failure .-> ER([ERROR])
 ```
 
-| Component | What it does |
-|---|---|
-| **Synthetic corpus (v2)** | 180 fictional decision records (10 domains × 3 subjects × 6 actions) split into 540 chunks. The phrase pools mix sentences that use the lexicon's cue words, cue-free paraphrases, and distractors |
-| **Embeddings** | An offline signed feature-hashing embedder (no credentials), and an optional OpenAI-compatible embedder whose vectors are validated (finite, consistent dimension) and cached per endpoint |
-| **Semantic signals** | Five signals (third-party dependency, operational motivation, legal dependency, security dependency, compliance relevance), labelled by a rule classifier with local negation and entity masking, or by an optional LLM classifier |
-| **Retrieval** | Three strategies behind one ranker: vector baseline, rule-based enrichment, and LLM semantic intent |
-| **Generation** | A deterministic extractive generator, and an LLM generator whose shown answer is composed only of validated claims |
-| **Answer states** | An explicit state machine: ANSWER needs validated claims, ABSTAIN shows only the abstention message, and provider or schema failures are ERROR, never ABSTAIN |
-| **Evaluation** | Configurations A–F, lexical and LLM judges applied only after the state rule, per-question paired sign tests, dev-only calibration, and a frozen manifest with separate pipeline and evaluation hashes |
-| **Interface** | A Streamlit app with ask, compare, measured-results and corpus views. It works fully offline |
+Strategy 3 intent and the LLM generator are optional stages that need a provider. The full diagram, separating the offline and LLM paths, is in [`docs/architecture.md`](docs/architecture.md).
 
-Details: [`docs/architecture.md`](docs/architecture.md).
+## Quick start
 
-## Experimental design
-
-| ID | Retrieval | Generator | Isolates |
-|---|---|---|---|
-| A | Vector baseline | Deterministic | baseline |
-| B | Rule-based semantic enrichment | Deterministic | rule-based signals without an LLM |
-| C | Vector baseline | LLM | the LLM generator |
-| D | Rule-based semantic enrichment | LLM | rule-based signals with an LLM |
-| E | LLM-based semantic intent | LLM | LLM intent with an LLM |
-| F | LLM-based semantic intent | Deterministic | LLM intent without an LLM generator |
-
-* **Questions (v2).** 70 hand-written phrasings, each used once, in ten categories: three kinds of lookup; signal, negated, conjunction, disjunction and hedged filters; and unanswerable questions both **inside** the domain (asking for information the records never contain) and outside it. A seeded draw assigns subjects and records, so the author did not pick them. Expected evidence comes from the generator's intended labels. The split is drawn per category in proportion: 20 dev and 50 holdout questions.
-* **Protocol.** Development and threshold calibration use the dev split only. `dirag freeze` records hashes of data, prompts, parameters, configurations, source code, the dependency lock and provider identity. The runner refuses the holdout if anything in them has changed. Deterministic configurations run once, because repeating them produces identical rows, not new observations. LLM configurations run three repetitions.
-* **Metrics.** Recall@4, supporting-source precision, answer correctness, citation faithfulness (model-written quotes only), correct-abstention and false-answer rates on unanswerable questions, latency and cost. Operational failures are counted separately. Configurations are compared question by question with an exact sign test.
-
-Full protocol: [`docs/methodology.md`](docs/methodology.md). Metric definitions: [`docs/evaluation.md`](docs/evaluation.md).
-
-## Installation
-
-Requires Python 3.12 or 3.13 (both tested in CI) and [uv](https://docs.astral.sh/uv/).
+Requires Python 3.12 or 3.13 and [uv](https://docs.astral.sh/uv/). No API key, account, database or model download is needed.
 
 ```bash
 git clone https://github.com/LorenzoNMachado/decision-intelligence-rag.git
 cd decision-intelligence-rag
-uv sync --extra app        # core + Streamlit; omit --extra app for the CLI only
+uv sync --locked --extra app            # add --python 3.13 to use Python 3.13
+
+uv run dirag corpus-validate            # the synthetic corpus is committed; this checks it
+uv run dirag ask "Which decisions about the feature flag service have security dependencies?" --retrieval rules
+uv run streamlit run app/streamlit_app.py   # http://localhost:8501
+
+uv run pytest                           # test suite (offline, providers mocked)
+uv run dirag verify-manifest            # protocol v2 unchanged since its freeze
+uv run dirag verify-v1                  # historical protocol v1 artefacts intact
 ```
 
-## Quick start (offline, no API keys)
+`make help` lists the same commands as short targets (`make install`, `make ask`, `make app`, `make check`).
 
-```bash
-uv run dirag corpus-validate                       # integrity of the committed v2 data
-uv run dirag ask "Which decisions about the feature flag service have security dependencies?" \
-    --retrieval rules                              # Strategy 2 + extractive generator
-uv run streamlit run app/streamlit_app.py          # interactive demo on http://localhost:8501
-```
-
-An out-of-domain question is gated before generation:
+`dirag ask` prints a JSON record with the parsed intent, the ranked records with their gate decisions, and the answer with its claims. Two behaviours worth trying:
 
 ```text
 $ uv run dirag ask "Which catering company was selected for the staff cafeteria contract?"
-"status": "ABSTAIN", "abstain_reason": "no document passed the evidence gate"
-```
+→ "status": "ABSTAIN", "abstain_reason": "no document passed the evidence gate"
 
-A question about a real record that asks for information the corpus never contains is **not** gated. The offline system answers it with unrelated sentences. This is a measured failure (see the results), not a hidden one:
-
-```text
 $ uv run dirag ask "What budget was approved for the decision to adopt a customer data warehouse?"
-"status": "ANSWER"   ← no record states a budget
+→ "status": "ANSWER"   (a known limitation: no record states a budget, but the question names a real record)
 ```
 
-## Configuring an LLM provider (optional)
+## Interactive demo
 
-Everything above runs offline, with no network access, credentials or paid services. LLM features are opt-in and configured only through environment variables (see [`.env.example`](.env.example)):
+The Streamlit app (`uv run streamlit run app/streamlit_app.py`) runs offline. LLM options appear only when provider variables are set. All screenshots below were captured from the real app in offline mode (`scripts/capture_screenshots.py`).
 
-| Variable | Purpose |
-|---|---|
-| `DIRAG_LLM_BASE_URL` | Endpoint of any OpenAI-compatible `/chat/completions` server (a hosted API, a gateway or a local server). It is recorded in manifests without credentials, query or fragment |
-| `DIRAG_LLM_MODEL` / `DIRAG_JUDGE_MODEL` | Generator / intent model and judge model |
-| `DIRAG_LLM_API_KEY` | Credential. It is read only from the environment and redacted from every error message, result and manifest |
-| `DIRAG_PRICE_PROMPT_PER_MTOK` / `DIRAG_PRICE_COMPLETION_PER_MTOK` | Token prices. **Required** when a spending limit is set |
-| `DIRAG_BUDGET_USD` | Spending limit per process (default 1.0). Use `none` to disable it explicitly |
+**Retrieval and evidence.** Every claim shows its citation, quote and support status. The ranked records show their similarity, adjusted score, gate decision and matched signals.
 
-**What the spending limit does and does not guarantee.** Before each request, the client computes an upper bound of its cost: the request bytes at the prompt price plus `max_tokens` at the completion price. It refuses to send the request when that bound does not fit in the remaining budget. Without configured prices no bound exists, so it refuses to send at all (fail closed). After the response, it charges the provider-reported cost when that is a valid non-negative number, otherwise the configured prices applied to the reported usage, otherwise the bound. Requests that may have been billed without usable accounting, such as timeouts or malformed bodies, are charged at the bound. Unknown costs are never recorded as zero. The limit holds only if the configured prices match the provider's and the provider counts at most one token per byte and honours `max_tokens`. What you actually pay is set by the provider's billing.
+![Claims with citation and quote status, and the ranked records with gate decisions](docs/assets/retrieval-evidence.png)
 
-While the provider variables are unset, the interface hides the LLM options. CLI commands that need an LLM then exit with code 2 and a message, without writing partial results.
+**Measured results.** Results are shown per protocol, with the paired sign test and a note that the LLM configurations have not been executed.
 
-## Reproducing the experiments
+![The measured-results tab with protocol v2 and the historical protocol v1](docs/assets/experimental-results.png)
 
-```bash
-# Offline (no credentials), protocol v2
-uv run dirag verify-manifest                       # v2 manifest intact (warnings: other Python/numpy)
-uv run dirag verify-v1                             # historical v1 artefacts identical to commit 30bce65
-uv run dirag corpus-generate --out /tmp/regen      # regenerates data/v2 byte-for-byte
-uv run dirag signals-evaluate                      # rule classifier vs generator labels
-uv run dirag calibrate                             # dev-only evidence-gate sweep
-uv run dirag run --split dev --configs A,B --name my-dev-run
-uv run dirag run --split holdout --configs A,B --name my-holdout-run
+## Experimental configurations
 
-# With an OpenAI-compatible LLM provider (see .env.example)
-set -a; source .env; set +a
-uv run dirag run --split dev --configs C,D,E,F --name llm-dev
-uv run dirag amend-providers --note "pin the LLM provider before the first LLM holdout run"
-uv run dirag run --split holdout --configs C,D,E,F --name llm-holdout
-uv run dirag judge --name llm-holdout              # judges only answered answerable rows
-uv run dirag report --name llm-holdout
-```
+| ID | Retrieval | Generator | Needs a provider | Status |
+|---|---|---|---|---|
+| A | Vector baseline | Extractive | no | measured |
+| B | Rule-based semantic enrichment | Extractive | no | measured |
+| C | Vector baseline | LLM | yes | **not executed** |
+| D | Rule-based semantic enrichment | LLM | yes | **not executed** |
+| E | LLM semantic intent | LLM | yes | **not executed** |
+| F | LLM semantic intent | Extractive | yes | **not executed** |
 
-Commands never overwrite results. An existing run is continued only with `--resume`, and only if its setup is unchanged. Every run writes `rows.jsonl`, `metadata.json` (with a log of sessions) and `summary.{json,csv,md}` under `experiments/v2/results/<name>/`. Runs with LLM intent also write `intents.jsonl`, so a resumed run reuses the same interpretations.
+**Protocol v2 data.**
+- A corpus of 180 synthetic decision records (540 chunks).
+- 70 hand-written questions in ten categories: lookups; signal, negated, conjunction, disjunction and hedged filters; and unanswerable questions inside and outside the domain.
+- A proportional split of 20 dev and 50 holdout questions.
 
-## Results measured with this implementation
+**Optional LLM providers.** Any OpenAI-compatible endpoint can be configured through environment variables (see [`.env.example`](.env.example)). Token prices are required whenever a spending limit is set. Before each request the client computes an upper bound of its cost and refuses requests that might exceed the limit, or whose cost cannot be bounded. The limit is only as accurate as the configured prices; the provider's billing is authoritative. Details: [`docs/methodology.md`](docs/methodology.md).
 
-All numbers come from the offline lexical embedder `hashing-v1` and the **lexical key-fact proxy** for correctness, not an LLM judge. Each configuration is deterministic and ran once. The unit of comparison is the question.
+## Measured results
 
-### Protocol v2 (current, exploratory)
+Protocol v2 holdout: 50 questions (40 answerable, 10 unanswerable). Offline `hashing-v1` embedder, extractive generator, one deterministic run per configuration. Source: [`experiments/v2/results/holdout-ab/`](experiments/v2/results/holdout-ab/summary.md).
 
-**Holdout: 50 questions (40 answerable, 10 unanswerable: 6 in-domain, 4 out of domain).** The protocol was frozen at commit `58f57ba` and the holdout run once afterwards, with no change to the system. Source: [`experiments/v2/results/holdout-ab/`](experiments/v2/results/holdout-ab/summary.md).
-
-| Metric | A · vector + extractive | B · rules + extractive |
+| Metric | Vector baseline (A) | Rule-based (B) |
 |---|---:|---:|
-| Recall@4 | 0.865 | 0.810 |
-| Supporting-source precision | 0.369 | 0.381 |
-| Correctness, lexical proxy (strict / partial) | 0.050 / 0.675 | 0.100 / 0.525 |
+| Recall@4 (n = 40) | 0.865 | 0.810 |
+| Supporting-source precision (n = 40) | 0.369 | 0.381 |
+| Strict correctness (n = 40) | 0.050 | 0.100 |
+| Partial correctness (n = 40) | 0.675 | 0.525 |
 | Correct abstention, in-domain unanswerable | 0/6 | 0/6 |
 | Correct abstention, out-of-domain unanswerable | 3/4 | 3/4 |
-| False-abstention rate, answerable | 0.000 | 0.000 |
-| Records cited that are not expected | 101 | 98 |
+| Recall@4 per question, A → B | — | 6 better, 5 worse, 29 tied; sign test **p = 1.0** |
 
-| Paired comparison, A → B (per question) | B better | A better | Ties | Sign test p |
-|---|---:|---:|---:|---:|
-| Recall@4 (40 answerable questions) | 6 | 5 | 29 | 1.00 |
-| Strictly correct (50 questions) | 2 | 0 | 48 | 0.50 |
+![Recall@4, supporting-source precision, strict and partial correctness for A and B](docs/assets/results-overview.svg)
 
-Recall@4 by category on the holdout (A → B): signal filters 0.708 → 0.842 (10 questions), conjunctions 0.875 → 1.000 (4), hedged 0.667 → 0.750 (3), disjunctions 0.667 → 0.583 (3), **negated filters 1.000 → 0.333 (6)**. All lookups score 1.000 for both. The rule classifier reaches 78.3 % macro accuracy against the generator's labels on the v2 corpus (93.9 % on v1). The drop is expected, because the v2 pools were written to avoid the lexicon's vocabulary.
+![Recall@4 by question category](docs/assets/recall-by-category.svg)
 
-**Reading these results.**
+![Share of questions where the system abstained](docs/assets/abstention.svg)
 
-* *RQ1:* **no evidence of improvement.** B wins on positive signal filters and loses heavily on negated filters. Overall, the paired difference is indistinguishable from chance. The failure on negation was diagnosed after the holdout run and was not fixed, because fixing it now would tune the system on the holdout ([`experiments/v2/README.md`](experiments/v2/README.md)). The cause is that records whose intended label is ABSENT receive a false PRESENT label from distractor sentences, and the bonus for matching ABSENT pulls in records of other subjects.
-* *RQ3:* **the gate does not prevent in-domain false answers.** None of the six in-domain unanswerable questions was abstained, and one out-of-domain question was answered on lexical overlap alone.
-* *The extractive generator* cites every admitted record, so strict correctness stays near zero by construction. Its citation faithfulness is not reported, because its quotes are copied from the record.
-* *RQ2* requires configurations C–F, which are pending.
+**How to read these numbers:**
 
-### Protocol v1 (historical, superseded)
+- These are **exploratory** results on a **synthetic** corpus.
+- The rule-based strategy shows **no statistically demonstrated advantage**. It helps positive signal filters (0.708 → 0.842) and fails on negated filters (1.000 → 0.333). The per-question sign test on Recall@4 gives p = 1.0.
+- The generator is **extractive**: it quotes one sentence from every admitted record, so strict correctness is low by construction.
+- Correctness comes from a **lexical key-fact judge**, which is an approximation that does not recognise paraphrases.
+- **In-domain unanswerable questions remain a limitation.** Neither configuration abstained on any of them.
+- Configurations with a real LLM (C–F) **have not been executed**.
 
-Kept unchanged in `experiments/results/` and verified by `dirag verify-v1`. On its holdout (40 questions), Recall@4 was 0.932 for A and 0.948 for B, and correct abstention 8/8 for both. An independent audit established that:
+The full interpretation, including where the rules helped and why, is in [`docs/results.md`](docs/results.md). An earlier protocol of this repository (v1) is kept as a historical record in [`experiments/v1/`](experiments/v1/README.md). Its numbers are not comparable with v2 and are superseded.
 
-* the improvement was small: 5 questions better and 2 worse, sign test p ≈ 0.453;
-* the three repetitions were identical deterministic runs, not independent observations;
-* the vector baseline already had high recall: a random choice of 4 of a subject's 5 records reaches 0.80;
-* the rule lexicon and the generator's templates shared vocabulary: the lexicon labelled all 33 templates as intended;
-* both regressions came from parser defects ("outside" read as a negation in Q-038; a subject word read as a constraint in Q-012), not one negated question as first reported;
-* the perfect abstention was measured only on out-of-domain questions, and the system answered 4 of 6 in-domain probes;
-* the reported citation faithfulness of 1.000 held by construction for extractive quotes;
-* the latency difference reflected warm-up order, not speed.
+## Reproducibility
 
-These points are why protocol v2 exists. v1 numbers are not comparable with v2: the corpus, the questions and the code differ.
+- **Data.** `uv run dirag corpus-generate --out /tmp/regen` regenerates `data/v2` byte for byte; CI diffs it on every pull request.
+- **Results.** `uv run dirag run --split holdout --configs A,B --name my-run` reproduces the committed holdout rows exactly, apart from latency. Runs never overwrite existing results.
+- **Protocol.** `uv run dirag verify-manifest` checks that the data, prompts, parameters, code and `uv.lock` are those frozen before the holdout was run. `uv run dirag verify-v1` checks the historical protocol against its git commit.
+- **Figures.** `uv run python scripts/make_figures.py` recomputes the figures from the result files; the test suite fails if they drift.
+- **CI** (Python 3.12 and 3.13) runs lint, strict type checking, the tests, a package build, data regeneration and both protocol checks. A security workflow scans the full history for secrets (gitleaks) and audits the locked dependencies (pip-audit).
+
+## Technical documentation
+
+| Document | Contents |
+|---|---|
+| [`docs/architecture.md`](docs/architecture.md) | Components, data flow, offline vs LLM stages, design decisions |
+| [`docs/methodology.md`](docs/methodology.md) | Research method, corpus and question design, strategies A–F, dev/holdout, freezing, statistical limits |
+| [`docs/evaluation.md`](docs/evaluation.md) | Metric formulas and denominators, judges, what each grounding check does and does not show |
+| [`docs/results.md`](docs/results.md) | Measured v2 results and their interpretation |
+| [`docs/limitations.md`](docs/limitations.md) | Known failures and threats to validity |
+| [`experiments/README.md`](experiments/README.md) | Execution status of every study, per protocol |
 
 ## Limitations
 
-The main limitations:
-
-* synthetic data, with references derived from the generator;
-* the author of the system also wrote the corpus, the lexicon and the questions (v2 is exploratory, not confirmatory);
-* few questions per category;
-* a lexical offline embedder and a lexical correctness proxy;
-* no LLM results.
+- **Synthetic data and one author.** The corpus, the questions and the system were written by the same author, and the references come from the generator's intended labels.
+- **Small samples.** There are 3–10 holdout questions per category. Most differences are within chance.
+- **A lexical offline embedder** and a **lexical correctness proxy**.
+- **Weak negation handling.** Negated filters fail under the rule-based strategy.
+- **No in-domain abstention.** The evidence gate cannot detect in-domain unanswerable questions.
+- **No LLM results.**
 
 See [`docs/limitations.md`](docs/limitations.md).
 
-## Development
+## Future work
 
-```bash
-uv run ruff check src tests app && uv run ruff format --check src tests app
-uv run mypy                     # strict mode
-uv run pytest                   # unit, integration and regression tests, including a headless app test
-```
-
-CI runs the same checks on Python 3.12 and 3.13, with no secrets. It also regenerates the v2 data and diffs it, verifies the v2 manifest, and checks the v1 artefacts against the v1 commit. The test suite removes any `DIRAG_*` variables from its environment and uses mock transports, so it never contacts a provider.
+- Run configurations C–F with a provider, following the documented order: dev run, provider freeze, holdout run, judge.
+- Develop a new protocol on new dev data and a new holdout. Candidate changes:
+  - restrict signal adjustments to a subject's similarity band;
+  - stop a PRESENT mention from overriding an explicit ABSENT statement;
+  - check that the evidence covers the question before answering.
+- Evaluate a dense embedding model with its own calibration.
+- Use independently written questions and human relevance labels.
 
 ## References
 
 * Lewis, P. et al. (2020). Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks. *NeurIPS*.
 * Karpukhin, V. et al. (2020). Dense Passage Retrieval for Open-Domain Question Answering. *EMNLP*.
+* Peffers, K. et al. (2007). A Design Science Research Methodology for Information Systems Research. *Journal of Management Information Systems*, 24(3).
 * Chapman, W. W. et al. (2001). A Simple Algorithm for Identifying Negated Findings and Diseases in Discharge Summaries. *Journal of Biomedical Informatics*, 34(5).
 * Gao, T., Yen, H., Yu, J., Chen, D. (2023). Enabling Large Language Models to Generate Text with Citations. *EMNLP*.
 * Rashkin, H. et al. (2023). Measuring Attribution in Natural Language Generation Models. *Computational Linguistics*, 49(4).
@@ -218,11 +200,10 @@ CI runs the same checks on Python 3.12 and 3.13, with no secrets. It also regene
 * Weinberger, K. et al. (2009). Feature Hashing for Large Scale Multitask Learning. *ICML*.
 * Youden, W. J. (1950). Index for Rating Diagnostic Tests. *Cancer*, 3(1).
 
-## Author
+## License and author
 
-**Lorenzo Nakayama Machado**, Pontifícia Universidade Católica do Paraná (PUCPR).
-This repository is an independent implementation of concepts studied during applied research in Computer Science. It does not reproduce, and makes no claims about, the results of that earlier study.
+Released under the [MIT License](LICENSE). Runtime dependencies use permissive licenses (BSD, MIT, Apache-2.0), except `certifi` (MPL-2.0, unmodified, a dependency of `httpx`).
 
-## License
+**Lorenzo Nakayama Machado**, Pontifícia Universidade Católica do Paraná (PUCPR). This repository is an independent implementation of concepts studied during applied research in Computer Science. It does not reproduce, and makes no claims about, the results of that earlier study.
 
-Released under the [MIT License](LICENSE). Runtime dependencies are under permissive licenses (BSD, MIT, Apache-2.0), except `certifi`, which is MPL-2.0 and used unmodified as a dependency of `httpx`.
+Contributions: see [`CONTRIBUTING.md`](CONTRIBUTING.md). Security reports: see [`SECURITY.md`](SECURITY.md).
