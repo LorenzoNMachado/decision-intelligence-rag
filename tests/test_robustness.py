@@ -25,7 +25,7 @@ from decision_intelligence.generation.generators import ExtractiveGenerator
 from decision_intelligence.llm.client import Budget, LLMError, OpenAICompatibleLLM, Pricing, sanitise
 from decision_intelligence.models import Question
 
-KEY = "sk-live-ABCDEFGH12345678"
+KEY = "sk-fake-ABCDEFGH12345678"
 
 
 def _llm(handler: Any, budget: Budget | None = None) -> OpenAICompatibleLLM:
