@@ -2,42 +2,65 @@
 
 ## Overview
 
-Solid boxes run offline and are exercised by the measured configurations A and
-B. Boxes inside "Optional · LLM provider" and dashed edges are implemented and
-tested with scripted models only. They are not active unless `DIRAG_LLM_*` is
-configured, and no result from them has been measured.
+Solid boxes run offline and are exercised by the measured configurations A–H
+of protocol v3. Boxes inside "Optional · LLM provider" and dashed edges are
+implemented and tested with scripted models only; they are inactive unless
+`DIRAG_LLM_*` is configured, and no result from them has been measured.
 
 ```mermaid
 flowchart TD
-    Q[Question] --> P1[S1 · no intent]
-    Q --> P2[S2 · rule lexicon<br/>local negation · coordination · hedging · entity masking]
+    Q[Question] --> P1[no intent<br/>vector · BM25]
+    Q --> P2[rule lexicon v2 / v3<br/>local negation · exceptions · hedging · entity masking]
     subgraph LLM ["Optional · LLM provider"]
-        P3[S3 · LLM intent<br/>validated: verbatim evidence, ≤ 2 REQUIRED]
+        P3[LLM intent<br/>validated: verbatim evidence, ≤ 2 REQUIRED]
         LG[LLM generator<br/>JSON claims with citations + quotes]
         J[LLM judge / claim verifier<br/>evaluation only]
     end
     Q -.-> P3
-    SI[(Signal index · rules-v2<br/>180 records × 5 signals)] --> R
-    VI[(Vector index · hashing-v1<br/>540 chunks)] --> R
+    SI[(Signal indices<br/>rules-v2 · rules-v3 scoped)] --> R
+    VI[(Vector index · BM25 index<br/>540 chunks)] --> R
     P1 --> R
     P2 --> R
     P3 -.-> R
-    R[Retrieval<br/>cosine → best chunk per record → pool of 20<br/>signal bonus / penalty → top-4] --> G{Evidence gate<br/>cosine ≥ 0.18 and no REQUIRED contradiction}
+    R[Retrieval<br/>score → best chunk per record → pool of 20<br/>signal bonus / penalty · topical band v3 → top-4] --> G{Evidence gate<br/>score ≥ threshold and no REQUIRED contradiction}
     G -->|nothing admitted| ABS([ABSTAIN])
-    G -->|admitted records| EX[Extractive generator<br/>one quoted sentence per record]
-    G -.->|admitted records| LG
+    G -->|admitted records| S{Evidence sufficiency v3<br/>answer type · focus · assertion scope}
+    S -->|insufficient / ambiguous| ABS
+    S -->|sufficient records| EX[Extractive generator<br/>v1 overlap · v2 sentence found by the check]
+    S -.->|sufficient records| LG
     EX --> ANS([ANSWER])
-    LG -.-> CV[Citation + quote validation<br/>admitted ids · no stray ids · verbatim quote ≥ 4 words in record body]
+    LG -.-> CV[Citation + quote validation]
     CV -.->|validated claims| ANS
     CV -.->|no valid claim| ABS
     LG -.->|provider / schema failure| ERR([ERROR])
     ANS -.-> J
 ```
 
-The final states follow `models.TRANSITIONS`. An answer exists only with
-claims. An abstention shows only the abstention message. An error is never an
-abstention. A failure anywhere in a run row (for example an embedding error) is
-recorded as ERROR and the batch continues.
+Configurations without the sufficiency check (A, B, C, G) go from the gate
+straight to the generator, as in protocol v2. Final states follow
+`models.TRANSITIONS`: an answer exists only with claims, an abstention shows
+only the abstention message (with the check's reason when it decided), and an
+error is never an abstention.
+
+## Evidence sufficiency (v3)
+
+`decision_intelligence.sufficiency` sees the question text, the retrieval
+result and the records, never a reference answer or a category:
+
+1. **Information need** (`need.py`): the expected answer type from the
+   question's structure (wh-form and the noun it governs, using a small
+   taxonomy of answer-type nouns), the focus words, and the referenced decision.
+2. **Typed facts** (`facts.py`): money, dates, counts, people, organisations,
+   regulations, frameworks and stated reasons, found with general patterns,
+   each with the assertion type of its clause.
+3. **Assertion scope** (`semantic_signals/scope.py`): FACTUAL, NEGATED,
+   HYPOTHETICAL, HISTORICAL or CONTEXTUAL per mention; a named organisation
+   after a dependency phrase is a third-party mention.
+4. **Decision per record** (`check.py`): OFF_TOPIC (another decision or
+   subject), SUFFICIENT (a current value of the right type about the requested
+   attribute, or every required condition asserted), PARTIAL, AMBIGUOUS
+   (both polarities asserted), INSUFFICIENT. Anything but SUFFICIENT overall
+   is ABSTAIN with outcome `INSUFFICIENT_EVIDENCE`.
 
 ## Packages
 
@@ -45,13 +68,14 @@ recorded as ERROR and the batch continues.
 |---|---|
 | `corpus` | Synthetic record generator, deterministic chunking, question-set builder, integrity validation, JSONL I/O |
 | `embeddings` | `Embedder` protocol, exact cosine `VectorIndex`, offline `HashingEmbedder`, cached `OpenAICompatibleEmbedder` |
-| `semantic_signals` | Cue lexicon, rule-based and LLM document classifiers, persisted `SignalIndex`, accuracy against generator labels |
+| `semantic_signals` | Versioned cue lexicons (v2, v3), assertion scope, rule-based (v2), scoped (v3) and LLM document classifiers, persisted `SignalIndex`, accuracy against generator labels |
 | `intent` | `IntentParser` protocol with the none / rules / LLM parsers |
-| `retrieval` | `Retriever`: similarity, signal adjustment, ranking and evidence gate |
+| `retrieval` | `Retriever`: similarity or BM25 scores, signal adjustment, flat or topical ranking, evidence gate; `BM25Scorer` |
 | `generation` | Extractive and LLM generators; versioned prompts in `generation/prompts/*.md` |
 | `grounding` | Evidence rendering, citation and quote validation, experimental claim verifier |
 | `llm` | OpenAI-compatible chat client with classified errors, retries, response validation and fail-closed budget; `ScriptedLLM` for tests |
-| `evaluation` | Metrics, judges (state rule + assessors), report and paired statistics, experiment runner, manifest (freeze/verify/amend), v1 historical verification, ablation and calibration |
+| `evaluation` | Metrics, judges (state rule + assessors), report, paired statistics and intervals, experiment runner, manifest (freeze/verify/amend), v1 and v2 historical verification, ablation and calibration |
+| `sufficiency` | Information need, typed facts and the evidence-sufficiency checker (v3) |
 | `config` | Protocol file, environment variables, component factory |
 | `cli` | `dirag` command-line entry point |
 
@@ -104,7 +128,13 @@ never stored in result files or manifests. The configured key, Bearer tokens and
 key-like strings are redacted from provider error messages. Endpoints are
 recorded without credentials, query or fragment.
 
-**Two protocols, one codebase.** The code runs protocol v2 only
-(`Workspace(protocol="v2")`). Protocol v1's artefacts remain at their original
-paths and are verified against the git objects of the v1 commit
-(`evaluation.historical`), never recomputed.
+**Three protocols, one codebase.** The code runs protocol v3 only
+(`Workspace(protocol="v3")`). The artefacts of v1 and v2 remain at their
+original paths and are verified against the git objects of the commits that
+published them (`evaluation.historical`, `evaluation.historical_v2`), never
+recomputed. The v2 lexicon, classifier and flat ranking stay in the code,
+unchanged, as configuration B of the v3 ablation; a test rebuilds the frozen v2
+signal index byte for byte.
+
+**Topical eligibility is a safeguard, not a measured gain.** In the v3 holdout
+ablation, rules-v3 with and without the topical band reach the same Recall@4.

@@ -41,12 +41,20 @@ final status. *Q⁺* are the answerable questions and *Q⁻* the unanswerable on
 | Quote verification rate | #claims with a verified quote / #claims | model-written claims of ANSWER rows |
 | Claim support (LLM) | #SUPPORTED / #judged claims | claims assessed by the claim verifier |
 | Correct abstention | #(s = ABSTAIN) / \|rows of Q⁻\| | unanswerable rows |
+| … in-domain / out-of-domain (v3) | the same, split by category | in-domain: a real record, information not stated; out-of-domain: no record on the topic |
+| Unsupported answer rate (v3) | #(s = ANSWER and (q ∈ Q⁻ or C ∩ E = ∅)) / #(s = ANSWER) | ANSWER rows |
 | False answer | #(s = ANSWER) / \|rows of Q⁻\| | unanswerable rows |
 | False abstention | #(s = ABSTAIN) / \|rows of Q⁺\| | answerable rows |
 | Operational failures | #(s = ERROR) | all rows (counted, never folded into abstention) |
 
 On unanswerable rows, correct abstention + false answer + operational
 failures = 1.
+
+**Intervals (v3).** Proportions get 95 % Wilson score intervals. Recall@4 gets
+a seeded percentile bootstrap over questions (2 000 resamples; repetitions are
+averaged per question first, so they never count as observations). Paired
+comparisons report the exact two-sided sign test and a bootstrap 95 % interval
+of the mean per-question difference.
 
 ## What each grounding check shows, and what it does not
 
@@ -58,7 +66,8 @@ failures = 1.
 | **Citation validity** | Every cited id is a record that passed the evidence gate | That the record supports the statement |
 | **Quote verification** | The quote occurs verbatim in the cited record's body | That the statement follows from the quote |
 | **Faithfulness / support** (LLM verifier, experimental) | An automated judgement that the cited records entail the claim | A human-validated judgement; this verifier has not been calibrated |
-| **Abstention** | The system declined when the gate admitted nothing or no claim survived | That it declines whenever it should (in-domain unanswerables are not caught) |
+| **Evidence sufficiency** (v3) | An admitted record asserts a value of the expected type about the requested attribute, or asserts every required condition | That the value is correct; it trusts the record. Paraphrased attributes are missed (false abstention) |
+| **Abstention** | The system declined: nothing admitted, insufficient evidence, or no claim survived | That it declines whenever it should; v3 catches in-domain unanswerables only for statements its rules recognise |
 
 A valid citation with a verified quote makes a claim **traceable**, not
 **true**. Correctness is graded only on the composed answer of validated

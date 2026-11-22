@@ -1,4 +1,6 @@
-# Results (protocol v2)
+# Results (protocol v2, historical)
+
+> Protocol v2 is superseded by protocol v3 ([`experiments/v3/README.md`](../experiments/v3/README.md)). The v2 numbers below were measured on a different corpus and question set and are not comparable with v3. They are kept because the failures they show motivated v3 ([`docs/v3/diagnosis.md`](v3/diagnosis.md)).
 
 These are the only measured results of protocol v2: configurations A
 (vector baseline + extractive generator) and B (rule-based semantic

@@ -3,7 +3,28 @@
 All notable changes to this project. Results are only ever reported for the
 protocol under which they were measured.
 
-## [Unreleased]
+## [0.3.0] — protocol v3
+
+### Added
+- Evidence sufficiency check between retrieval and generation
+  (`decision_intelligence.sufficiency`): information need, typed facts with
+  assertion scope, per-record decisions; insufficient evidence → ABSTAIN.
+- Assertion scope (factual, negated, hypothetical, historical, contextual) and
+  a scoped classifier (rules-v3) with a CONTRADICTORY label.
+- Versioned lexicon (v3 adds implicit negation, exceptions, conditional hedges).
+- Topical eligibility ranking, BM25 baseline, extractive generator v2.
+- Protocol v3: new corpus, 224 questions with in-domain unanswerables that
+  reuse the answerable phrasings, configurations A–H (+ L pending), dev-only
+  calibration, pre-registered plan, holdout run once.
+- Metrics: in/out-of-domain abstention, unsupported answers, Wilson and
+  bootstrap intervals, per-category tables.
+- `dirag verify-v2`: protocol v2 preserved as a verifiable historical record.
+
+### Changed
+- v2 is historical; the code runs v3 only. The v2 semantic layer is kept
+  unchanged as ablation configuration B.
+
+## [Unreleased — release preparation]
 
 ### Added
 - Real interface screenshots and SVG figures generated from the measured v2
