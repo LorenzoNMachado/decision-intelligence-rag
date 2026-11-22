@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -12,6 +13,7 @@ def _module():  # type: ignore[no-untyped-def]
     spec = importlib.util.spec_from_file_location("make_figures", ROOT / "scripts" / "make_figures.py")
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
+    sys.modules["make_figures"] = module  # dataclasses resolve their module by name
     spec.loader.exec_module(module)
     return module
 
