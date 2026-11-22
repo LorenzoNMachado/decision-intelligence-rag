@@ -21,6 +21,7 @@ from decision_intelligence.config import (
     Workspace,
     build_llm,
     load_components,
+    make_checker,
     make_generator,
     make_retriever,
 )
@@ -32,36 +33,55 @@ from decision_intelligence.pipeline import Pipeline, PipelineResult
 ROOT = Path(__file__).resolve().parents[1]
 
 RETRIEVAL_LABELS = {
-    "vector": "Strategy 1 · Vector baseline",
-    "rules": "Strategy 2 · Rule-based semantic enrichment",
-    "llm_intent": "Strategy 3 · LLM semantic intent",
+    "vector": "Vector baseline (hashing embedder)",
+    "bm25": "BM25 lexical baseline",
+    "rules-v2": "Rule-based signals, v2 (historical behaviour)",
+    "rules-v3": "Rule-based signals, v3 (scoped labels, topical ranking)",
+    "llm_intent": "LLM semantic intent (needs a provider)",
 }
-GENERATOR_LABELS = {"extractive": "Deterministic extractive", "llm": "LLM with validated citations"}
+GENERATOR_LABELS = {
+    "extractive-v1": "Extractive v1 (largest word overlap)",
+    "extractive-v2": "Extractive v2 (quotes the sentence the sufficiency check found)",
+    "llm": "LLM with validated citations (needs a provider)",
+}
+# (retrieval, sufficiency check, generator) of the protocol v3 configurations.
 CONFIGS = {
-    "A": ("vector", "extractive"),
-    "B": ("rules", "extractive"),
-    "C": ("vector", "llm"),
-    "D": ("rules", "llm"),
-    "E": ("llm_intent", "llm"),
-    "F": ("llm_intent", "extractive"),
+    "A": ("vector", False, "extractive-v1"),
+    "B": ("rules-v2", False, "extractive-v1"),
+    "C": ("rules-v3", False, "extractive-v1"),
+    "D": ("rules-v2", True, "extractive-v1"),
+    "E": ("rules-v3", True, "extractive-v1"),
+    "F": ("rules-v3", True, "extractive-v2"),
+    "G": ("bm25", False, "extractive-v1"),
+    "H": ("vector", True, "extractive-v2"),
+    "L": ("rules-v3", True, "llm"),
 }
 EXAMPLES = [
-    "Which decisions about the feature flag service have security dependencies?",
-    "Which decisions about the payroll processing system depend on an external vendor?",
-    "Which decisions about the contract repository state that there is no legal requirement?",
-    "What budget was approved for the decision to adopt a customer data warehouse?",
-    "Which catering company was selected for the staff cafeteria contract?",
+    "Which decisions about the identity directory have security implications?",
+    "Which decisions about the travel booking process involve no external vendor?",
+    "What budget was approved for the decision to introduce a patient scheduling system?",
+    "Who leads the work on the decision to trial a route optimisation engine?",
+    "Which architect designed the new headquarters atrium?",
 ]
 STATE_HELP = {
-    "ANSWER": "Every statement below cites a record admitted by the evidence gate.",
-    "ABSTAIN": "The system declined to answer: no admitted evidence, or no claim survived validation.",
+    "ANSWER": "Every statement below cites an admitted record (judged sufficient, when the check is on).",
+    "ABSTAIN": "The system declined: no admitted or no sufficient evidence, or no claim survived validation.",
     "ERROR": "An operational failure (provider, network, schema). This is not an abstention.",
 }
+DEMO_NOTE = (
+    "Live demonstration on the synthetic corpus — not a measured result. "
+    "Measured results are in the 'Measured results' tab."
+)
 RESULTS = [
     (
-        "Protocol v2 · holdout · A and B",
-        ROOT / "experiments" / "v2" / "results" / "holdout-ab" / "summary.json",
+        "Protocol v3 · holdout · all offline configurations",
+        ROOT / "experiments" / "v3" / "results" / "holdout" / "summary.json",
         "Current protocol. Exploratory: the holdout was unseen by the system but written by its author.",
+    ),
+    (
+        "Protocol v2 · holdout · A and B (historical)",
+        ROOT / "experiments" / "v2" / "results" / "holdout-ab" / "summary.json",
+        "Superseded; different corpus, questions and code. Not comparable with v3.",
     ),
     (
         "Protocol v1 · holdout · A and B (historical)",
@@ -75,7 +95,10 @@ SHOWN_METRICS = [
     ("supporting_source_precision", "Supporting-source precision"),
     ("correctness", "Correctness (lexical proxy, strict)"),
     ("correct_abstention_rate", "Correct abstention (unanswerable)"),
-    ("false_answer_rate", "False answers (unanswerable)"),
+    ("correct_abstention_in_domain", "Correct abstention, in-domain"),
+    ("correct_abstention_out_of_domain", "Correct abstention, out-of-domain"),
+    ("false_abstention_rate", "False abstention (answerable)"),
+    ("unsupported_answer_rate", "Unsupported answers"),
 ]
 
 CSS = """
@@ -128,35 +151,61 @@ def get_llm() -> LLMClient | None:
     return build_llm(env)
 
 
-def run(question: str, retrieval: str, generator: str) -> PipelineResult:
+def run(question: str, retrieval: str, generator: str, sufficiency: bool) -> PipelineResult:
     components = get_components()
     llm = get_llm()
     pipeline = Pipeline(
         make_retriever(components, retrieval, llm),
         make_generator(generator, llm, components.protocol),
         components.documents,
+        checker=make_checker(components) if sufficiency else None,
     )
     return pipeline.run(question)
 
 
 def retrieved_table(result: PipelineResult, components: Components) -> list[dict[str, Any]]:
+    checked = {d.doc_id: d for d in result.sufficiency.documents} if result.sufficiency is not None else {}
     rows = []
     for d in result.retrieval.documents:
         doc = components.documents[d.doc_id]
-        rows.append(
-            {
-                "rank": d.rank,
-                "id": d.doc_id,
-                "title": doc.title,
-                "similarity": round(d.similarity, 3),
-                "final score": round(d.final_score, 3),
-                "admitted": "yes" if d.admitted else "no",
-                "gate": d.gate_reason,
-                "matched signals": ", ".join(d.matched_signals),
-                "contradicted": ", ".join(d.contradicted_signals),
-            }
-        )
+        row: dict[str, Any] = {
+            "rank": d.rank,
+            "id": d.doc_id,
+            "title": doc.title,
+            "similarity": round(d.similarity, 3),
+            "final score": round(d.final_score, 3),
+            "on topic": "yes" if d.topical else "no",
+            "admitted": "yes" if d.admitted else "no",
+            "gate": d.gate_reason,
+            "matched signals": ", ".join(d.matched_signals),
+            "contradicted": ", ".join(d.contradicted_signals),
+        }
+        if result.sufficiency is not None:
+            item = checked.get(d.doc_id)
+            row["sufficiency"] = item.status.value if item else "not checked (not admitted)"
+            row["why"] = item.reason if item else ""
+        rows.append(row)
     return rows
+
+
+def show_sufficiency(result: PipelineResult) -> None:
+    report = result.sufficiency
+    if report is None:
+        st.caption("Evidence sufficiency check: off (v2 behaviour — the gate alone decides).")
+        return
+    need = report.need
+    constraints = ", ".join(c.split(":")[0] + "=" + c.split(":")[1] for c in need.to_dict()["constraints"])
+    st.caption(
+        f"Evidence sufficiency (v3 mechanism): **{report.status.value}** — {report.reason}. "
+        f"Asked for: {need.answer_type.value.lower()}"
+        + (f" · focus: {', '.join(need.focus)}" if need.focus else "")
+        + (f" · conditions: {constraints}" if constraints else "")
+    )
+    for item in report.sufficient():
+        for sentence in item.supporting:
+            st.markdown(
+                f"> {plain(sentence)}  \n<span class='muted'>{item.doc_id}</span>", unsafe_allow_html=True
+            )
 
 
 def show_answer(result: PipelineResult) -> None:
@@ -190,9 +239,9 @@ def show_answer(result: PipelineResult) -> None:
 
 def show_results() -> None:
     st.caption(
-        "Measured results only. LLM configurations (C–F) have not been executed, so no LLM result is shown. "
-        "Differences between configurations must be read with the paired sign test below them: "
-        "one deterministic run per configuration, a few dozen questions, synthetic data."
+        "Measured results only. Configurations that need an LLM (v3: L) have not been executed, so no LLM "
+        "result is shown. Read differences with the paired comparisons below them: one deterministic run "
+        "per configuration, synthetic data, and different corpora and questions in each protocol."
     )
     for title, path, context in RESULTS:
         st.markdown(f"#### {title}")
@@ -209,8 +258,11 @@ def show_results() -> None:
             ],
             hide_index=True,
         )
-        for pair, metrics in summary.get("paired", {}).items():
-            c = metrics["recall_at_k"]
+        shown = [
+            p for p in summary.get("paired", {}) if p in ("A->B", "B->C", "C->E", "D->E", "E->F", "A->G")
+        ]
+        for pair in shown or list(summary.get("paired", {}))[:1]:
+            c = summary["paired"][pair]["recall_at_k"]
             st.caption(
                 f"{pair}, Recall@4 per question: second better {c['second_better']}, first better "
                 f"{c['first_better']}, ties {c['ties']} (sign test p = {c['sign_test_p']})."
@@ -222,7 +274,7 @@ def main() -> None:
     st.markdown(CSS, unsafe_allow_html=True)
     st.title("Decision Intelligence RAG")
     st.caption(
-        "Evidence-grounded retrieval and answer generation over a synthetic decision corpus (protocol v2)."
+        "Evidence-grounded retrieval and answer generation over a synthetic decision corpus (protocol v3)."
     )
 
     try:
@@ -243,7 +295,7 @@ def main() -> None:
             f"**Evidence gate:** cosine ≥ {components.protocol.threshold_for(components.embedder)}"
         )
         if not llm_ready:
-            st.info("Strategy 3 and the LLM generator need `DIRAG_LLM_*` variables (see `.env.example`).")
+            st.info("LLM intent and the LLM generator need `DIRAG_LLM_*` variables (see `.env.example`).")
         st.caption("All records are synthetic and fictional.")
 
     ask_tab, compare_tab, results_tab, corpus_tab = st.tabs(
@@ -251,17 +303,35 @@ def main() -> None:
     )
 
     with ask_tab:
+        st.caption(DEMO_NOTE)
         example = st.selectbox("Example questions", ["—", *EXAMPLES])
         question = st.text_input("Question", value="" if example == "—" else example, max_chars=500)
         left, right = st.columns(2)
         retrieval = left.radio(
-            "Retrieval", available_retrieval, format_func=RETRIEVAL_LABELS.__getitem__, horizontal=False
+            "Retrieval",
+            available_retrieval,
+            index=available_retrieval.index("rules-v3"),
+            format_func=RETRIEVAL_LABELS.__getitem__,
         )
-        generator = right.radio("Generator", available_generators, format_func=GENERATOR_LABELS.__getitem__)
+        generator = right.radio(
+            "Generator",
+            available_generators,
+            index=available_generators.index("extractive-v2"),
+            format_func=GENERATOR_LABELS.__getitem__,
+        )
+        sufficiency = (
+            st.checkbox(
+                "Check evidence sufficiency before answering (v3)",
+                value=True,
+                disabled=generator == "extractive-v2",
+            )
+            or generator == "extractive-v2"
+        )
         if st.button("Ask", type="primary", disabled=not question.strip()):
-            result = run(question, retrieval, generator)
+            result = run(question, retrieval, generator, sufficiency)
             st.subheader("Answer")
             show_answer(result)
+            show_sufficiency(result)
             st.subheader("Retrieved documents")
             intent = result.retrieval.intent
             constraints = ", ".join(
@@ -276,21 +346,25 @@ def main() -> None:
             st.dataframe(retrieved_table(result, components), hide_index=True, use_container_width=True)
 
     with compare_tab:
+        st.caption(DEMO_NOTE)
         runnable = [
-            c for c, (r, g) in CONFIGS.items() if r in available_retrieval and g in available_generators
+            c for c, (r, _, g) in CONFIGS.items() if r in available_retrieval and g in available_generators
         ]
-        chosen = st.multiselect("Configurations", runnable, default=runnable[:2])
+        chosen = st.multiselect("Configurations", runnable, default=["A", "F"])
         compare_question = st.text_input(
-            "Question to compare", value=EXAMPLES[0], key="compare", max_chars=500
+            "Question to compare", value=EXAMPLES[2], key="compare", max_chars=500
         )
         if st.button("Compare", disabled=not chosen):
             columns = st.columns(len(chosen))
             for column, config in zip(columns, chosen, strict=True):
-                retrieval_kind, generator_kind = CONFIGS[config]
+                retrieval_kind, check, generator_kind = CONFIGS[config]
                 with column:
                     st.markdown(f"### {config}")
-                    st.caption(f"{RETRIEVAL_LABELS[retrieval_kind]} + {GENERATOR_LABELS[generator_kind]}")
-                    result = run(compare_question, retrieval_kind, generator_kind)
+                    st.caption(
+                        f"{RETRIEVAL_LABELS[retrieval_kind]} · sufficiency {'on' if check else 'off'} · "
+                        f"{GENERATOR_LABELS[generator_kind]}"
+                    )
+                    result = run(compare_question, retrieval_kind, generator_kind, check)
                     show_answer(result)
                     st.caption(
                         "Top documents: "
@@ -315,15 +389,17 @@ def main() -> None:
         st.markdown(plain(doc.decision))
         st.markdown(f"**Context.** {plain(doc.context)}")
         st.markdown(f"**Rationale.** {plain(doc.rationale)}")
-        labels = components.signal_index.labels.get(doc.id, {})
+        v2 = components.signal_indices["rules-v2"].labels.get(doc.id, {})
+        v3 = components.signal_indices["rules-v3"].labels.get(doc.id, {})
         st.dataframe(
             [
                 {
                     "signal": s.value,
-                    "rule-based label": lab.value,
+                    "rules-v2 label": v2[s].value if s in v2 else "",
+                    "rules-v3 label": lab.value,
                     "generator's intended label": doc.ground_truth_signals[s.value],
                 }
-                for s, lab in labels.items()
+                for s, lab in v3.items()
             ],
             hide_index=True,
         )
