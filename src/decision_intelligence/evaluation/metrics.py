@@ -7,10 +7,14 @@ the runner. Definitions (see ``docs/evaluation.md``):
 * Supporting-source precision — answerable rows that answered with ≥1 citation:
   |cited ∩ expected| / |cited|.
 * Expected-source coverage — same rows: |cited ∩ expected| / |expected|.
-* Answer correctness — answerable rows labelled CORRECT / all answerable rows.
-  Abstentions and errors on answerable questions count as incorrect.
-* Citation faithfulness — claims whose quote is literally present in a cited
-  source / all claims (``quote``); with an LLM verifier, SUPPORTED / judged claims.
+* Answer correctness — answerable rows labelled CORRECT / answerable rows whose
+  label is not a judge failure. The state rule (``judges.grade``) applies first:
+  abstentions and errors on answerable questions are INCORRECT whatever a judge
+  said, and judges only assess ANSWER rows.
+* Citation faithfulness — model-written claims whose quote is literally present
+  in a cited source / model-written claims (``quote``); extracted quotes are
+  verified by construction and excluded. With an LLM verifier: SUPPORTED /
+  judged claims.
 * Correct abstention rate — unanswerable rows that abstained / unanswerable rows.
 * False-answer rate — unanswerable rows that answered / unanswerable rows.
 * False-abstention rate — answerable rows that abstained / answerable rows.
@@ -28,8 +32,8 @@ from typing import Any
 
 import numpy as np
 
-from decision_intelligence.evaluation.judges import LexicalJudge
-from decision_intelligence.models import Question
+from decision_intelligence.evaluation.judges import LexicalJudge, grade
+from decision_intelligence.models import ABSTAIN_TEXT, Question
 
 Row = dict[str, Any]
 
@@ -64,6 +68,7 @@ def enforce_quotes(row: Row) -> Row:
     answer["claims"] = claims
     if not claims:
         answer["status"] = "ABSTAIN"
+        answer["text"] = ABSTAIN_TEXT
         answer["abstain_reason"] = "replay: no claim with a verified quote"
     return {**row, "answer": answer}
 
@@ -95,15 +100,17 @@ def compute_metrics(
             irrelevant_cited += len(set(cited) - expected)
 
     def label_of(row: Row) -> str:
-        if correctness is not None:
-            return correctness(row)
+        # The state rule comes first: a judge label attached to an abstention or an error
+        # is ignored, and the assessor is consulted only for answered answerable rows.
         q = questions[row["question_id"]]
-        return lexical.judge(q, row["answer"]["status"], row["answer"]["text"]).label
+        assess = (lambda _q, _t: correctness(row)) if correctness is not None else lexical.assess
+        return grade(q, row["answer"]["status"], assess, row["answer"]["text"]).label
 
     labels = [label_of(r) for r in answerable]
     judged = [label for label in labels if label != "ERROR"]
 
     claims = [c for r in rows if r["answer"]["status"] == "ANSWER" for c in r["answer"]["claims"]]
+    model_claims = [c for c in claims if c.get("quote_origin", "model") == "model"]
     llm_claims = list(claim_labels.values()) if claim_labels else []
     llm_claims_judged = [label for label in llm_claims if label != "ERROR"]
 
@@ -124,7 +131,10 @@ def compute_metrics(
         "correctness": _rate(sum(label == "CORRECT" for label in judged), len(judged)),
         "correctness_partial": _rate(sum(label == "PARTIAL" for label in judged), len(judged)),
         "correctness_judge_errors": len(labels) - len(judged),
-        "faithfulness_quote": _rate(sum(bool(c["quote_verified"]) for c in claims), len(claims)),
+        # Extracted quotes are copied from the record, so they are verified by construction and
+        # are excluded: the rate is reported only over quotes written by a model.
+        "faithfulness_quote": _rate(sum(bool(c["quote_verified"]) for c in model_claims), len(model_claims)),
+        "extracted_quotes": len(claims) - len(model_claims),
         "faithfulness_llm": _rate(
             sum(label == "SUPPORTED" for label in llm_claims_judged), len(llm_claims_judged)
         )

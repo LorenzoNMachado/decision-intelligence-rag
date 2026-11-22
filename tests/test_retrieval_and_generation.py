@@ -7,7 +7,7 @@ import numpy as np
 from decision_intelligence.corpus.chunking import chunk_corpus
 from decision_intelligence.embeddings.hashing import HashingEmbedder
 from decision_intelligence.generation.generators import ExtractiveGenerator, LLMGenerator
-from decision_intelligence.grounding.evidence import quote_in, render_document, validate_claims
+from decision_intelligence.grounding.evidence import RawClaim, quote_in, render_document, validate_claims
 from decision_intelligence.intent.parsers import RuleBasedIntentParser
 from decision_intelligence.llm.client import LLMError, ScriptedLLM
 from decision_intelligence.models import (
@@ -111,19 +111,19 @@ def test_claim_validation_removes_unadmitted_and_leaked_ids(corpus: list[Decisio
     admitted = {corpus[0].id: corpus[0]}
     validated = validate_claims(
         [
-            ("ok", [corpus[0].id, "DEC-999"], corpus[0].decision),
-            ("only foreign", ["DEC-777"], "anything"),
-            ("bad quote", [corpus[0].id], "This quote was invented by the model."),
+            RawClaim("ok", (corpus[0].id, "DEC-999"), corpus[0].decision),
+            RawClaim("only foreign", ("DEC-777",), "anything"),
+            RawClaim("bad quote", (corpus[0].id,), "This quote was invented by the model."),
         ],
         admitted,
-        answer_text=f"See {corpus[0].id} and also DEC-555.",
+        discarded_text=f"See {corpus[0].id} and also DEC-555.",
         enforce_quotes=False,
     )
     assert [c.statement for c in validated.claims] == ["ok", "bad quote"]
     assert [c.quote_verified for c in validated.claims] == [True, False]
     assert set(validated.rejected_citations) == {"DEC-999", "DEC-777", "DEC-555"}
     enforced = validate_claims(
-        [("bad", [corpus[0].id], "invented quote text here")], admitted, "", enforce_quotes=True
+        [RawClaim("bad", (corpus[0].id,), "invented quote text here")], admitted, "", enforce_quotes=True
     )
     assert enforced.claims == () and enforced.dropped_claims == 1
 

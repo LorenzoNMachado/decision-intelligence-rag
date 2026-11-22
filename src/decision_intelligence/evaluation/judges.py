@@ -1,6 +1,15 @@
-"""Answer-correctness judges.
+"""Answer-correctness grading.
 
-``LexicalJudge`` is a deterministic proxy that needs no model. It checks that
+``grade`` applies the answer state machine before any judge is consulted:
+
+* unanswerable question: ABSTAIN is CORRECT; ANSWER and ERROR are INCORRECT;
+* answerable question: ABSTAIN and ERROR are INCORRECT (operational errors are
+  also counted separately by the metrics);
+* answerable question answered (ANSWER): the assessor decides.
+
+So no judge ever sees an abstention, an error or text that validation rejected.
+
+``LexicalJudge`` is a deterministic assessor that needs no model. It checks that
 every key fact of the reference appears in the answer and that no forbidden
 fact (a decision title or attribute value that should not be in the answer)
 appears. It cannot recognise paraphrases, so it under-credits fluent LLM
@@ -12,6 +21,7 @@ without access to the sources.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
@@ -24,9 +34,28 @@ LABELS = ("CORRECT", "PARTIAL", "INCORRECT")
 
 @dataclass(frozen=True)
 class Verdict:
-    label: str  # CORRECT | PARTIAL | INCORRECT | ERROR
+    label: str  # CORRECT | PARTIAL | INCORRECT | ERROR (judge failure)
     rationale: str = ""
     cost_usd: float | None = 0.0
+    assessed: bool = False  # True when an assessor (not the state rule) produced the label
+
+
+def grade(
+    question: Question,
+    status: str,
+    assess: Callable[[Question, str], str | Verdict],
+    text: str = "",
+) -> Verdict:
+    """Correctness of a final answer; ``assess`` is called only for answered answerable questions."""
+
+    if not question.answerable:
+        return Verdict("CORRECT" if status == "ABSTAIN" else "INCORRECT", f"unanswerable question ({status})")
+    if status != "ANSWER":
+        return Verdict("INCORRECT", f"no answer ({status})")
+    result = assess(question, text)
+    if isinstance(result, Verdict):
+        return Verdict(result.label, result.rationale, result.cost_usd, assessed=True)
+    return Verdict(result, assessed=True)
 
 
 def _contains(haystack: str, needle: str) -> bool:
@@ -36,11 +65,8 @@ def _contains(haystack: str, needle: str) -> bool:
 class LexicalJudge:
     name = "lexical-key-facts-v1"
 
-    def judge(self, question: Question, status: str, answer_text: str) -> Verdict:
-        if not question.answerable:
-            return Verdict("CORRECT" if status == "ABSTAIN" else "INCORRECT", "unanswerable question")
-        if status != "ANSWER":
-            return Verdict("INCORRECT", f"no answer ({status})")
+    @staticmethod
+    def assess(question: Question, answer_text: str) -> Verdict:
         found = [f for f in question.key_facts if _contains(answer_text, f)]
         forbidden = [f for f in question.forbidden_facts if _contains(answer_text, f)]
         if len(found) == len(question.key_facts) and not forbidden:
@@ -50,6 +76,9 @@ class LexicalJudge:
                 "PARTIAL", f"{len(found)}/{len(question.key_facts)} key facts, {len(forbidden)} forbidden"
             )
         return Verdict("INCORRECT", "no key fact found")
+
+    def judge(self, question: Question, status: str, answer_text: str) -> Verdict:
+        return grade(question, status, self.assess, answer_text)
 
 
 JUDGE_SCHEMA: dict[str, Any] = {
@@ -63,22 +92,27 @@ JUDGE_SCHEMA: dict[str, Any] = {
 class LLMCorrectnessJudge:
     def __init__(self, llm: LLMClient) -> None:
         self.llm = llm
-        self.prompt = load_prompt("judge_correctness_v1")
+        self.prompt = load_prompt("judge_correctness_v2")
 
     @property
     def name(self) -> str:
         return f"{self.prompt.version}:{self.llm.name}"
 
-    def judge(self, question: Question, status: str, answer_text: str) -> Verdict:
-        shown = answer_text if status == "ANSWER" else f"[The system abstained] {answer_text}"
-        user = f"QUESTION: {question.text}\n\nREFERENCE: {question.reference_answer}\n\nANSWER: {shown}"
+    def assess(self, question: Question, answer_text: str) -> Verdict:
+        user = f"QUESTION: {question.text}\n\nREFERENCE: {question.reference_answer}\n\nANSWER: {answer_text}"
         try:
             response = self.llm.complete_json(
                 self.prompt.system, user, JUDGE_SCHEMA, "correctness", max_tokens=400
             )
         except LLMError as exc:
-            return Verdict("ERROR", f"{exc.kind}: {exc}")
-        label = str(response.parsed.get("label", ""))
+            return Verdict("ERROR", f"{exc.kind}: {exc}", None)
+        label = response.parsed.get("label")
+        rationale = response.parsed.get("rationale")
         if label not in LABELS:
             return Verdict("ERROR", "invalid label", response.cost_usd)
-        return Verdict(label, str(response.parsed.get("rationale", ""))[:500], response.cost_usd)
+        return Verdict(
+            str(label), str(rationale)[:500] if isinstance(rationale, str) else "", response.cost_usd
+        )
+
+    def judge(self, question: Question, status: str, answer_text: str) -> Verdict:
+        return grade(question, status, self.assess, answer_text)

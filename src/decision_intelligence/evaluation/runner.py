@@ -222,8 +222,11 @@ def judge_run(
         for row in rows:
             key = row_key(row)
             question = questions[row["question_id"]]
-            if question.answerable and (key, "correctness", None) not in done:
-                verdict = judge.judge(question, row["answer"]["status"], row["answer"]["text"])
+            # Only answered answerable rows are judged; abstentions and errors are graded by the
+            # state rule in the metrics and are never shown to the judge.
+            needs_judge = question.answerable and row["answer"]["status"] == "ANSWER"
+            if needs_judge and (key, "correctness", None) not in done:
+                verdict = judge.assess(question, row["answer"]["text"])
                 record = {
                     "key": key,
                     "kind": "correctness",
