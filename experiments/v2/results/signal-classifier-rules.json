@@ -1,0 +1,93 @@
+{
+  "classifier": "rules-v2",
+  "documents": 180,
+  "macro_accuracy": 0.7833,
+  "signals": {
+    "compliance_relevance": {
+      "accuracy": 0.8889,
+      "confusion_truth_to_predicted": {
+        "ABSENT": {
+          "ABSENT": 30,
+          "UNCLEAR": 9
+        },
+        "PRESENT": {
+          "PRESENT": 58,
+          "UNCLEAR": 11
+        },
+        "UNCLEAR": {
+          "UNCLEAR": 72
+        }
+      }
+    },
+    "legal_dependency": {
+      "accuracy": 0.8389,
+      "confusion_truth_to_predicted": {
+        "ABSENT": {
+          "ABSENT": 21,
+          "PRESENT": 8,
+          "UNCLEAR": 6
+        },
+        "PRESENT": {
+          "PRESENT": 73,
+          "UNCLEAR": 8
+        },
+        "UNCLEAR": {
+          "PRESENT": 7,
+          "UNCLEAR": 57
+        }
+      }
+    },
+    "operational_motivation": {
+      "accuracy": 0.7389,
+      "confusion_truth_to_predicted": {
+        "ABSENT": {
+          "ABSENT": 36,
+          "UNCLEAR": 11
+        },
+        "PRESENT": {
+          "PRESENT": 35,
+          "UNCLEAR": 36
+        },
+        "UNCLEAR": {
+          "UNCLEAR": 62
+        }
+      }
+    },
+    "security_dependency": {
+      "accuracy": 0.7222,
+      "confusion_truth_to_predicted": {
+        "ABSENT": {
+          "ABSENT": 20,
+          "PRESENT": 6,
+          "UNCLEAR": 7
+        },
+        "PRESENT": {
+          "PRESENT": 56,
+          "UNCLEAR": 25
+        },
+        "UNCLEAR": {
+          "PRESENT": 12,
+          "UNCLEAR": 54
+        }
+      }
+    },
+    "third_party_dependency": {
+      "accuracy": 0.7278,
+      "confusion_truth_to_predicted": {
+        "ABSENT": {
+          "ABSENT": 24,
+          "PRESENT": 10,
+          "UNCLEAR": 4
+        },
+        "PRESENT": {
+          "PRESENT": 50,
+          "UNCLEAR": 23
+        },
+        "UNCLEAR": {
+          "PRESENT": 12,
+          "UNCLEAR": 57
+        }
+      }
+    }
+  }
+}

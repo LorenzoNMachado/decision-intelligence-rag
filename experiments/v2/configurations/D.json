@@ -1,0 +1,6 @@
+{
+  "id": "D",
+  "retrieval": "rules",
+  "generator": "llm",
+  "description": "Rule-based semantic enrichment with the LLM generator."
+}

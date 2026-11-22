@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
+from decision_intelligence.corpus.questions import CATEGORIES
 from decision_intelligence.models import Chunk, DecisionDocument, Question, Signal, SignalLabel
 
 _ID_PATTERN = re.compile(r"^DEC-\d{3}$")
@@ -44,7 +45,7 @@ def validate_corpus(
             report.errors.append(f"{doc.id}: invalid ground-truth label")
         for key in ("vendor", "regulation", "framework"):
             value = doc.metadata.get(key)
-            if value and value not in doc.full_text():
+            if value and value.lower() not in doc.full_text().lower():
                 report.errors.append(f"{doc.id}: metadata {key} not present in text")
 
     id_set = set(ids)
@@ -66,6 +67,8 @@ def validate_corpus(
             report.errors.append("duplicate question ids")
         by_id = {d.id: d for d in documents}
         for q in questions:
+            if q.category not in CATEGORIES:
+                report.errors.append(f"{q.id}: unknown category {q.category}")
             if q.split not in {"dev", "holdout"}:
                 report.errors.append(f"{q.id}: invalid split {q.split}")
             missing = [d for d in q.expected_doc_ids if d not in id_set]
@@ -77,14 +80,19 @@ def validate_corpus(
                 report.errors.append(f"{q.id}: unanswerable question with expected documents")
             # Every key fact must be literally recoverable from the expected evidence,
             # otherwise the reference cannot be reached by any grounded system.
-            evidence = " ".join(by_id[d].full_text() for d in q.expected_doc_ids if d in by_id)
+            evidence = " ".join(by_id[d].full_text() for d in q.expected_doc_ids if d in by_id).lower()
             for fact in q.key_facts:
-                if fact not in evidence:
+                if fact.lower() not in evidence:
                     report.errors.append(f"{q.id}: key fact {fact!r} absent from expected evidence")
         report.stats["questions"] = len(questions)
         report.stats["dev"] = sum(q.split == "dev" for q in questions)
         report.stats["holdout"] = sum(q.split == "holdout" for q in questions)
         report.stats["unanswerable"] = sum(not q.answerable for q in questions)
+        for split in ("dev", "holdout"):
+            categories = {q.category for q in questions if q.split == split}
+            missing_categories = sorted({q.category for q in questions} - categories)
+            if missing_categories:
+                report.errors.append(f"{split} split lacks categories: {missing_categories}")
 
     report.stats["documents"] = len(documents)
     report.stats["chunks"] = len(chunks)

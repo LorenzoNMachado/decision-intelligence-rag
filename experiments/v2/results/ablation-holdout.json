@@ -1,0 +1,1366 @@
+{
+  "changes_vs_vector": {
+    "rules": {
+      "questions_with_active_signals": 27,
+      "questions_with_changed_top_k": 24,
+      "recall_at_k_paired": {
+        "first_better": 5,
+        "questions": 40,
+        "second_better": 6,
+        "sign_test_p": 1.0,
+        "ties": 29
+      }
+    }
+  },
+  "embedder": "hashing-v1:d2048:uni+bi",
+  "evidence_threshold": 0.18,
+  "per_question": [
+    {
+      "category": "negated_filter",
+      "expected": [
+        "DEC-160"
+      ],
+      "question_id": "Q-003",
+      "rules": {
+        "intent": [
+          "compliance_relevance:ABSENT:REQUIRED"
+        ],
+        "top": [
+          "DEC-160",
+          "DEC-162",
+          "DEC-159",
+          "DEC-158"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-157",
+          "DEC-162",
+          "DEC-160",
+          "DEC-159"
+        ]
+      }
+    },
+    {
+      "category": "unanswerable_out_of_domain",
+      "expected": [],
+      "question_id": "Q-004",
+      "rules": {
+        "intent": [],
+        "top": [
+          "DEC-073",
+          "DEC-076",
+          "DEC-078",
+          "DEC-074"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-073",
+          "DEC-076",
+          "DEC-078",
+          "DEC-074"
+        ]
+      }
+    },
+    {
+      "category": "provider_lookup",
+      "expected": [
+        "DEC-048"
+      ],
+      "question_id": "Q-005",
+      "rules": {
+        "intent": [],
+        "top": [
+          "DEC-048",
+          "DEC-047",
+          "DEC-045",
+          "DEC-046"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-048",
+          "DEC-047",
+          "DEC-045",
+          "DEC-046"
+        ]
+      }
+    },
+    {
+      "category": "unanswerable_in_domain",
+      "expected": [],
+      "question_id": "Q-006",
+      "rules": {
+        "intent": [],
+        "top": [
+          "DEC-007",
+          "DEC-010",
+          "DEC-011",
+          "DEC-009"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-007",
+          "DEC-010",
+          "DEC-011",
+          "DEC-009"
+        ]
+      }
+    },
+    {
+      "category": "regulation_lookup",
+      "expected": [
+        "DEC-138"
+      ],
+      "question_id": "Q-008",
+      "rules": {
+        "intent": [
+          "legal_dependency:PRESENT:REQUIRED"
+        ],
+        "top": [
+          "DEC-138",
+          "DEC-135",
+          "DEC-134",
+          "DEC-137"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-138",
+          "DEC-133",
+          "DEC-135",
+          "DEC-136"
+        ]
+      }
+    },
+    {
+      "category": "negated_filter",
+      "expected": [
+        "DEC-078"
+      ],
+      "question_id": "Q-009",
+      "rules": {
+        "intent": [
+          "legal_dependency:ABSENT:REQUIRED"
+        ],
+        "top": [
+          "DEC-076",
+          "DEC-049",
+          "DEC-048",
+          "DEC-168"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-076",
+          "DEC-073",
+          "DEC-078",
+          "DEC-074"
+        ]
+      }
+    },
+    {
+      "category": "framework_lookup",
+      "expected": [
+        "DEC-098"
+      ],
+      "question_id": "Q-010",
+      "rules": {
+        "intent": [],
+        "top": [
+          "DEC-098",
+          "DEC-099",
+          "DEC-102",
+          "DEC-097"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-098",
+          "DEC-099",
+          "DEC-102",
+          "DEC-097"
+        ]
+      }
+    },
+    {
+      "category": "regulation_lookup",
+      "expected": [
+        "DEC-123"
+      ],
+      "question_id": "Q-011",
+      "rules": {
+        "intent": [
+          "legal_dependency:PRESENT:REQUIRED"
+        ],
+        "top": [
+          "DEC-123",
+          "DEC-126",
+          "DEC-122",
+          "DEC-121"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-123",
+          "DEC-121",
+          "DEC-126",
+          "DEC-124"
+        ]
+      }
+    },
+    {
+      "category": "negated_filter",
+      "expected": [
+        "DEC-133",
+        "DEC-135"
+      ],
+      "question_id": "Q-012",
+      "rules": {
+        "intent": [
+          "compliance_relevance:PRESENT:REQUIRED"
+        ],
+        "top": [
+          "DEC-136",
+          "DEC-138",
+          "DEC-134",
+          "DEC-137"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-135",
+          "DEC-136",
+          "DEC-134",
+          "DEC-133"
+        ]
+      }
+    },
+    {
+      "category": "signal_filter",
+      "expected": [
+        "DEC-033",
+        "DEC-035",
+        "DEC-036"
+      ],
+      "question_id": "Q-013",
+      "rules": {
+        "intent": [],
+        "top": [
+          "DEC-034",
+          "DEC-032",
+          "DEC-035",
+          "DEC-033"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-034",
+          "DEC-032",
+          "DEC-035",
+          "DEC-033"
+        ]
+      }
+    },
+    {
+      "category": "signal_filter",
+      "expected": [
+        "DEC-001",
+        "DEC-004",
+        "DEC-005",
+        "DEC-006"
+      ],
+      "question_id": "Q-014",
+      "rules": {
+        "intent": [
+          "compliance_relevance:PRESENT:REQUIRED"
+        ],
+        "top": [
+          "DEC-001",
+          "DEC-004",
+          "DEC-005",
+          "DEC-006"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-001",
+          "DEC-003",
+          "DEC-004",
+          "DEC-002"
+        ]
+      }
+    },
+    {
+      "category": "signal_filter",
+      "expected": [
+        "DEC-043",
+        "DEC-044",
+        "DEC-046",
+        "DEC-047"
+      ],
+      "question_id": "Q-015",
+      "rules": {
+        "intent": [],
+        "top": [
+          "DEC-047",
+          "DEC-045",
+          "DEC-046",
+          "DEC-044"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-047",
+          "DEC-045",
+          "DEC-046",
+          "DEC-044"
+        ]
+      }
+    },
+    {
+      "category": "provider_lookup",
+      "expected": [
+        "DEC-052"
+      ],
+      "question_id": "Q-016",
+      "rules": {
+        "intent": [],
+        "top": [
+          "DEC-052",
+          "DEC-154",
+          "DEC-049",
+          "DEC-051"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-052",
+          "DEC-154",
+          "DEC-049",
+          "DEC-051"
+        ]
+      }
+    },
+    {
+      "category": "signal_filter",
+      "expected": [
+        "DEC-128",
+        "DEC-131",
+        "DEC-132"
+      ],
+      "question_id": "Q-017",
+      "rules": {
+        "intent": [],
+        "top": [
+          "DEC-127",
+          "DEC-129",
+          "DEC-130",
+          "DEC-128"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-127",
+          "DEC-129",
+          "DEC-130",
+          "DEC-128"
+        ]
+      }
+    },
+    {
+      "category": "conjunction_filter",
+      "expected": [
+        "DEC-001"
+      ],
+      "question_id": "Q-018",
+      "rules": {
+        "intent": [
+          "legal_dependency:PRESENT:REQUIRED",
+          "third_party_dependency:ABSENT:REQUIRED"
+        ],
+        "top": [
+          "DEC-001",
+          "DEC-005",
+          "DEC-004",
+          "DEC-002"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-001",
+          "DEC-003",
+          "DEC-004",
+          "DEC-002"
+        ]
+      }
+    },
+    {
+      "category": "disjunction_filter",
+      "expected": [
+        "DEC-013",
+        "DEC-016"
+      ],
+      "question_id": "Q-019",
+      "rules": {
+        "intent": [
+          "security_dependency:PRESENT:REQUIRED"
+        ],
+        "top": [
+          "DEC-015",
+          "DEC-014",
+          "DEC-013",
+          "DEC-018"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-014",
+          "DEC-013",
+          "DEC-018",
+          "DEC-016"
+        ]
+      }
+    },
+    {
+      "category": "disjunction_filter",
+      "expected": [
+        "DEC-092",
+        "DEC-094"
+      ],
+      "question_id": "Q-022",
+      "rules": {
+        "intent": [
+          "third_party_dependency:PRESENT:PREFERRED",
+          "legal_dependency:PRESENT:PREFERRED"
+        ],
+        "top": [
+          "DEC-091",
+          "DEC-093",
+          "DEC-096",
+          "DEC-092"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-091",
+          "DEC-093",
+          "DEC-094",
+          "DEC-096"
+        ]
+      }
+    },
+    {
+      "category": "disjunction_filter",
+      "expected": [
+        "DEC-151",
+        "DEC-152",
+        "DEC-155",
+        "DEC-156"
+      ],
+      "question_id": "Q-024",
+      "rules": {
+        "intent": [
+          "operational_motivation:PRESENT:PREFERRED",
+          "legal_dependency:PRESENT:PREFERRED"
+        ],
+        "top": [
+          "DEC-156",
+          "DEC-151",
+          "DEC-153",
+          "DEC-152"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-151",
+          "DEC-153",
+          "DEC-154",
+          "DEC-156"
+        ]
+      }
+    },
+    {
+      "category": "unanswerable_in_domain",
+      "expected": [],
+      "question_id": "Q-025",
+      "rules": {
+        "intent": [],
+        "top": [
+          "DEC-023",
+          "DEC-019",
+          "DEC-022",
+          "DEC-024"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-023",
+          "DEC-019",
+          "DEC-022",
+          "DEC-024"
+        ]
+      }
+    },
+    {
+      "category": "unanswerable_in_domain",
+      "expected": [],
+      "question_id": "Q-027",
+      "rules": {
+        "intent": [],
+        "top": [
+          "DEC-016",
+          "DEC-015",
+          "DEC-018",
+          "DEC-014"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-016",
+          "DEC-015",
+          "DEC-018",
+          "DEC-014"
+        ]
+      }
+    },
+    {
+      "category": "provider_lookup",
+      "expected": [
+        "DEC-074"
+      ],
+      "question_id": "Q-028",
+      "rules": {
+        "intent": [
+          "third_party_dependency:PRESENT:REQUIRED"
+        ],
+        "top": [
+          "DEC-074",
+          "DEC-073",
+          "DEC-076",
+          "DEC-078"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-074",
+          "DEC-073",
+          "DEC-076",
+          "DEC-078"
+        ]
+      }
+    },
+    {
+      "category": "unanswerable_in_domain",
+      "expected": [],
+      "question_id": "Q-029",
+      "rules": {
+        "intent": [],
+        "top": [
+          "DEC-143",
+          "DEC-144",
+          "DEC-139",
+          "DEC-141"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-143",
+          "DEC-144",
+          "DEC-139",
+          "DEC-141"
+        ]
+      }
+    },
+    {
+      "category": "signal_filter",
+      "expected": [
+        "DEC-013",
+        "DEC-014",
+        "DEC-016",
+        "DEC-018"
+      ],
+      "question_id": "Q-030",
+      "rules": {
+        "intent": [
+          "operational_motivation:PRESENT:REQUIRED"
+        ],
+        "top": [
+          "DEC-016",
+          "DEC-014",
+          "DEC-013",
+          "DEC-018"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-016",
+          "DEC-014",
+          "DEC-017",
+          "DEC-015"
+        ]
+      }
+    },
+    {
+      "category": "signal_filter",
+      "expected": [
+        "DEC-147",
+        "DEC-148",
+        "DEC-150"
+      ],
+      "question_id": "Q-031",
+      "rules": {
+        "intent": [],
+        "top": [
+          "DEC-033",
+          "DEC-147",
+          "DEC-148",
+          "DEC-150"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-033",
+          "DEC-147",
+          "DEC-148",
+          "DEC-150"
+        ]
+      }
+    },
+    {
+      "category": "regulation_lookup",
+      "expected": [
+        "DEC-140"
+      ],
+      "question_id": "Q-032",
+      "rules": {
+        "intent": [],
+        "top": [
+          "DEC-140",
+          "DEC-144",
+          "DEC-139",
+          "DEC-141"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-140",
+          "DEC-144",
+          "DEC-139",
+          "DEC-141"
+        ]
+      }
+    },
+    {
+      "category": "unanswerable_out_of_domain",
+      "expected": [],
+      "question_id": "Q-033",
+      "rules": {
+        "intent": [],
+        "top": [
+          "DEC-061(x)",
+          "DEC-063(x)",
+          "DEC-064(x)",
+          "DEC-066(x)"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-061(x)",
+          "DEC-063(x)",
+          "DEC-064(x)",
+          "DEC-066(x)"
+        ]
+      }
+    },
+    {
+      "category": "unanswerable_in_domain",
+      "expected": [],
+      "question_id": "Q-034",
+      "rules": {
+        "intent": [],
+        "top": [
+          "DEC-034",
+          "DEC-033",
+          "DEC-031",
+          "DEC-036"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-034",
+          "DEC-033",
+          "DEC-031",
+          "DEC-036"
+        ]
+      }
+    },
+    {
+      "category": "provider_lookup",
+      "expected": [
+        "DEC-116"
+      ],
+      "question_id": "Q-036",
+      "rules": {
+        "intent": [],
+        "top": [
+          "DEC-116",
+          "DEC-117",
+          "DEC-115",
+          "DEC-118"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-116",
+          "DEC-117",
+          "DEC-115",
+          "DEC-118"
+        ]
+      }
+    },
+    {
+      "category": "unanswerable_out_of_domain",
+      "expected": [],
+      "question_id": "Q-037",
+      "rules": {
+        "intent": [],
+        "top": [
+          "DEC-130(x)",
+          "DEC-033(x)",
+          "DEC-110(x)",
+          "DEC-049(x)"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-130(x)",
+          "DEC-033(x)",
+          "DEC-110(x)",
+          "DEC-049(x)"
+        ]
+      }
+    },
+    {
+      "category": "signal_filter",
+      "expected": [
+        "DEC-050",
+        "DEC-052",
+        "DEC-054"
+      ],
+      "question_id": "Q-043",
+      "rules": {
+        "intent": [
+          "legal_dependency:PRESENT:REQUIRED"
+        ],
+        "top": [
+          "DEC-050",
+          "DEC-051",
+          "DEC-052",
+          "DEC-054"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-049",
+          "DEC-050",
+          "DEC-051",
+          "DEC-052"
+        ]
+      }
+    },
+    {
+      "category": "hedged_filter",
+      "expected": [
+        "DEC-111",
+        "DEC-112",
+        "DEC-113",
+        "DEC-114"
+      ],
+      "question_id": "Q-044",
+      "rules": {
+        "intent": [
+          "operational_motivation:PRESENT:PREFERRED"
+        ],
+        "top": [
+          "DEC-114",
+          "DEC-109",
+          "DEC-112",
+          "DEC-110"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-114",
+          "DEC-109",
+          "DEC-112",
+          "DEC-110"
+        ]
+      }
+    },
+    {
+      "category": "negated_filter",
+      "expected": [
+        "DEC-049",
+        "DEC-053"
+      ],
+      "question_id": "Q-045",
+      "rules": {
+        "intent": [
+          "third_party_dependency:ABSENT:REQUIRED"
+        ],
+        "top": [
+          "DEC-123",
+          "DEC-008",
+          "DEC-109",
+          "DEC-025"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-049",
+          "DEC-076",
+          "DEC-053",
+          "DEC-123"
+        ]
+      }
+    },
+    {
+      "category": "negated_filter",
+      "expected": [
+        "DEC-030"
+      ],
+      "question_id": "Q-046",
+      "rules": {
+        "intent": [
+          "security_dependency:ABSENT:REQUIRED"
+        ],
+        "top": [
+          "DEC-027",
+          "DEC-129",
+          "DEC-083",
+          "DEC-006"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-027",
+          "DEC-030",
+          "DEC-028",
+          "DEC-029"
+        ]
+      }
+    },
+    {
+      "category": "framework_lookup",
+      "expected": [
+        "DEC-121"
+      ],
+      "question_id": "Q-047",
+      "rules": {
+        "intent": [],
+        "top": [
+          "DEC-121",
+          "DEC-124",
+          "DEC-126",
+          "DEC-122"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-121",
+          "DEC-124",
+          "DEC-126",
+          "DEC-122"
+        ]
+      }
+    },
+    {
+      "category": "negated_filter",
+      "expected": [
+        "DEC-123"
+      ],
+      "question_id": "Q-049",
+      "rules": {
+        "intent": [
+          "operational_motivation:ABSENT:REQUIRED"
+        ],
+        "top": [
+          "DEC-121",
+          "DEC-123",
+          "DEC-126",
+          "DEC-122"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-121",
+          "DEC-123",
+          "DEC-124",
+          "DEC-126"
+        ]
+      }
+    },
+    {
+      "category": "signal_filter",
+      "expected": [
+        "DEC-124",
+        "DEC-126"
+      ],
+      "question_id": "Q-052",
+      "rules": {
+        "intent": [],
+        "top": [
+          "DEC-121",
+          "DEC-124",
+          "DEC-126",
+          "DEC-122"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-121",
+          "DEC-124",
+          "DEC-126",
+          "DEC-122"
+        ]
+      }
+    },
+    {
+      "category": "provider_lookup",
+      "expected": [
+        "DEC-012"
+      ],
+      "question_id": "Q-053",
+      "rules": {
+        "intent": [],
+        "top": [
+          "DEC-012",
+          "DEC-007",
+          "DEC-010",
+          "DEC-008"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-012",
+          "DEC-007",
+          "DEC-010",
+          "DEC-008"
+        ]
+      }
+    },
+    {
+      "category": "hedged_filter",
+      "expected": [
+        "DEC-145",
+        "DEC-146",
+        "DEC-149",
+        "DEC-150"
+      ],
+      "question_id": "Q-054",
+      "rules": {
+        "intent": [
+          "third_party_dependency:PRESENT:PREFERRED"
+        ],
+        "top": [
+          "DEC-145",
+          "DEC-150",
+          "DEC-149",
+          "DEC-147"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-145",
+          "DEC-147",
+          "DEC-148",
+          "DEC-150"
+        ]
+      }
+    },
+    {
+      "category": "conjunction_filter",
+      "expected": [
+        "DEC-090"
+      ],
+      "question_id": "Q-055",
+      "rules": {
+        "intent": [
+          "compliance_relevance:PRESENT:REQUIRED",
+          "operational_motivation:PRESENT:REQUIRED"
+        ],
+        "top": [
+          "DEC-090",
+          "DEC-086",
+          "DEC-066(x)",
+          "DEC-121(x)"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-090",
+          "DEC-087",
+          "DEC-086",
+          "DEC-089"
+        ]
+      }
+    },
+    {
+      "category": "signal_filter",
+      "expected": [
+        "DEC-016"
+      ],
+      "question_id": "Q-056",
+      "rules": {
+        "intent": [
+          "third_party_dependency:PRESENT:REQUIRED"
+        ],
+        "top": [
+          "DEC-018",
+          "DEC-016",
+          "DEC-015",
+          "DEC-013"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-015",
+          "DEC-013",
+          "DEC-018",
+          "DEC-016"
+        ]
+      }
+    },
+    {
+      "category": "regulation_lookup",
+      "expected": [
+        "DEC-176"
+      ],
+      "question_id": "Q-058",
+      "rules": {
+        "intent": [
+          "legal_dependency:PRESENT:REQUIRED"
+        ],
+        "top": [
+          "DEC-176",
+          "DEC-177",
+          "DEC-178",
+          "DEC-180"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-176",
+          "DEC-175",
+          "DEC-177",
+          "DEC-178"
+        ]
+      }
+    },
+    {
+      "category": "conjunction_filter",
+      "expected": [
+        "DEC-026"
+      ],
+      "question_id": "Q-059",
+      "rules": {
+        "intent": [
+          "security_dependency:PRESENT:REQUIRED",
+          "legal_dependency:ABSENT:REQUIRED"
+        ],
+        "top": [
+          "DEC-026",
+          "DEC-102",
+          "DEC-150",
+          "DEC-049"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-026",
+          "DEC-027",
+          "DEC-028",
+          "DEC-030"
+        ]
+      }
+    },
+    {
+      "category": "unanswerable_in_domain",
+      "expected": [],
+      "question_id": "Q-060",
+      "rules": {
+        "intent": [],
+        "top": [
+          "DEC-010",
+          "DEC-008",
+          "DEC-011",
+          "DEC-009"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-010",
+          "DEC-008",
+          "DEC-011",
+          "DEC-009"
+        ]
+      }
+    },
+    {
+      "category": "conjunction_filter",
+      "expected": [
+        "DEC-002",
+        "DEC-005"
+      ],
+      "question_id": "Q-061",
+      "rules": {
+        "intent": [
+          "third_party_dependency:PRESENT:REQUIRED",
+          "security_dependency:PRESENT:REQUIRED"
+        ],
+        "top": [
+          "DEC-003",
+          "DEC-002",
+          "DEC-005",
+          "DEC-004"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-001",
+          "DEC-003",
+          "DEC-004",
+          "DEC-002"
+        ]
+      }
+    },
+    {
+      "category": "framework_lookup",
+      "expected": [
+        "DEC-174"
+      ],
+      "question_id": "Q-062",
+      "rules": {
+        "intent": [],
+        "top": [
+          "DEC-174",
+          "DEC-169",
+          "DEC-172",
+          "DEC-170"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-174",
+          "DEC-169",
+          "DEC-172",
+          "DEC-170"
+        ]
+      }
+    },
+    {
+      "category": "unanswerable_out_of_domain",
+      "expected": [],
+      "question_id": "Q-063",
+      "rules": {
+        "intent": [],
+        "top": [
+          "DEC-081(x)",
+          "DEC-117(x)",
+          "DEC-090(x)",
+          "DEC-104(x)"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-081(x)",
+          "DEC-117(x)",
+          "DEC-090(x)",
+          "DEC-104(x)"
+        ]
+      }
+    },
+    {
+      "category": "hedged_filter",
+      "expected": [
+        "DEC-164",
+        "DEC-165",
+        "DEC-167",
+        "DEC-168"
+      ],
+      "question_id": "Q-064",
+      "rules": {
+        "intent": [
+          "compliance_relevance:PRESENT:PREFERRED"
+        ],
+        "top": [
+          "DEC-167",
+          "DEC-165",
+          "DEC-168",
+          "DEC-164"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-167",
+          "DEC-165",
+          "DEC-168",
+          "DEC-164"
+        ]
+      }
+    },
+    {
+      "category": "framework_lookup",
+      "expected": [
+        "DEC-004"
+      ],
+      "question_id": "Q-066",
+      "rules": {
+        "intent": [
+          "compliance_relevance:PRESENT:REQUIRED"
+        ],
+        "top": [
+          "DEC-004",
+          "DEC-001",
+          "DEC-005",
+          "DEC-006"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-004",
+          "DEC-001",
+          "DEC-003",
+          "DEC-002"
+        ]
+      }
+    },
+    {
+      "category": "signal_filter",
+      "expected": [
+        "DEC-037",
+        "DEC-038",
+        "DEC-039"
+      ],
+      "question_id": "Q-067",
+      "rules": {
+        "intent": [
+          "security_dependency:PRESENT:REQUIRED"
+        ],
+        "top": [
+          "DEC-037",
+          "DEC-041",
+          "DEC-039",
+          "DEC-040"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-039",
+          "DEC-040",
+          "DEC-042",
+          "DEC-038"
+        ]
+      }
+    },
+    {
+      "category": "provider_lookup",
+      "expected": [
+        "DEC-085"
+      ],
+      "question_id": "Q-068",
+      "rules": {
+        "intent": [
+          "third_party_dependency:PRESENT:REQUIRED"
+        ],
+        "top": [
+          "DEC-085",
+          "DEC-089",
+          "DEC-090",
+          "DEC-086"
+        ]
+      },
+      "vector": {
+        "intent": [],
+        "top": [
+          "DEC-085",
+          "DEC-090",
+          "DEC-087",
+          "DEC-086"
+        ]
+      }
+    }
+  ],
+  "strategies": {
+    "rules": {
+      "admitted_precision": 0.3812,
+      "expected_all_admitted_rate": 0.675,
+      "non_expected_admitted_total": 126,
+      "questions": 50,
+      "recall_at_k": 0.8104,
+      "signal_vetoes": 0,
+      "unanswerable_with_any_admission": "7/10"
+    },
+    "vector": {
+      "admitted_precision": 0.3688,
+      "expected_all_admitted_rate": 0.7,
+      "non_expected_admitted_total": 129,
+      "questions": 50,
+      "recall_at_k": 0.8646,
+      "signal_vetoes": 0,
+      "unanswerable_with_any_admission": "7/10"
+    }
+  }
+}

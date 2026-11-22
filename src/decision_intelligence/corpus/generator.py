@@ -1,13 +1,29 @@
-"""Deterministic generator of synthetic organisational decision records.
+"""Deterministic generator of synthetic organisational decision records (protocol v2).
 
-Every record is produced from a seeded pseudo-random generator and a set of
-phrase pools written for this project. Organisations, vendors and regulations
-are fictional; the audit frameworks named in the compliance pool are public
+Every record is produced from a seeded pseudo-random generator and phrase
+pools written for this project. Organisations, vendors and regulations are
+fictional; the audit frameworks named in the compliance pool are public
 standards used only as vocabulary.
 
-The generator also records the *intended* label of each semantic signal
-(``ground_truth_signals``). Those labels exist so that signal classifiers can be
-evaluated; retrieval and generation never read them.
+Compared with protocol v1, the v2 pools were written after the rule lexicon
+had been frozen (git history shows the order) and deliberately mix three kinds
+of sentences, so that the rule-based layer is not evaluated on its own
+vocabulary:
+
+* phrasings that use the lexicon's cue words;
+* phrasings that express the same signal without any cue word
+  ("subcontracted to …", "losing hours to re-entry");
+* distractors that contain cue words without asserting the signal
+  ("the vendor management office reviewed the case").
+
+Each subject now has six records (one per action), so retrieving "all records
+of the subject" no longer fills the top four by itself.
+
+The generator records the *intended* label of each semantic signal
+(``ground_truth_signals``). Those labels define the expected evidence of the
+questions and are used to evaluate classifiers; retrieval and generation never
+read them. They are not independent annotations: the author of the pools also
+wrote the lexicon and the questions (see ``docs/limitations.md``).
 """
 
 from __future__ import annotations
@@ -17,6 +33,8 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 
 from decision_intelligence.models import DecisionDocument, Signal, SignalLabel
+
+CORPUS_VERSION = "v2"
 
 DOMAINS: dict[str, dict[str, object]] = {
     "Infrastructure": {
@@ -83,7 +101,6 @@ DOMAINS: dict[str, dict[str, object]] = {
     },
 }
 
-# (title prefix, verb phrase used inside the decision sentence)
 # (title prefix, verb phrase used inside the decision sentence); "{a}" becomes "a"/"an".
 ACTIONS: list[tuple[str, str]] = [
     ("Adopt {a}", "adopt {a}"),
@@ -91,6 +108,7 @@ ACTIONS: list[tuple[str, str]] = [
     ("Expand the", "expand the"),
     ("Standardise the", "standardise the"),
     ("Retire the legacy", "retire the legacy"),
+    ("Migrate the", "migrate the"),
 ]
 
 VENDORS = [
@@ -121,73 +139,103 @@ FRAMEWORKS = ["ISO/IEC 27001", "SOC 2 Type II", "COSO internal control", "PCI DS
 
 PRESENT_PHRASES: dict[Signal, list[str]] = {
     Signal.THIRD_PARTY: [
-        "The work will be delivered by an external provider, {vendor}.",
-        "The chosen option depends on {vendor} as the hosting partner.",
+        "Hosting and support will be handled by {vendor} under a three-year arrangement.",
+        "The chosen option depends on {vendor} as an outside partner.",
+        "{vendor} will build the integration and operate it on the organisation's behalf.",
         "Delivery relies on a service contract with {vendor}.",
-        "{vendor} will operate the service under a managed agreement.",
+        "Implementation work is subcontracted to {vendor}.",
+        "The vendor, {vendor}, keeps responsibility for maintenance.",
     ],
     Signal.OPERATIONAL: [
         "The main driver is reducing on-call load and manual toil.",
-        "This was motivated by recurring outages and slow incident recovery.",
-        "The change targets throughput bottlenecks observed during peak weeks.",
-        "Operational efficiency was the primary motivation, with fewer manual handoffs.",
+        "Recurring outages during month-end closing prompted the change.",
+        "Staff were losing hours every week to repetitive data re-entry.",
+        "The current process breaks down whenever demand spikes.",
+        "Operational efficiency was the primary motivation.",
+        "Slow recovery after failures was the trigger for this proposal.",
     ],
     Signal.LEGAL: [
         "The change is required to meet obligations under {regulation}.",
+        "{regulation_cap} makes this change mandatory by the end of the year.",
         "Counsel confirmed that the process must follow {regulation}.",
-        "A statutory deadline under {regulation} makes this change mandatory.",
+        "Lawmakers set a deadline in {regulation} that the current process cannot meet.",
     ],
     Signal.SECURITY: [
         "It closes an access-control gap found in the last penetration test.",
         "Encryption of data at rest is a precondition for go-live.",
+        "Go-live is blocked until two high-severity weaknesses are fixed.",
         "The design depends on single sign-on and hardened service credentials.",
-        "The rollout is gated on remediation of two vulnerabilities rated high.",
+        "The aim is to stop unauthorised staff from reading confidential records.",
     ],
     Signal.COMPLIANCE: [
         "Evidence produced by this process feeds the annual {framework} audit.",
         "Internal audit placed this control inside the {framework} scope.",
-        "The outcome must be documented for {framework} certification.",
+        "Auditors will sample these records during the next {framework} review.",
+        "The outcome must be documented so that the {framework} attestation can be renewed.",
+        "Independent assessors will check this control every year.",
     ],
 }
 
 ABSENT_PHRASES: dict[Signal, list[str]] = {
     Signal.THIRD_PARTY: [
-        "The team will build and run it in-house, with no outside supplier.",
-        "No external vendor is involved; the capability stays internal.",
+        "No outside firm is involved; the organisation's own staff will deliver it.",
+        "The team will build and run it in-house.",
+        "No external vendor is engaged for any part of the work.",
+        "All of the work is done by internal staff without any supplier.",
     ],
     Signal.OPERATIONAL: [
         "Operational concerns were not a factor in this choice.",
-        "Day-to-day operations are unaffected and played no part in the decision.",
+        "Day-to-day running of the service played no part in the decision.",
+        "The decision is not about reliability or workload.",
     ],
     Signal.LEGAL: [
         "There is no legal or regulatory requirement behind this decision.",
-        "No statute or regulation applies to this change.",
+        "Nothing in current legislation requires this change.",
+        "No statute or rule applies to this change.",
     ],
     Signal.SECURITY: [
         "The decision has no security implications beyond standard practice.",
         "Security review found nothing that affects this change.",
+        "Protecting data against intruders played no role in the choice.",
     ],
     Signal.COMPLIANCE: [
         "This item is out of scope for audit and certification work.",
         "No audit framework covers this activity.",
+        "Assessors confirmed that this activity is excluded from every attestation.",
     ],
 }
 
-# Hedged statements: the intended label is UNCLEAR even though signal vocabulary appears.
+# Hedged statements: the intended label is UNCLEAR even though the topic appears.
 HEDGED_PHRASES: dict[Signal, list[str]] = {
-    Signal.THIRD_PARTY: ["An external partner may be considered in a later phase."],
-    Signal.OPERATIONAL: ["Whether this improves day-to-day operations is still being assessed."],
-    Signal.LEGAL: ["Counsel has not yet confirmed whether any regulation applies."],
-    Signal.SECURITY: ["A security review is planned but has not started."],
-    Signal.COMPLIANCE: ["It is not yet known whether auditors will ask about this process."],
+    Signal.THIRD_PARTY: [
+        "Bringing in a vendor may be considered in a later phase.",
+        "Whether an outside firm will help is still open.",
+    ],
+    Signal.OPERATIONAL: [
+        "Whether this improves day-to-day operations is still being assessed.",
+        "Any effect on workload is not yet known.",
+    ],
+    Signal.LEGAL: [
+        "Counsel has not yet confirmed whether any regulation applies.",
+        "A pending bill might eventually apply to this area.",
+    ],
+    Signal.SECURITY: [
+        "A security review is planned but has not started.",
+        "It is unclear whether the change introduces new attack surface.",
+    ],
+    Signal.COMPLIANCE: [
+        "It is not yet known whether auditors will ask about this process.",
+    ],
 }
 
+# Context and rationale fillers. Some contain signal vocabulary without asserting a signal.
 CONTEXT_FILLERS = [
     "The current setup was introduced {years} years ago and has grown without a clear owner.",
     "Usage has roughly doubled since the last review.",
     "Two teams maintain overlapping versions of the same capability.",
-    "Most of the configuration is undocumented and depends on a few individuals.",
     "Stakeholders from {other} were consulted during discovery.",
+    "The vendor management office reviewed the business case.",
+    "A former legal adviser drafted the original proposal.",
 ]
 
 RATIONALE_FILLERS = [
@@ -195,6 +243,7 @@ RATIONALE_FILLERS = [
     "Expected benefits will be reviewed after {months} months.",
     "The estimated effort fits within the current planning cycle.",
     "A fallback plan keeps the previous arrangement available for one quarter.",
+    "The security of next year's funding was confirmed by the finance office.",
 ]
 
 STATUS_WEIGHTS = [("approved", 0.7), ("deferred", 0.15), ("rejected", 0.15)]
@@ -202,7 +251,7 @@ STATUS_WEIGHTS = [("approved", 0.7), ("deferred", 0.15), ("rejected", 0.15)]
 
 @dataclass(frozen=True)
 class CorpusSpec:
-    """Size presets: ``demo`` (30 records) and ``experimental`` (150 records)."""
+    """Size presets: ``demo`` (36 records) and ``experimental`` (180 records)."""
 
     name: str
     domains: int
@@ -215,8 +264,8 @@ class CorpusSpec:
 
 
 SPECS = {
-    "demo": CorpusSpec("demo", domains=5, subjects_per_domain=2, actions_per_subject=3),
-    "experimental": CorpusSpec("experimental", domains=10, subjects_per_domain=3, actions_per_subject=5),
+    "demo": CorpusSpec("demo", domains=3, subjects_per_domain=2, actions_per_subject=6),
+    "experimental": CorpusSpec("experimental", domains=10, subjects_per_domain=3, actions_per_subject=6),
 }
 
 
@@ -260,7 +309,7 @@ def _render_signal(
     return None
 
 
-def generate_corpus(spec: CorpusSpec | str = "experimental", seed: int = 2026) -> list[DecisionDocument]:
+def generate_corpus(spec: CorpusSpec | str = "experimental", seed: int = 4242) -> list[DecisionDocument]:
     """Generate the corpus for a size preset. Same (spec, seed) ⇒ identical output."""
 
     if isinstance(spec, str):
@@ -268,9 +317,8 @@ def generate_corpus(spec: CorpusSpec | str = "experimental", seed: int = 2026) -
     rng = random.Random(seed)
     start = date(2023, 1, 9)
     documents: list[DecisionDocument] = []
-    domain_names = list(DOMAINS)[: spec.domains]
     counter = 0
-    for domain in domain_names:
+    for domain in list(DOMAINS)[: spec.domains]:
         info = DOMAINS[domain]
         subjects = list(info["subjects"])[: spec.subjects_per_domain]  # type: ignore[call-overload]
         for subject in subjects:
@@ -278,18 +326,17 @@ def generate_corpus(spec: CorpusSpec | str = "experimental", seed: int = 2026) -
                 title_prefix = title_template.format(a=_article(subject))
                 verb = verb_template.format(a=_article(subject))
                 counter += 1
-                doc_id = f"DEC-{counter:03d}"
                 status = _weighted_choice(rng, STATUS_WEIGHTS)
                 plan = _signal_plan(rng)
+                regulation = rng.choice(REGULATIONS)
                 fills = {
                     "vendor": rng.choice(VENDORS),
-                    "regulation": rng.choice(REGULATIONS),
+                    "regulation": regulation,
+                    "regulation_cap": regulation[:1].upper() + regulation[1:],
                     "framework": rng.choice(FRAMEWORKS),
                 }
-                verb_word = {"approved": "approved", "deferred": "deferred", "rejected": "rejected"}[status]
                 decision = (
-                    f"The {info['owner']} {verb_word} the proposal to {verb} {subject} "
-                    f"for the {info['unit']}."
+                    f"The {info['owner']} {status} the proposal to {verb} {subject} for the {info['unit']}."
                 )
                 if status == "deferred":
                     decision += " A final answer is expected next quarter."
@@ -303,10 +350,12 @@ def generate_corpus(spec: CorpusSpec | str = "experimental", seed: int = 2026) -
                         options=rng.randint(2, 4), months=rng.choice([3, 6, 9])
                     )
                 ]
+                rendered: list[str] = []
                 for signal in Signal:
                     sentence = _render_signal(rng, signal, plan[signal], fills)
                     if sentence is None:
                         continue
+                    rendered.append(sentence)
                     (context_parts if rng.random() < 0.5 else rationale_parts).append(sentence)
                 rng.shuffle(context_parts)
                 rng.shuffle(rationale_parts)
@@ -315,16 +364,16 @@ def generate_corpus(spec: CorpusSpec | str = "experimental", seed: int = 2026) -
                     "risk_level": rng.choice(["low", "moderate", "elevated"]),
                     "review_cycle": rng.choice(["quarterly", "semi-annual", "annual"]),
                 }
-                # Fills are recorded only when the corresponding sentence was rendered.
-                if plan[Signal.THIRD_PARTY] is SignalLabel.PRESENT:
-                    metadata["vendor"] = fills["vendor"]
-                if plan[Signal.LEGAL] is SignalLabel.PRESENT:
-                    metadata["regulation"] = fills["regulation"]
-                if plan[Signal.COMPLIANCE] is SignalLabel.PRESENT:
-                    metadata["framework"] = fills["framework"]
+                # An attribute is recorded only when a rendered sentence actually states it.
+                text = " ".join(rendered)
+                for key in ("vendor", "framework"):
+                    if fills[key] in text:
+                        metadata[key] = fills[key]
+                if regulation in text or fills["regulation_cap"] in text:
+                    metadata["regulation"] = regulation
                 documents.append(
                     DecisionDocument(
-                        id=doc_id,
+                        id=f"DEC-{counter:03d}",
                         title=f"{title_prefix} {subject}",
                         domain=domain,
                         subject=subject,

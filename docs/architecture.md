@@ -16,7 +16,7 @@ question
           ▼                                ▼
 ┌──────────────────────────────────────────────────────────┐
 │ Retriever (shared by all strategies)                     │
-│  embed question → cosine vs 450 chunks → best chunk per  │
+│  embed question → cosine vs 540 chunks → best chunk per  │
 │  document → candidate pool (20) → signal adjustment →    │
 │  top-k (4) → evidence gate (threshold + signal veto)     │
 └─────────────────────────┬────────────────────────────────┘
@@ -49,8 +49,8 @@ question
 | `retrieval` | `Retriever`: similarity, signal adjustment, ranking and evidence gate |
 | `generation` | Extractive and LLM generators; versioned prompts in `generation/prompts/*.md` |
 | `grounding` | Evidence rendering, citation and quote validation, experimental claim verifier |
-| `llm` | OpenAI-compatible chat client with classified errors, retries, cost and budget; `ScriptedLLM` for tests |
-| `evaluation` | Metrics, judges, experiment runner, manifest (freeze/verify), ablation and calibration |
+| `llm` | OpenAI-compatible chat client with classified errors, retries, response validation and fail-closed budget; `ScriptedLLM` for tests |
+| `evaluation` | Metrics, judges (state rule + assessors), report and paired statistics, experiment runner, manifest (freeze/verify/amend), v1 historical verification, ablation and calibration |
 | `config` | Protocol file, environment variables, component factory |
 | `cli` | `dirag` command-line entry point |
 
@@ -73,18 +73,37 @@ contradiction of a REQUIRED constraint is an additional, optional veto.
 
 **The LLM sees only admitted evidence.** When the gate admits nothing, the LLM
 generator abstains without a model call. Citations outside the admitted set are
-removed and logged; an ANSWER without a surviving claim becomes ABSTAIN.
+removed and logged, and an ANSWER without a surviving claim becomes ABSTAIN.
 
-**Quote policy recorded, enforcement replayed.** Experiments run with
-`quote_policy: "record"`: every claim carries `quote_verified`. The effect of
-enforcing quotes is computed afterwards from the same rows (`quote_enforce_replay`),
-so the ablation costs no additional model calls.
+**The answer is the validated claims.** The text shown and judged is composed
+from the claims that survived validation. The model's free-text answer is kept
+only as `discarded_text`, so prose that names unsupported vendors or uncited
+records never reaches the user or a judge.
+
+**Explicit answer states.** `GeneratedAnswer` checks its invariants on
+construction (`models.TRANSITIONS`): ANSWER needs claims, ABSTAIN shows only the
+abstention message, and ERROR carries no text. Failures are ERROR, never
+ABSTAIN, and correctness is graded by final state before any judge.
+
+**Quote policy enforced in v2.** Protocol v2 runs with `quote_policy: "enforce"`.
+The `record` policy (v1) is still supported, and the effect of enforcement can
+be replayed from recorded rows (`quote_enforce_replay`).
+
+**Fail closed on cost.** A limited budget authorises each request against an
+upper bound computed from configured prices before sending. Unknown prices block
+the request, and unknown costs are recorded as unknown, never as zero.
 
 **OpenAI-compatible interfaces.** Both the embedder and the chat client target
 the de-facto standard `/embeddings` and `/chat/completions` endpoints, so hosted
 gateways, vendor endpoints and local servers can be swapped through environment
 variables without code changes.
 
-**Secrets stay in the environment.** API keys are read once in `config.py`,
-never stored in result files or manifests, and redacted from provider error
-messages before they are recorded.
+**Secrets stay in the environment.** API keys are read once in `config.py` and
+never stored in result files or manifests. The configured key, Bearer tokens and
+key-like strings are redacted from provider error messages. Endpoints are
+recorded without credentials, query or fragment.
+
+**Two protocols, one codebase.** The code runs protocol v2 only
+(`Workspace(protocol="v2")`). Protocol v1's artefacts remain at their original
+paths and are verified against the git objects of the v1 commit
+(`evaluation.historical`), never recomputed.

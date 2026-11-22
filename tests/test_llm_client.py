@@ -113,7 +113,7 @@ def test_timeouts_truncation_and_invalid_json_are_classified() -> None:
 def test_budget_blocks_calls_once_exhausted() -> None:
     budget = Budget(limit_usd=0.001)
     handler = lambda r: httpx.Response(200, json=_completion("{}", usage={"cost": 0.002}))  # noqa: E731
-    client = _client(handler, budget=budget)
+    client = _client(handler, budget=budget, pricing=Pricing(0.0, 0.0))
     client.complete_json("s", "u", SCHEMA, "s")
     with pytest.raises(LLMError) as err:
         client.complete_json("s", "u", SCHEMA, "s")

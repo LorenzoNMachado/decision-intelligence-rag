@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from decision_intelligence.corpus.io import read_json, write_json
-from decision_intelligence.models import DecisionDocument, Signal, SignalLabel
+from decision_intelligence.models import DecisionDocument, Signal, SignalLabel, add_costs
 from decision_intelligence.semantic_signals.classifier import SignalClassifier, SignalLabels
 
 
@@ -49,19 +49,19 @@ class SignalIndex:
 
 def build_signal_index(
     documents: list[DecisionDocument], classifier: SignalClassifier, previous: SignalIndex | None = None
-) -> tuple[SignalIndex, float]:
+) -> tuple[SignalIndex, float | None]:
     """Classify every document. With ``previous``, only documents that had errors are retried."""
 
     labels: dict[str, SignalLabels] = {}
     errors: dict[str, str] = {}
-    cost = 0.0
+    cost: float | None = 0.0
     for doc in documents:
         if previous is not None and doc.id in previous.labels and doc.id not in previous.errors:
             labels[doc.id] = previous.labels[doc.id]
             continue
         result = classifier.classify(doc)
         labels[doc.id] = result.labels
-        cost += result.cost_usd
+        cost = add_costs(cost, result.cost_usd)
         if result.error:
             errors[doc.id] = result.error
     return SignalIndex(classifier=classifier.name, labels=labels, errors=errors), cost

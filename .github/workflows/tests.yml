@@ -16,8 +16,11 @@ jobs:
       matrix:
         python-version: ["3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      # Actions are pinned to commit SHAs (tag in the comment).
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0 # verify-v1 reads the protocol v1 commit
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
         with:
           enable-cache: true
       - name: Install dependencies
@@ -30,13 +33,16 @@ jobs:
         run: uv run mypy
       - name: Tests
         run: uv run pytest
-      - name: Corpus integrity
+      - name: Corpus integrity (protocol v2)
         run: uv run dirag corpus-validate
-      - name: Committed data is reproducible from the generator
+      - name: Committed v2 data is reproducible from the generator
         run: |
           uv run dirag corpus-generate --out "$RUNNER_TEMP/regen"
           for f in corpus.jsonl chunks.jsonl questions.json signal_index.rules.json; do
-            diff -q "data/synthetic/$f" "$RUNNER_TEMP/regen/$f"
+            diff -q "data/v2/$f" "$RUNNER_TEMP/regen/$f"
           done
-      - name: Frozen protocol is intact
+      - name: Frozen protocol v2 is intact
+        # Python patch versions may differ from the freeze; they are reported as warnings.
         run: uv run dirag verify-manifest
+      - name: Historical protocol v1 is intact
+        run: uv run dirag verify-v1

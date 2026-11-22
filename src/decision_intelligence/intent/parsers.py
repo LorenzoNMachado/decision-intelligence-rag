@@ -3,8 +3,8 @@
 Three parsers share the ``IntentParser`` interface:
 
 * ``NoIntentParser`` (Strategy 1) always returns no constraint.
-* ``RuleBasedIntentParser`` (Strategy 2) applies the cue lexicon clause by
-  clause and marks a clause as negated when it contains a negation cue.
+* ``RuleBasedIntentParser`` (Strategy 2) applies the cue lexicon with local
+  negation scope, hedging and coordination (``semantic_signals.lexicon``).
 * ``LLMIntentParser`` (Strategy 3) asks an LLM for REQUIRED/PREFERRED
   constraints with polarity, then validates the output deterministically:
   evidence must be a verbatim span of at least two words of the question,
@@ -16,12 +16,13 @@ from __future__ import annotations
 
 import re
 import time
+from collections.abc import Iterable
 from typing import Any, Protocol
 
 from decision_intelligence.generation.prompts import load_prompt
 from decision_intelligence.llm.client import LLMClient, LLMError
 from decision_intelligence.models import IntentSignal, Polarity, QueryIntent, Requirement, Signal
-from decision_intelligence.semantic_signals.lexicon import is_negated, signals_mentioned
+from decision_intelligence.semantic_signals.lexicon import analyse, disjunctive_signals
 
 MAX_REQUIRED = 2
 
@@ -40,11 +41,6 @@ class NoIntentParser:
         return QueryIntent(parser=self.name, status="NONE")
 
 
-_CLAUSE_SPLIT = re.compile(
-    r",|;|\band also\b|\band\b(?= (?:are|were|have|has|depend|rely|involve|aim|address|matter|produce))"
-)
-
-
 def _cap_required(signals: list[IntentSignal]) -> list[IntentSignal]:
     capped: list[IntentSignal] = []
     required = 0
@@ -58,30 +54,53 @@ def _cap_required(signals: list[IntentSignal]) -> list[IntentSignal]:
 
 
 class RuleBasedIntentParser:
-    name = "rules-v1"
+    """Strategy 2: the cue lexicon with local negation, hedging and coordination.
+
+    * A signal is REQUIRED unless its mention is hedged or offered as an
+      alternative to another signal ("a vendor or a legal obligation"), in
+      which case it is PREFERRED.
+    * Polarity comes from the mention's local negation scope (see
+      ``semantic_signals.lexicon.analyse``).
+    * A signal mentioned with both polarities is contradictory: it is dropped
+      and reported in ``notes`` rather than guessed.
+    * ``entities`` (subject names, departments, job titles) are masked first,
+      so words inside a name never become constraints.
+    """
+
+    name = "rules-v2"
+
+    def __init__(self, entities: Iterable[str] = ()) -> None:
+        self.entities = tuple(entities)
 
     def parse(self, question: str) -> QueryIntent:
-        signals: list[IntentSignal] = []
-        seen: set[Signal] = set()
-        for clause in _CLAUSE_SPLIT.split(question):
-            if not clause.strip():
-                continue
-            negated = is_negated(clause)
-            for signal, cue in signals_mentioned(clause):
-                if signal in seen:
-                    continue
-                seen.add(signal)
-                signals.append(
-                    IntentSignal(
-                        signal=signal,
-                        requirement=Requirement.REQUIRED,
-                        polarity=Polarity.ABSENT if negated else Polarity.PRESENT,
-                        evidence=cue,
-                    )
-                )
-        if not signals:
+        mentions = analyse(question, self.entities)
+        if not mentions:
             return QueryIntent(parser=self.name, status="NONE")
-        return QueryIntent(parser=self.name, status="OK", signals=tuple(_cap_required(signals)))
+        alternatives = disjunctive_signals(question, mentions, self.entities)
+        signals: list[IntentSignal] = []
+        contradictory: list[str] = []
+        for signal in Signal:
+            own = [m for m in mentions if m.signal is signal]
+            if not own:
+                continue
+            polarities = {m.polarity for m in own}
+            if len(polarities) > 1:
+                contradictory.append(signal.value)
+                continue
+            soft = all(m.hedged for m in own) or signal in alternatives
+            signals.append(
+                IntentSignal(
+                    signal=signal,
+                    requirement=Requirement.PREFERRED if soft else Requirement.REQUIRED,
+                    polarity=own[0].polarity,
+                    evidence=own[0].cue,
+                )
+            )
+        signals.sort(key=lambda s: min(m.token for m in mentions if m.signal is s.signal))
+        notes = f"contradictory constraints dropped: {', '.join(contradictory)}" if contradictory else ""
+        if not signals:
+            return QueryIntent(parser=self.name, status="NONE", notes=notes)
+        return QueryIntent(parser=self.name, status="OK", signals=tuple(_cap_required(signals)), notes=notes)
 
 
 INTENT_SCHEMA: dict[str, Any] = {
@@ -132,6 +151,8 @@ class LLMIntentParser:
                 parser=self.name,
                 status="UNAVAILABLE",
                 notes=f"{exc.kind}: {exc}",
+                # Refused before sending: free. Otherwise it may have been billed: unknown.
+                cost_usd=0.0 if exc.kind in ("budget", "config") else None,
                 latency_ms=(time.perf_counter() - started) * 1000,
             )
         latency_ms = (time.perf_counter() - started) * 1000
@@ -139,7 +160,10 @@ class LLMIntentParser:
         accepted: list[IntentSignal] = []
         rejected: list[str] = []
         try:
-            for item in response.parsed.get("signals", []):
+            items = response.parsed.get("signals", [])
+            if not isinstance(items, list):
+                raise TypeError("signals is not a list")
+            for item in items:
                 evidence = str(item.get("evidence", ""))
                 span = _normalise(evidence)
                 if len(span.split()) < 2 or span not in normalised_question:

@@ -1,0 +1,6 @@
+{
+  "id": "A",
+  "retrieval": "vector",
+  "generator": "extractive",
+  "description": "Vector baseline retrieval with the deterministic extractive generator."
+}

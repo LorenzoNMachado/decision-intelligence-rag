@@ -1,0 +1,96 @@
+{
+  "configs": {
+    "A": {
+      "generator": "extractive",
+      "lexical_judge": {
+        "answerable_rows": 40,
+        "claims": 188,
+        "correct_abstention_rate": 0.3,
+        "correctness": 0.05,
+        "correctness_judge_errors": 0,
+        "correctness_partial": 0.675,
+        "cost_per_question_usd": 0.0,
+        "cost_unknown_rows": 0,
+        "expected_source_coverage": 0.8646,
+        "extracted_quotes": 188,
+        "faithfulness_llm": null,
+        "faithfulness_quote": null,
+        "false_abstention_rate": 0.0,
+        "false_answer_rate": 0.7,
+        "intent_failures": 0,
+        "irrelevant_sources_cited_per_rep": 101.0,
+        "latency_p50_ms": 0.8,
+        "latency_p95_ms": 4.2,
+        "operational_failures": 0,
+        "recall_at_k": 0.8646,
+        "rejected_citations": 0,
+        "rows": 50,
+        "supporting_source_precision": 0.3688,
+        "unanswerable_rows": 10
+      },
+      "repetitions": 1,
+      "retrieval": "vector"
+    },
+    "B": {
+      "generator": "extractive",
+      "lexical_judge": {
+        "answerable_rows": 40,
+        "claims": 186,
+        "correct_abstention_rate": 0.3,
+        "correctness": 0.1,
+        "correctness_judge_errors": 0,
+        "correctness_partial": 0.525,
+        "cost_per_question_usd": 0.0,
+        "cost_unknown_rows": 0,
+        "expected_source_coverage": 0.8104,
+        "extracted_quotes": 186,
+        "faithfulness_llm": null,
+        "faithfulness_quote": null,
+        "false_abstention_rate": 0.0,
+        "false_answer_rate": 0.7,
+        "intent_failures": 0,
+        "irrelevant_sources_cited_per_rep": 98.0,
+        "latency_p50_ms": 1.9,
+        "latency_p95_ms": 3.6,
+        "operational_failures": 0,
+        "recall_at_k": 0.8104,
+        "rejected_citations": 0,
+        "rows": 50,
+        "supporting_source_precision": 0.3812,
+        "unanswerable_rows": 10
+      },
+      "repetitions": 1,
+      "retrieval": "rules"
+    }
+  },
+  "embedder": "hashing-v1:d2048:uni+bi",
+  "evidence_threshold": 0.18,
+  "notes": [
+    "Correctness uses the lexical key-fact proxy unless an LLM-judge table follows.",
+    "Questions are the unit of comparison; deterministic configurations run once, so there is no repetition variance to report.",
+    "Quote faithfulness is reported only for model-written quotes; extractive quotes are copied from the record and verified by construction (shown as —).",
+    "Latency is measured on one machine within one run and includes warm-up effects; it is not evidence that one configuration is faster than another."
+  ],
+  "paired": {
+    "A->B": {
+      "correct": {
+        "first_better": 0,
+        "questions": 50,
+        "second_better": 2,
+        "sign_test_p": 0.5,
+        "ties": 48
+      },
+      "recall_at_k": {
+        "first_better": 5,
+        "questions": 40,
+        "second_better": 6,
+        "sign_test_p": 1.0,
+        "ties": 29
+      }
+    }
+  },
+  "protocol": 2,
+  "questions": 50,
+  "run": "holdout-ab",
+  "split": "holdout"
+}

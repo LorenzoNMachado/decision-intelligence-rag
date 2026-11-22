@@ -1,0 +1,6 @@
+{
+  "id": "C",
+  "retrieval": "vector",
+  "generator": "llm",
+  "description": "Vector baseline retrieval with the LLM generator."
+}

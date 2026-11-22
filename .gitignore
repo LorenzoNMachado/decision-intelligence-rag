@@ -17,3 +17,7 @@ build/
 
 # Scratch experiment runs; curated results are committed explicitly
 experiments/results/scratch-*/
+
+# Streamlit secrets (the app reads none, but never commit them)
+.streamlit/secrets.toml
+*.log

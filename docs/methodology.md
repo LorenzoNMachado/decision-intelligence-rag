@@ -1,4 +1,7 @@
-# Methodology
+# Methodology (protocol v2)
+
+Protocol v1 is historical (see `experiments/v1/README.md`). This document
+describes protocol v2, which is the only protocol the current code runs.
 
 ## Research questions
 
@@ -8,75 +11,118 @@
 3. **RQ3.** How well do an evidence gate and citation validation prevent answers
    to questions that the corpus cannot answer?
 
+## Why a second protocol
+
+The v1 holdout was run once and then inspected during an audit, so it can no
+longer serve as an unseen test set. The audit also found defects that affected
+the v1 results: parser negation scope, circularity between the rule lexicon and
+the generator's templates, a saturated Recall@4, and abstention measured only
+out of domain. Protocol v2 has its own corpus, questions, paths and manifest.
+v1 artefacts are never regenerated or recomputed with the current code.
+
+## Order of work (verifiable in git)
+
+1. The rule lexicon and parser were fixed (commit `00d44a6`) **before** any v2
+   phrase pool or question existed. Neither has been edited since.
+2. The v2 phrase pools and the 70 question specifications were written
+   (`83740d1`), and the data generated (`ea47514`).
+3. The evidence gate was calibrated and A/B were run on **dev only** (`58f57ba`).
+   No system change followed from the dev results.
+4. The protocol was frozen (`1674075`).
+5. The holdout was run once for A and B (`9137cc0`). Defects found afterwards
+   are documented, not fixed (see `experiments/v2/README.md`).
+
 ## Corpus
 
-`dirag corpus-generate` builds 150 synthetic decision records (10 domains × 3
-subjects × 5 actions) from seeded phrase pools. Each record has a title,
-decision, context, rationale and metadata. Organisations, vendors and
-regulations are fictional; public audit frameworks (ISO/IEC 27001, SOC 2,
-PCI DSS, COSO) appear only as vocabulary.
+`dirag corpus-generate` builds 180 synthetic decision records (10 domains × 3
+subjects × 6 actions, seed 4242). Each record has a title, decision, context,
+rationale and metadata. Organisations, vendors and regulations are fictional,
+and public audit frameworks appear only as vocabulary.
 
-Each of the five signals receives an *intended* label per record, drawn
-independently (PRESENT 40 %, ABSENT stated explicitly 22 %, UNCLEAR 38 %, of
-which about 30 % contain a hedged mention such as "may be considered later").
-The record text is written from those labels. The labels are used only to
-build the question set and to measure classifier accuracy; retrieval never
-reads them.
+Each of the five signals gets an *intended* label per record, drawn
+independently: PRESENT 40 %, ABSENT stated explicitly 22 %, UNCLEAR 38 %. About
+30 % of the UNCLEAR labels come with a hedged mention. The record text is
+written from those labels. To limit circularity with the rule lexicon, the v2
+pools mix:
 
-Chunking is section-based (summary, context, rationale), with a sentence-aware
-split for sections longer than 800 characters, giving 450 chunks. Every chunk
-starts with the record title and identifier.
+* sentences that use the lexicon's cue words;
+* paraphrases without any cue word ("implementation work is subcontracted to …",
+  "staff were losing hours every week to re-entry");
+* distractors that use cue words without asserting a signal ("the vendor
+  management office reviewed the business case", "the security of next year's
+  funding was confirmed").
 
-A demo preset (`--size demo`, 30 records) exists for quick experimentation.
+Six records per subject (up from five) mean that retrieving all of a subject's
+records no longer fills the top four. Chunking is section-based (summary,
+context, rationale), which gives 540 chunks, each starting with the record title
+and id.
 
 ## Questions
 
-`build_question_set` produces 50 questions over the experimental corpus:
+`data/v2/question_specs.json` holds 70 hand-written phrasings, each used once.
+`build_question_set` (question seed 1717) assigns each filter a subject drawn at
+random among those with 1–4 matching records, and each lookup or in-domain
+unanswerable a random record. Expected evidence comes from the generator's
+labels.
 
 | Category | Count | Expected evidence |
 |---|---:|---|
-| provider_lookup | 8 | the one record whose vendor is asked for |
-| regulation_lookup | 6 | the one record whose regulation is asked for |
-| framework_lookup | 6 | the one record whose audit framework is asked for |
-| signal_filter | 12 | records of one subject with the signal PRESENT (1–4) |
-| negated_filter | 5 | records of one subject that state the signal is ABSENT |
-| multi_signal_filter | 3 | records of one subject with two signals PRESENT |
-| unanswerable | 10 | none (topics absent from the corpus) |
+| provider / regulation / framework lookup | 8 / 6 / 6 | the one record whose attribute is asked for |
+| signal_filter | 14 | records of the subject with the signal PRESENT |
+| negated_filter | 8 | records of the subject that state the signal is ABSENT |
+| conjunction_filter | 6 | records satisfying both constraints (PRESENT/PRESENT or PRESENT/ABSENT) |
+| disjunction_filter | 4 | records satisfying either constraint |
+| hedged_filter | 4 | records with the signal PRESENT ("might", "may", "perhaps" are read as a preference) |
+| unanswerable_in_domain | 8 | none: a real record, but information no record contains (budget, owner, date, value) |
+| unanswerable_out_of_domain | 6 | none: topics no record touches |
 
-Signal filters use three paraphrases per signal, several of which are outside
-the rule lexicon, so the rule-based parser is not guaranteed to recognise every
-constraint. The split is stratified: 10 dev questions (8 answerable, 2
-unanswerable) and 40 holdout questions (32 + 8).
-
-Every reference is checked by `corpus-validate`: each key fact must occur
-literally in the expected evidence, so no reference asks for information that
-the corpus does not contain.
+Of the 36 filter questions, 27 contain at least one lexicon cue word and 9 none.
+The split is drawn per category in proportion (30 % dev, at least one question
+per category in each split): 20 dev questions (16 answerable, 4 unanswerable)
+and 50 holdout questions (40 + 10). `corpus-validate` checks that every key fact
+occurs in its expected evidence and that each split covers every category.
 
 ## Retrieval strategies
 
 | Strategy | Intent source | Signal index |
 |---|---|---|
 | 1 · Vector baseline | none | not used |
-| 2 · Rule-based enrichment | cue lexicon with clause-level negation | rule-based classifier |
-| 3 · LLM semantic intent | LLM, validated deterministically | rule-based classifier |
+| 2 · Rule-based enrichment | lexicon with local negation, coordination, hedging, entity masking | rule-based classifier (`rules-v2`) |
+| 3 · LLM semantic intent | LLM, validated deterministically | rule-based classifier (`rules-v2`) |
 
 Scoring: `final = cos + 0.06 · matched REQUIRED + 0.02 · matched PREFERRED − 0.12 · contradicted REQUIRED`,
-computed over a candidate pool of the 20 most similar documents. A document is
-admitted when its cosine similarity reaches the evidence threshold and it does
-not contradict a REQUIRED constraint.
+over a candidate pool of the 20 most similar records. These weights were
+inherited from v1 and were not tuned on v2 data. A record is admitted when its
+cosine similarity reaches the evidence threshold and it does not contradict a
+REQUIRED constraint.
+
+The rule parser (Strategy 2) makes a signal REQUIRED unless it is hedged or
+offered as an alternative to another signal ("a vendor *or* a legal
+obligation"), in which case it is PREFERRED. A signal mentioned with both
+polarities is dropped and reported. Negation is local: a negator governs a short
+window after it, stopping at commas, semicolons, "but", "while" and similar
+words. A predicate negation ("played no role") reaches back to its subject.
+Names of subjects, departments and job titles are masked before analysis.
 
 LLM intent validation: every constraint must quote at least two words of the
-question verbatim; at most two constraints remain REQUIRED; malformed output or
+question verbatim, and at most two constraints stay REQUIRED. Malformed output or
 provider errors produce status UNAVAILABLE, which falls back to the baseline.
 
-## Generators
+## Generators and answer states
 
-* **Extractive** — no model. For each admitted record, the sentence with the
-  largest token overlap with the question (excluding title words) is quoted.
-  It abstains only when the gate admits nothing.
-* **LLM** — prompt `answer_v1`, strict JSON schema, per-claim `source_ids` and
-  verbatim `quote`, explicit ABSTAIN option. Output is validated by the
-  grounding layer before it is returned.
+* **Extractive.** No model. For each admitted record, it quotes the sentence with
+  the largest token overlap with the question, excluding title words. It
+  abstains only when the gate admits nothing.
+* **LLM.** Prompt `answer_v2`, strict JSON schema, per-claim `source_ids` and
+  verbatim `quote`, explicit ABSTAIN option. Protocol v2 uses
+  `quote_policy: "enforce"`: a claim survives only if it cites admitted records,
+  names no record it does not cite, and has a quote of at least four words found
+  literally in a cited record's body. The answer shown and judged is composed of
+  the surviving claims only. The model's free text is kept for audit as
+  `discarded_text`.
+* **States.** `models.TRANSITIONS` fixes the allowed final status per outcome.
+  An answer that loses every claim becomes ABSTAIN. Provider, schema and pipeline
+  failures become ERROR, never ABSTAIN.
 
 ## Configurations
 
@@ -89,44 +135,54 @@ provider errors produce status UNAVAILABLE, which falls back to the baseline.
 | E | LLM intent | LLM | LLM intent with an LLM |
 | F | LLM intent | Extractive | LLM intent without an LLM generator |
 
-E and F share the same intent interpretation per (question, repetition), so
-they differ only in the generator.
+E and F share the same intent interpretation per (question, repetition). It is
+stored in the run's `intents.jsonl`, so the sharing also holds across resumed
+sessions.
 
 ## Evidence-gate calibration
 
 The threshold depends on the embedder's cosine scale. It is selected on the
-**dev split only** with `dirag calibrate`: the sweep maximises Youden's J for
-"some evidence admitted" (answerable vs unanswerable), then the share of
-expected records admitted, and returns the median of the optimal range (the
-largest margin on both sides).
+**dev split only** with `dirag calibrate`. The sweep maximises Youden's J for
+"some evidence admitted" (answerable vs unanswerable), breaks ties by the share
+of expected records admitted, and returns the median of the optimal range.
 
-For the offline `hashing-v1` embedder the optimal dev range was 0.11–0.25 and
-the selected threshold is **0.18**. The design default for dense neural
-embeddings remains 0.65, which must be recalibrated in the same way before it
-is used.
+For `hashing-v1` the v2 dev range was 0.08–0.27, with J = 0.5. The gate admits
+evidence for half of the dev unanswerables (the in-domain ones) at every
+threshold that keeps the answerable ones. The selected threshold is **0.18**.
+Four unanswerable dev questions make this a coarse calibration.
 
 ## Protocol and holdout lock
 
 1. Develop and calibrate on the dev split only.
-2. `dirag freeze` writes `experiments/manifest.json` with SHA-256 hashes of the
-   corpus, chunks, questions, signal index, protocol, configurations, every
-   prompt and the package source, plus the embedder and (when configured) LLM
-   provider settings and the git commit.
-3. The runner refuses the holdout split unless `verify-manifest` reports no
-   change. Any edit to code, data, prompts or parameters locks the holdout.
-4. LLM configurations additionally require the LLM provider to be recorded in
-   the manifest. A manifest frozen without one can be amended exactly once with
-   `dirag amend-providers --note "…"`. The amendment is timestamped in the
-   manifest and cannot alter any frozen input.
+2. `dirag freeze` writes `experiments/v2/manifest.json` with two hash groups:
+   * **pipeline**: corpus, chunks, questions, question specifications, signal
+     index, protocol, configurations, system prompts and all package source except
+     the evaluation files;
+   * **evaluation**: metrics, judges, report and statistics modules, the claim
+     verifier, and the judge and verifier prompts.
+
+   It also records the environment (Python, numpy and httpx versions, SHA-256 of
+   `uv.lock`) and the providers (backend, model, endpoint; never a credential).
+3. The runner refuses the holdout unless both groups, the lock file and the
+   providers match. Python or package version differences are warnings.
+4. `freeze` never replaces a manifest that holdout results were produced under.
+5. LLM configurations also need the LLM provider recorded, once, with
+   `dirag amend-providers`.
+6. Evaluation code may be corrected after a holdout run only with
+   `dirag amend-evaluation --note …`, which logs the old and new hashes. The
+   pipeline group cannot be amended; changing it requires a new protocol version.
 
 ## Repetitions and reproducibility
 
-Each configuration runs three repetitions. Deterministic configurations (A, B)
-produce identical repetitions by construction; the repetitions matter for
-LLM-based configurations. Temperature 0 and a seed are sent when the provider
-supports them, but providers do not guarantee deterministic sampling.
+Deterministic configurations (A and B) run once
+(`deterministic_repetitions: 1`), because repeating them only duplicates rows.
+LLM configurations run three repetitions. Temperature 0 and a seed are sent when
+supported, but providers do not guarantee deterministic sampling. Configurations
+are compared per question with an exact two-sided sign test, which is reported
+in every summary.
 
-Results are appended row by row to `rows.jsonl`; an interrupted run resumes
-where it stopped. Network errors, timeouts, truncation and budget exhaustion
-are recorded as operational failures (status ERROR) and never silently retried
-into a different outcome.
+Results are appended row by row to `rows.jsonl`. A run directory is reused only
+with `--resume`, and only if split, embedder, threshold, protocol and pipeline
+fingerprint (and, on the holdout, the manifest) are unchanged. Every session is
+logged in `metadata.json`. Timeouts, network and schema errors, truncation and
+budget refusals are ERROR rows, never abstentions.

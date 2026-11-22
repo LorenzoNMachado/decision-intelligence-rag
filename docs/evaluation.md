@@ -10,20 +10,27 @@ aggregated over all rows of a configuration.
 | Recall@4 | answerable rows | \|expected ∩ top-4 retrieved\| / \|expected\| |
 | Supporting-source precision | answerable rows that answered with ≥ 1 citation | \|cited ∩ expected\| / \|cited\| |
 | Expected-source coverage | same as above | \|cited ∩ expected\| / \|expected\| |
-| Answer correctness | answerable rows | rows judged CORRECT / answerable rows (abstentions and errors count as incorrect) |
-| Citation faithfulness (quote) | claims of ANSWER rows | claims whose quote occurs literally in a cited source / claims |
+| Answer correctness | answerable rows | rows labelled CORRECT / answerable rows without a judge failure. The state rule applies first: ABSTAIN and ERROR are INCORRECT whatever a judge says |
+| Citation faithfulness (quote) | model-written claims of ANSWER rows | claims whose quote occurs literally in a cited record's body / model-written claims. Extractive quotes are copied, so they are excluded (reported as —) |
 | Citation faithfulness (LLM) | claims of LLM ANSWER rows | claims judged SUPPORTED / judged claims (experimental) |
 | Correct abstention rate | unanswerable rows | ABSTAIN / unanswerable rows |
 | False-answer rate | unanswerable rows | ANSWER / unanswerable rows |
 | False-abstention rate | answerable rows | ABSTAIN / answerable rows |
 | Latency p50 / p95 | all rows | end-to-end milliseconds, including intent and generation calls |
-| Cost per question | all rows | mean USD of intent and generation calls (judge calls excluded) |
+| Cost per question | all rows | mean USD of intent and generation calls (judge calls excluded); `None` when any row's cost is unknown (`cost_unknown_rows` counts them) |
+| Paired comparison | questions | per question, configuration B better / worse / tied than A on Recall@4 and strict correctness, with an exact two-sided sign test; repetitions are averaged, never counted as observations |
 | Operational failures | all rows | rows with status ERROR (timeouts, network, truncation, budget) |
 | Irrelevant sources cited | answerable ANSWER rows | cited records not in the expected set, per repetition |
 
 Correct abstention + false answer + operational failure = 1 on unanswerable rows.
 
 ## Judges
+
+All judges run after the **state rule** (`judges.grade`): unanswerable
+questions are CORRECT exactly when the system abstained; answerable questions
+that abstained or failed are INCORRECT. Only answered answerable rows reach a
+judge, and the text a judge sees is the composed answer of validated claims,
+never discarded model output.
 
 * **Lexical key-fact judge (proxy, deterministic).** CORRECT when every key fact
   of the reference appears in the answer and no forbidden fact does. For list
@@ -51,10 +58,13 @@ Correct abstention + false answer + operational failure = 1 on unanswerable rows
 
 ## Outputs
 
-Each run directory under `experiments/results/<name>/` contains:
+Each run directory under `experiments/v2/results/<name>/` contains:
 
-* `metadata.json` — split, configurations, protocol, embedder, threshold,
-  provider settings without secrets, manifest hash, timestamps and spend;
+* `metadata.json` — split, protocol, embedder, threshold, pipeline fingerprint
+  and one entry per session (configurations, provider settings without
+  secrets, manifest hash and warnings, timestamps, rows written, error rows,
+  spend split into confirmed and estimated, calls with unknown cost);
+* `intents.jsonl` — stored LLM intent interpretations (Strategy 3 only);
 * `rows.jsonl` — one row per execution with intent, ranked documents, gate
   decisions, answer, claims, rejected citations, latency and cost;
 * `judgements.jsonl` — LLM verdicts, when `dirag judge` was run;

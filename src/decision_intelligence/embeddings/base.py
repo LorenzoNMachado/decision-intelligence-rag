@@ -44,11 +44,21 @@ class VectorIndex:
     vectors: Matrix
 
     def __post_init__(self) -> None:
-        if len(self.ids) != self.vectors.shape[0]:
-            raise ValueError("ids and vectors must have the same length")
+        if self.vectors.ndim != 2 or len(self.ids) != self.vectors.shape[0]:
+            raise EmbeddingError("ids and vectors must have the same length", kind="dimension_mismatch")
+        if not np.all(np.isfinite(self.vectors)):
+            raise EmbeddingError("index vectors contain NaN or infinite values", kind="invalid_vector")
         self.vectors = l2_normalise(self.vectors.astype(np.float32))
 
     def similarities(self, query: Matrix) -> npt.NDArray[np.float32]:
-        q = l2_normalise(query.reshape(1, -1).astype(np.float32))
+        flat = query.reshape(-1)
+        if flat.shape[0] != self.vectors.shape[1]:
+            raise EmbeddingError(
+                f"query dimension {flat.shape[0]} differs from index dimension {self.vectors.shape[1]}",
+                kind="dimension_mismatch",
+            )
+        if not np.all(np.isfinite(flat)):
+            raise EmbeddingError("query vector contains NaN or infinite values", kind="invalid_vector")
+        q = l2_normalise(flat.reshape(1, -1).astype(np.float32))
         scores: npt.NDArray[np.float32] = (self.vectors @ q[0]).astype(np.float32)
         return scores
