@@ -1,0 +1,76 @@
+{
+  "embedder": "hashing-v1:d2048:uni+bi",
+  "evidence_threshold": 0.2115,
+  "pipeline_fingerprint": "d81e1e0f8ca396fccb00d67546f2c61916d85a5e9153d7a176d0094446241f3d",
+  "protocol": {
+    "corpus": {
+      "question_seed": 2929,
+      "seed": 7373,
+      "size": "experimental",
+      "version": "v3"
+    },
+    "deterministic_repetitions": 1,
+    "evidence_threshold": {
+      "bm25-v1": 7.522,
+      "default": 0.65,
+      "hashing-v1": 0.2115
+    },
+    "generation": {
+      "max_tokens": 1500,
+      "quote_policy": "enforce"
+    },
+    "protocol_version": 3,
+    "repetitions": 3,
+    "retrieval": {
+      "candidate_pool": 20,
+      "contradiction_penalty": 0.12,
+      "preferred_bonus": 0.02,
+      "required_bonus": 0.06,
+      "top_k": 4,
+      "topical_band": 0.12,
+      "veto_contradictions": true
+    }
+  },
+  "run": "dev-r4",
+  "sessions": [
+    {
+      "configs": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H"
+      ],
+      "error_rows": 0,
+      "finished_at": "2026-11-22T22:53:00+00:00",
+      "manifest": {
+        "status": "not required for dev"
+      },
+      "new_rows": 512,
+      "package_version": "0.2.0",
+      "providers": {
+        "budget_usd": 1.0,
+        "embedding_backend": "hashing",
+        "embedding_endpoint": "",
+        "embedding_model": "",
+        "judge_model": "",
+        "llm_api_key_configured": false,
+        "llm_endpoint": "",
+        "llm_model": "",
+        "llm_response_format": "json_schema",
+        "llm_seed": null,
+        "llm_temperature": 0.0,
+        "pricing_configured": false
+      },
+      "python": "3.12.16",
+      "spent_confirmed_usd": 0.0,
+      "spent_usd": 0.0,
+      "started_at": "2026-11-22T22:52:53+00:00",
+      "unknown_cost_calls": 0
+    }
+  ],
+  "split": "dev"
+}
