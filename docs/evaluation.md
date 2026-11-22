@@ -24,6 +24,46 @@ aggregated over all rows of a configuration.
 
 Correct abstention + false answer + operational failure = 1 on unanswerable rows.
 
+## Formulas and denominators
+
+Notation, per row (one configuration, repetition and question): *E* is the set of
+expected records, *T* the top-4 retrieved records (admitted or not), *C* the
+records cited by the answer's claims, and *s* ∈ {ANSWER, ABSTAIN, ERROR} the
+final status. *Q⁺* are the answerable questions and *Q⁻* the unanswerable ones.
+
+| Metric | Formula | Denominator |
+|---|---|---|
+| Recall@4 | mean over Q⁺ of \|E ∩ T\| / \|E\| | answerable rows |
+| Supporting-source precision | mean of \|C ∩ E\| / \|C\| | answerable rows with s = ANSWER and \|C\| ≥ 1 |
+| Expected-source coverage | mean of \|C ∩ E\| / \|E\| | same as precision |
+| Strict correctness | #CORRECT / #judged | answerable rows whose label is not a judge failure |
+| Partial correctness | #PARTIAL / #judged | same |
+| Quote verification rate | #claims with a verified quote / #claims | model-written claims of ANSWER rows |
+| Claim support (LLM) | #SUPPORTED / #judged claims | claims assessed by the claim verifier |
+| Correct abstention | #(s = ABSTAIN) / \|rows of Q⁻\| | unanswerable rows |
+| False answer | #(s = ANSWER) / \|rows of Q⁻\| | unanswerable rows |
+| False abstention | #(s = ABSTAIN) / \|rows of Q⁺\| | answerable rows |
+| Operational failures | #(s = ERROR) | all rows (counted, never folded into abstention) |
+
+On unanswerable rows, correct abstention + false answer + operational
+failures = 1.
+
+## What each grounding check shows, and what it does not
+
+| Check | It shows | It does **not** show |
+|---|---|---|
+| **Recall** | The expected records were among the top four retrieved | That they were admitted, cited, or used correctly |
+| **Supporting-source precision** | Which share of the cited records were expected ones | That the statements about them are true |
+| **Correctness** (lexical proxy) | That the expected key facts appear in the answer and no forbidden ones do | That a paraphrase is right (it is not recognised), or that the answer is well grounded |
+| **Citation validity** | Every cited id is a record that passed the evidence gate | That the record supports the statement |
+| **Quote verification** | The quote occurs verbatim in the cited record's body | That the statement follows from the quote |
+| **Faithfulness / support** (LLM verifier, experimental) | An automated judgement that the cited records entail the claim | A human-validated judgement; this verifier has not been calibrated |
+| **Abstention** | The system declined when the gate admitted nothing or no claim survived | That it declines whenever it should (in-domain unanswerables are not caught) |
+
+A valid citation with a verified quote makes a claim **traceable**, not
+**true**. Correctness is graded only on the composed answer of validated
+claims, and only after the state rule below.
+
 ## Judges
 
 All judges run after the **state rule** (`judges.grade`): unanswerable
