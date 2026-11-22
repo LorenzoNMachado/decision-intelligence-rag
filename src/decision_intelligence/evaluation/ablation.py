@@ -16,6 +16,7 @@ from typing import Any
 import numpy as np
 
 from decision_intelligence.config import Components, make_retriever
+from decision_intelligence.evaluation.statistics import paired_comparison
 from decision_intelligence.llm.client import LLMClient
 from decision_intelligence.models import Question, RetrievalResult
 
@@ -55,6 +56,14 @@ def _retrieval_metrics(results: list[tuple[Question, RetrievalResult]]) -> dict[
     }
 
 
+def _recalls(results: list[tuple[Question, RetrievalResult]]) -> dict[str, float]:
+    return {
+        q.id: len(set(q.expected_doc_ids) & set(r.top_ids())) / len(q.expected_doc_ids)
+        for q, r in results
+        if q.answerable
+    }
+
+
 def retrieval_ablation(
     components: Components, questions: list[Question], strategies: list[str], llm: LLMClient | None = None
 ) -> dict[str, Any]:
@@ -78,6 +87,7 @@ def retrieval_ablation(
         report["changes_vs_vector"][strategy] = {
             "questions_with_active_signals": active,
             "questions_with_changed_top_k": changed,
+            "recall_at_k_paired": paired_comparison(_recalls(per_strategy["vector"]), _recalls(results)),
         }
     for index, question in enumerate(questions):
         entry: dict[str, Any] = {
