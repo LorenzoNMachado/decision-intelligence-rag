@@ -18,6 +18,21 @@ from decision_intelligence.semantic_signals.index import build_signal_index
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
+@pytest.fixture(autouse=True)
+def _no_provider_environment(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep the suite hermetic: provider variables of the developer's shell never reach a test.
+
+    Without this, a machine with real DIRAG_LLM_* credentials exported could make
+    paid network calls from the CLI tests.
+    """
+
+    import os
+
+    for name in list(os.environ):
+        if name.startswith("DIRAG_"):
+            monkeypatch.delenv(name)
+
+
 @pytest.fixture(scope="session")
 def corpus() -> list[DecisionDocument]:
     return generate_corpus("experimental")

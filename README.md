@@ -4,7 +4,7 @@ An independent research implementation for evaluating evidence-grounded RAG arch
 
 The project builds a complete, reproducible experimental platform around one question: when a retrieval-augmented system answers questions about organisational decisions, which components actually make the answers more correct and better grounded? Answers come from the retriever, from semantic interpretation of the question, or from the generator.
 
-> **Status.** The offline part of the study (configurations A and B, the retrieval ablation, gate calibration and signal-classifier accuracy) has been executed under a frozen protocol, and its results are reported below. Configurations C–F use an LLM. They are implemented and tested with scripted models, but they have **not** been run against a real provider yet, so no LLM result is reported here.
+> **Status.** The offline part of the study (configurations A and B, the retrieval ablation, gate calibration and signal-classifier accuracy) has been executed under a frozen protocol, and its results are reported below. Configurations C–F use an LLM. They are implemented and tested with scripted models, but they are **pending execution**: they have not been run against a real provider, and no LLM result is reported anywhere in this repository. See [`experiments/README.md`](experiments/README.md) for the execution status of every study.
 
 ## Problem
 
@@ -105,6 +105,20 @@ $ uv run dirag ask "Which catering company was selected for the staff cafeteria 
 status: ABSTAIN — "no document passed the evidence gate"   (best similarity 0.110 < threshold 0.18)
 ```
 
+## Configuring an LLM provider (optional)
+
+Everything above runs offline, with no network access, credentials or paid services. LLM features are opt-in and configured only through environment variables (see [`.env.example`](.env.example)):
+
+| Variable | Purpose |
+|---|---|
+| `DIRAG_LLM_BASE_URL` | Endpoint of any OpenAI-compatible `/chat/completions` server. This selects the provider: hosted API, gateway or local server |
+| `DIRAG_LLM_MODEL` / `DIRAG_JUDGE_MODEL` | Generator / intent model and judge model |
+| `DIRAG_LLM_API_KEY` | Credential, read only from the environment and never written to results, manifests or logs |
+| `DIRAG_EMBEDDING_BACKEND` and `DIRAG_EMBEDDING_*` | Switch from the offline embedder to an OpenAI-compatible `/embeddings` endpoint |
+| `DIRAG_BUDGET_USD` | Hard spending ceiling per process |
+
+Until the provider variables are set, the interface hides the LLM options and shows a notice. CLI commands that need an LLM exit with code 2 and a message naming the missing variables, without writing partial results. `.env` and `.env.*` are git-ignored; only the placeholder file `.env.example` is versioned.
+
 ## Reproducing the experiments
 
 ```bash
@@ -178,7 +192,7 @@ Correctness uses the **lexical key-fact proxy**, not an LLM judge.
   One negated-filter question lost recall.
 * *The extractive generator cannot turn better retrieval into better answers.* It cites every admitted record, so most answers are only partially correct. The difference in strict correctness between A and B is 4 against 2 questions out of 32, which is noise.
 * *RQ3, partial:* the calibrated gate rejected all unanswerable holdout questions. Those questions are deliberately out of domain, however, which makes them an easy case (see limitations).
-* *RQ2* requires configurations C–F and remains open.
+* *RQ2* requires configurations C–F, which are pending execution, and remains open.
 
 Development-split results (`experiments/results/dev-ab/`, `ablation-dev.json`, `calibration-dev-hashing.json`) are kept separately and were the only results used for design decisions.
 
@@ -200,10 +214,10 @@ See [`docs/limitations.md`](docs/limitations.md).
 ```bash
 uv run ruff check src tests app && uv run ruff format --check src tests app
 uv run mypy                     # strict mode
-uv run pytest                   # 44 tests, no network access required
+uv run pytest                   # 47 tests, including a headless test of the Streamlit app
 ```
 
-Continuous integration runs the same checks on Python 3.12 and 3.13. It also verifies that the committed data regenerates byte-for-byte and that the frozen manifest is intact.
+Continuous integration runs the same checks on Python 3.12 and 3.13, with no secrets configured. It also verifies that the committed data regenerates byte-for-byte and that the frozen manifest is intact. The test suite removes any `DIRAG_*` variables from its environment, so it never contacts a provider, even on a machine where credentials are exported.
 
 ## References
 
@@ -225,4 +239,4 @@ This repository is an independent implementation of concepts studied during appl
 
 ## License
 
-No license has been selected yet; see [`LICENSE`](LICENSE).
+Released under the [MIT License](LICENSE). Runtime dependencies are under permissive licenses (BSD, MIT, Apache-2.0), except `certifi`, which is MPL-2.0 and used unmodified as a dependency of `httpx`.

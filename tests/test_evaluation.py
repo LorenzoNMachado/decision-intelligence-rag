@@ -193,3 +193,40 @@ def test_cli_offline_commands(workspace: Workspace, capsys: pytest.CaptureFixtur
     assert output["strategy"] == "rules" and output["answer"]["status"] in {"ANSWER", "ABSTAIN"}
     assert main(["--root", root, "run", "--split", "holdout", "--configs", "A", "--name", "x"]) == 2
     assert main(["--root", root, "ask", "q", "--generator", "llm"]) == 2  # no credentials configured
+
+
+def test_missing_llm_provider_is_reported_clearly_without_side_effects(
+    workspace: Workspace, capsys: pytest.CaptureFixture[str]
+) -> None:
+    root = str(workspace.root)
+    # A local run exists, so `judge` reaches the provider check rather than a missing-file error.
+    assert (
+        main(["--root", root, "run", "--split", "dev", "--configs", "A", "--name", "local", "--reps", "1"])
+        == 0
+    )
+    capsys.readouterr()
+    for argv in (
+        ["ask", "q", "--generator", "llm"],
+        ["ask", "q", "--retrieval", "llm_intent"],
+        ["run", "--split", "dev", "--configs", "C", "--name", "no-llm"],
+        ["ablation", "--split", "dev", "--strategies", "vector,llm_intent"],
+        ["judge", "--name", "local"],
+    ):
+        code = main(["--root", root, *argv])
+        err = capsys.readouterr().err
+        assert code == 2, argv
+        assert "DIRAG_LLM_BASE_URL" in err and ".env.example" in err, argv
+    # No partial results are written for the LLM run, and local configurations still work.
+    assert not (workspace.results_dir / "no-llm" / "rows.jsonl").exists()
+    assert not (workspace.results_dir / "local" / "judgements.jsonl").exists()
+    assert (
+        main(
+            [
+                "--root",
+                root,
+                "ask",
+                "Which decisions about the feature flag service have security dependencies?",
+            ]
+        )
+        == 0
+    )
