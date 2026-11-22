@@ -28,6 +28,7 @@ from decision_intelligence.corpus.questions import build_question_set
 from decision_intelligence.corpus.validation import validate_corpus
 from decision_intelligence.evaluation import manifest as manifest_mod
 from decision_intelligence.evaluation.ablation import calibrate_threshold, retrieval_ablation
+from decision_intelligence.evaluation.historical import verify_v1
 from decision_intelligence.evaluation.runner import ProtocolViolation, judge_run, report_run, run_experiment
 from decision_intelligence.llm.client import Budget
 from decision_intelligence.pipeline import Pipeline
@@ -203,6 +204,12 @@ def cmd_verify(args: argparse.Namespace, ws: Workspace, env: Environment) -> int
     return 0 if not problems else 1
 
 
+def cmd_verify_v1(args: argparse.Namespace, ws: Workspace, env: Environment) -> int:
+    report = verify_v1(ws.root)
+    _print(report)
+    return 0 if report["ok"] else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="dirag", description="Decision Intelligence RAG research toolkit")
     parser.add_argument("--root", default=".", help="repository root (default: current directory)")
@@ -273,6 +280,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("verify-manifest", help="check that nothing changed since the freeze")
     p.set_defaults(func=cmd_verify)
+
+    p = sub.add_parser("verify-v1", help="check that the historical protocol v1 artefacts are intact")
+    p.set_defaults(func=cmd_verify_v1)
     return parser
 
 
