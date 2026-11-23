@@ -1,0 +1,21 @@
+invariants checked on 1792 rows; violations: [] (0)
+C ABSTAIN claims=0 cited=[] | ''
+F ABSTAIN claims=0 cited=[] | ''
+C ABSTAIN claims=0 cited=[] | '   '
+F ABSTAIN claims=0 cited=[] | '   '
+C ABSTAIN claims=0 cited=[] | '?'
+F ABSTAIN claims=0 cited=[] | '?'
+C ABSTAIN claims=0 cited=[] | 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+F ABSTAIN claims=0 cited=[] | 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+C ABSTAIN claims=0 cited=[] | 'Quel budget a été approuvé pour le système de planification '
+F ABSTAIN claims=0 cited=[] | 'Quel budget a été approuvé pour le système de planification '
+C ANSWER  claims=4 cited=['DEC-100', 'DEC-097', 'DEC-098', 'DEC-102'] | 'What budget was approved?? \x00\u202e'
+F ANSWER  claims=1 cited=['DEC-097'] | 'What budget was approved?? \x00\u202e'
+C ABSTAIN claims=0 cited=[] | "'; DROP TABLE decisions; --"
+F ABSTAIN claims=0 cited=[] | "'; DROP TABLE decisions; --"
+C ANSWER  claims=4 cited=['DEC-002', 'DEC-001', 'DEC-003', 'DEC-005'] | 'What budget was approved for the decision to trial a patient'
+F ANSWER  claims=1 cited=['DEC-002'] | 'What budget was approved for the decision to trial a patient'
+C ANSWER  claims=4 cited=['DEC-002', 'DEC-003', 'DEC-005', 'DEC-006'] | 'Which decisions about the patient scheduling system do not n'
+F ANSWER  claims=3 cited=['DEC-002', 'DEC-003', 'DEC-005'] | 'Which decisions about the patient scheduling system do not n'
+C ANSWER  claims=4 cited=['DEC-002', 'DEC-006', 'DEC-001', 'DEC-003'] | 'What budget was approved for the patient scheduling system?'
+F ANSWER  claims=3 cited=['DEC-002', 'DEC-006', 'DEC-003'] | 'What budget was approved for the patient scheduling system?'

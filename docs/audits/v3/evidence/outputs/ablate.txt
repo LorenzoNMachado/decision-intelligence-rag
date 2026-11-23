@@ -1,0 +1,23 @@
+F as frozen: in-domain abstained 40/40, answerable abstained 14/100
+F scope-blind facts (every value FACTUAL): in-domain abstained 39/40, answerable abstained 13/100
+F scope-blind + no attribute focus: in-domain abstained 30/40, answerable abstained 9/100
+in-domain unanswerable targets: (category, field, record contains a value of the requested type):
+   ('entity_missing', 'framework', False) 5
+   ('entity_missing', 'regulation', False) 7
+   ('entity_missing', 'vendor', False) 6
+   ('entity_missing', 'vendor', True) 2
+   ('fact_missing', 'budget', False) 4
+   ('fact_missing', 'budget', True) 4
+   ('fact_missing', 'go_live', False) 1
+   ('fact_missing', 'go_live', True) 2
+   ('fact_missing', 'lead', False) 4
+   ('fact_missing', 'users', False) 2
+   ('fact_missing', 'users', True) 3
+Recall@4 parser-v2 index rules-v2 flat 0.8275
+Recall@4 parser-v2 index rules-v2 topical 0.8325
+Recall@4 parser-v2 index rules-v3 flat 0.9133
+Recall@4 parser-v2 index rules-v3 topical 0.9133
+Recall@4 parser-v3 index rules-v2 flat 0.8325
+Recall@4 parser-v3 index rules-v2 topical 0.8375
+Recall@4 parser-v3 index rules-v3 flat 0.9533
+Recall@4 parser-v3 index rules-v3 topical 0.9533

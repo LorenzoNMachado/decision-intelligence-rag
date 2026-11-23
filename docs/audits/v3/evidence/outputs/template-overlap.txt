@@ -1,0 +1,9 @@
+fact_missing     holdout templates  9, also used in dev  6
+entity_missing   holdout templates 10, also used in dev  7
+negated_filter   holdout templates  8, also used in dev  5
+fact_lookup      holdout templates  9, also used in dev  6
+entity_lookup    holdout templates 10, also used in dev  6
+multi_condition  holdout templates  6, also used in dev  5
+signal_filter    holdout templates 11, also used in dev  6
+out_of_domain    holdout templates 20, also used in dev  0
+holdout in-domain questions whose phrasing also appears in dev: 89 / 140
