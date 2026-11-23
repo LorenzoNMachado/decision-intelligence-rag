@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this research prototype, please cite it as software."
+title: "Decision Intelligence RAG"
+authors:
+  - family-names: Machado
+    given-names: Lorenzo Nakayama
+version: "0.3.0"
+license: MIT
+type: software
+repository-code: "https://github.com/LorenzoNMachado/decision-intelligence-rag"

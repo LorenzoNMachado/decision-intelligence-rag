@@ -16,6 +16,7 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       # Every `uv run` must use the matrix interpreter. Without this, .python-version (3.12)
       # wins and uv silently rebuilds .venv on 3.12, without the app extra.

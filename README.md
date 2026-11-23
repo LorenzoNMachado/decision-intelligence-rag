@@ -119,7 +119,7 @@ The Streamlit app (`uv run streamlit run app/streamlit_app.py`) runs offline. It
 - 224 questions in 8 categories, 8 dev + 20 holdout each (sizes fixed beforehand).
 - Categories: entity and fact lookups; the **same phrasings** about records that do *not* state the attribute (in-domain unanswerables); signal, negated and multi-condition filters; out-of-domain questions.
 
-**Optional LLM providers.** Any OpenAI-compatible endpoint can be configured through environment variables (see [`.env.example`](.env.example)). Token prices are required whenever a spending limit is set. Before each request the client computes an upper bound of its cost and refuses requests that might exceed the limit or whose cost cannot be bounded. The limit is only as accurate as the configured prices; the provider's billing is authoritative.
+**Optional remote providers.** Any OpenAI-compatible endpoint can be configured through environment variables (see [`.env.example`](.env.example)). A remote embedding backend sends corpus chunks and query text to `/embeddings`. Depending on the chat stage, `/chat/completions` receives the question, full decision-record text, admitted evidence, or question/reference/answer text. Provider retention and logging follow that service's terms. The optional local embedding cache stores vectors under `.cache/`, not source text, and is unencrypted. Keep credentials in the dedicated key variables, not in endpoint URLs. Token prices are required whenever a spending limit is set. Before each request the client computes an upper bound of its cost and refuses requests that might exceed the limit or whose cost cannot be bounded. The limit is only as accurate as the configured prices; the provider's billing is authoritative.
 
 ## Measured results
 
@@ -165,7 +165,7 @@ Earlier protocols are historical records ([v2](experiments/v2/README.md), [v1](e
 - **Data.** `uv run dirag corpus-generate --out /tmp/regen` regenerates `data/v3` byte for byte; CI diffs it on every pull request.
 - **Results.** `uv run dirag run --split holdout --configs A,B,C,D,E,F,G,H --name my-run` reproduces the committed holdout rows, apart from latency. Runs never overwrite results.
 - **Protocol.** `uv run dirag verify-manifest` checks the v3 freeze. `uv run dirag verify-v2` and `verify-v1` check the historical protocols against the git commits that published them, recomputing their manifest inputs.
-- **CI** (Python 3.12 and 3.13) runs lint, strict type checking, the tests, a package build, data regeneration and all three protocol checks. A security workflow scans the full history for secrets (gitleaks) and audits the locked dependencies (pip-audit).
+- **CI** (Python 3.12 and 3.13) runs lint, strict type checking, tests, a package build, data regeneration and all three protocol checks. Security workflows scan full history (gitleaks), audit locked dependencies (pip-audit), run Bandit and CodeQL.
 
 ## Technical documentation
 
@@ -175,6 +175,7 @@ Earlier protocols are historical records ([v2](experiments/v2/README.md), [v1](e
 | [`docs/v3/protocol.md`](docs/v3/protocol.md) | Hypotheses, configurations, primary comparisons, sizes, calibration, changes after the data was written |
 | [`experiments/v3/README.md`](experiments/v3/README.md) | Measured results, ablation, failure analysis, threats to validity |
 | [`docs/audits/v3/`](docs/audits/v3/README.md) | Adversarial audit of v3: findings, pre-registered cases, scripts, outputs, [known issues](docs/audits/v3/known-issues.md) |
+| [`docs/security-review.md`](docs/security-review.md) | Security boundaries, current controls and open prompt-injection and evidence-poisoning risks |
 | [`docs/architecture.md`](docs/architecture.md) | Components, data flow, offline vs LLM stages, design decisions |
 | [`docs/evaluation.md`](docs/evaluation.md) | Metric formulas and denominators, intervals, what each grounding check shows |
 | [`docs/limitations.md`](docs/limitations.md) | Known failures and threats to validity |

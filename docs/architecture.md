@@ -126,10 +126,22 @@ the de-facto standard `/embeddings` and `/chat/completions` endpoints, so hosted
 gateways, vendor endpoints and local servers can be swapped through environment
 variables without code changes.
 
-**Secrets stay in the environment.** API keys are read once in `config.py` and
-never stored in result files or manifests. The configured key, Bearer tokens and
-key-like strings are redacted from provider error messages. Endpoints are
-recorded without credentials, query or fragment.
+**Data sent to providers.** The default hashing embedder makes no network call.
+If a remote embedding backend is selected, corpus chunks and query text are
+sent to `/embeddings`; depending on the chat stage, `/chat/completions` receives
+the question, full decision-record text, admitted evidence, or
+question/reference/answer text. Provider retention and logging are outside the
+repository's control. The local embedding cache stores returned vectors under
+`.cache/`, keyed by text hashes, without storing the source text; it is not
+encrypted.
+
+**Secrets stay in the environment.** Dedicated API keys are read by
+`config.py` and not stored in result files or manifests. The chat client
+redacts the configured key, Bearer tokens and key-like strings from provider
+error details; embedding errors omit response bodies. These filters do not
+cover every possible secret string. Endpoint identity in manifests omits
+credentials, query and fragment, but the code does not reject credentials in
+configured endpoint URLs. Keep credentials in the dedicated key variables.
 
 **Three protocols, one codebase.** The code runs protocol v3 only
 (`Workspace(protocol="v3")`). The artefacts of v1 and v2 remain at their
