@@ -16,6 +16,10 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      # Every `uv run` must use the matrix interpreter. Without this, .python-version (3.12)
+      # wins and uv silently rebuilds .venv on 3.12, without the app extra.
+      UV_PYTHON: ${{ matrix.python-version }}
     strategy:
       fail-fast: false
       matrix:
@@ -31,6 +35,10 @@ jobs:
           enable-cache: true
       - name: Install dependencies (locked)
         run: uv sync --locked --extra app --python ${{ matrix.python-version }}
+      - name: Interpreter matches the matrix
+        run: >-
+          uv run python -c "import sys; v = '${{ matrix.python-version }}';
+          assert sys.version.startswith(v + '.'), sys.version; print(sys.version)"
       - name: Lint
         run: |
           uv run ruff check src tests app scripts
