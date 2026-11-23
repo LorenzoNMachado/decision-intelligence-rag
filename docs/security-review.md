@@ -14,12 +14,12 @@ protocols, evaluation sets and historical result files were not changed.
 | Evidence sufficiency | Offline rules can return `ABSTAIN` when evidence is not admitted or does not match the requested fact. | The rule set has documented paraphrase, scope, contradiction and subject-resolution failures. Preserve `ANSWER`, `ABSTAIN` and `ERROR` as separate outcomes. |
 | Data isolation | The demo uses a bundled synthetic corpus and runs locally by default. | There is no authentication, tenant model or cross-user isolation. Do not expose the app as a shared service or use sensitive organizational records. |
 | Input and paths | JSON corpus loading and corpus integrity checks validate repository-format data. CLI paths are supplied by the local operator. | The project is not a sandbox for hostile files or a multi-tenant upload service. Only load files from trusted local sources. |
-| Provider security | Provider keys come from environment variables; error text is sanitized; tests use mocked transports. Offline mode makes no provider calls. | With an LLM provider enabled, questions and admitted evidence leave the local process. Provider retention, access controls and logging are outside this repository's control. |
+| Provider security | Dedicated API keys come from environment variables; known key/bearer patterns are redacted from chat errors, embedding errors omit response bodies, and tests use mocked transports. Offline mode makes no provider calls. | A remote embedder receives corpus chunks and query text. Depending on the chat stage, a provider receives the question, full decision-record text, admitted evidence, or question/reference/answer text. Provider retention, access controls and logging are outside this repository's control. Credentials in endpoint URLs are not rejected by code and may not be fully redacted. The local `.cache/` stores unencrypted embedding vectors keyed by hashes, not raw input text. |
 | Reproducibility | CI checks the frozen manifests, corpus generation, and historical v1/v2 records. | These integrity checks establish that committed inputs match their manifests; they do not establish scientific validity or security. |
 
 ## Adversarial test boundary
 
-Existing tests cover malformed provider responses, secret redaction, invalid
+Existing tests cover malformed provider responses, known-secret redaction, invalid
 citations, quote matching, answer states and evidence sufficiency. A separate
 test records that a valid source ID plus a literal quote can still leave claim
 support unchecked; this is deliberately outside the frozen experiment

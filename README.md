@@ -119,7 +119,7 @@ The Streamlit app (`uv run streamlit run app/streamlit_app.py`) runs offline. It
 - 224 questions in 8 categories, 8 dev + 20 holdout each (sizes fixed beforehand).
 - Categories: entity and fact lookups; the **same phrasings** about records that do *not* state the attribute (in-domain unanswerables); signal, negated and multi-condition filters; out-of-domain questions.
 
-**Optional LLM providers.** Any OpenAI-compatible endpoint can be configured through environment variables (see [`.env.example`](.env.example)). Token prices are required whenever a spending limit is set. Before each request the client computes an upper bound of its cost and refuses requests that might exceed the limit or whose cost cannot be bounded. The limit is only as accurate as the configured prices; the provider's billing is authoritative.
+**Optional remote providers.** Any OpenAI-compatible endpoint can be configured through environment variables (see [`.env.example`](.env.example)). A remote embedding backend sends corpus chunks and query text to `/embeddings`. Depending on the chat stage, `/chat/completions` receives the question, full decision-record text, admitted evidence, or question/reference/answer text. Provider retention and logging follow that service's terms. The optional local embedding cache stores vectors under `.cache/`, not source text, and is unencrypted. Keep credentials in the dedicated key variables, not in endpoint URLs. Token prices are required whenever a spending limit is set. Before each request the client computes an upper bound of its cost and refuses requests that might exceed the limit or whose cost cannot be bounded. The limit is only as accurate as the configured prices; the provider's billing is authoritative.
 
 ## Measured results
 

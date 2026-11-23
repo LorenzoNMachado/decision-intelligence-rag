@@ -40,15 +40,24 @@ corpora or expose the unauthenticated app to a network.
 
 ## Design notes
 
-* Credentials are read only from environment variables, never written to
-  results or manifests, and redacted from error messages.
+* Dedicated API keys are read from environment variables and are not written
+  to results or manifests. The chat client redacts its configured key and
+  common bearer/key-like strings from provider error details; this is not a
+  general-purpose scrubber for arbitrary secrets. Keep credentials out of
+  endpoint URLs and query strings. The code does not enforce that convention.
 * The offline mode (default) makes no network calls.
 * The Streamlit app binds to `localhost` by default and has no authentication;
   do not expose it publicly with provider credentials configured.
 * The bundled corpus is synthetic. There is no multi-user or tenant isolation;
   this repository does not provide a secure boundary for user-supplied corpora.
-  When a provider is configured, questions and admitted evidence are sent to
-  that endpoint under its data-retention terms.
+  A remote embedding backend sends corpus chunks and query text to its
+  `/embeddings` endpoint. Depending on the optional chat stage, `/chat/completions`
+  receives the question, full decision-record text for signal classification,
+  admitted evidence for answer generation, or a question/reference/answer for
+  judging. Provider retention, access controls and logging are outside this
+  repository's control. The optional embedding cache persists vectors under
+  the local `.cache/` directory; it stores hashes of input text as keys, not
+  the original text, and is not encrypted.
 * CI runs a full-history secret scan (gitleaks) and a known-vulnerability audit
   of locked dependencies (pip-audit), Bandit and CodeQL. These checks are
   limited to the code and dependency versions they inspect and do not establish
