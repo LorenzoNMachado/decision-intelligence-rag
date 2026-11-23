@@ -14,7 +14,7 @@ It is **a research implementation, not a production system**. It runs fully offl
 
 ![The Streamlit demo answering a budget question from the evidence that contains it](docs/assets/demo-overview.png)
 
-> **Status.** Protocol **v3** is current. It is frozen, and its holdout was run once for the eight offline configurations (A–H). The results are **exploratory**: the system was frozen before the v3 corpus and questions were written, but one author wrote all of them. Protocols v1 and v2 are kept as verifiable historical records and are not comparable with v3. The configuration that needs an LLM (L) is implemented and tested with scripted models but **has not been executed**.
+> **Status.** Protocol **v3** is current. It is frozen, and its holdout was run once for the eight offline configurations (A–H). The results are **exploratory**: the system was frozen before the v3 corpus and questions were written, but one author wrote all of them. Protocols v1 and v2 are kept as verifiable historical records and are not comparable with v3. The configuration that needs an LLM (L) is implemented and tested with scripted models but **has not been executed**. An adversarial audit of v3 (not independent: same AI agent as the implementation) is in [`docs/audits/v3/`](docs/audits/v3/README.md); it qualifies several of the results below.
 
 ## Research problem
 
@@ -28,8 +28,8 @@ Protocol v3 tests mechanisms aimed at each failure ([plan](docs/v3/protocol.md),
 
 ## Key features
 
-- **Evidence sufficiency check (v3).** Between retrieval and generation, the check decides from the question text and the admitted records alone whether a record *asserts* what is asked. Possible outcomes are a current value of the expected type about the requested attribute, every required condition with the requested polarity, a partial match, ambiguity, or nothing; otherwise the system abstains.
-- **Assertion scope (v3).** Each mention is factual, negated, hypothetical, historical or merely contextual. Records that assert both polarities are labelled contradictory instead of "PRESENT wins".
+- **Evidence sufficiency check (v3).** Between retrieval and generation, the check decides from the question text and the admitted records alone whether a record *asserts* what is asked. Possible outcomes are a current value of the expected type about the requested attribute, every required condition with the requested polarity, a partial match, ambiguity, or nothing; otherwise the system abstains. Topicality also uses the records' structured `subject` and `domain` fields, so the system does not work from unstructured text alone.
+- **Assertion scope (v3).** Each mention is factual, negated, hypothetical, historical or merely contextual. Records that assert both polarities are labelled contradictory instead of "PRESENT wins". Its measured contribution to the sufficiency results is small (one holdout question); see the audit.
 - **Controlled ablation.** The v2 semantic layer is kept unchanged next to the v3 one; a BM25 lexical baseline sits next to the hashing embedder; and extractive generators v1 (word overlap) and v2 (quotes the sentence the check found) are compared on the same records.
 - **Explicit answer states.** ANSWER, ABSTAIN and ERROR. Insufficient evidence is a recorded abstention reason, and provider failures are never counted as abstentions.
 - **Reproducible evaluation.**
@@ -125,27 +125,36 @@ The Streamlit app (`uv run streamlit run app/streamlit_app.py`) runs offline. It
 
 Protocol v3 holdout: 160 questions (100 answerable, 40 in-domain unanswerable, 20 out of domain). Lexical correctness proxy; one deterministic run per configuration; the question is the unit of comparison. Source: [`experiments/v3/`](experiments/v3/README.md).
 
-| Metric | A vector | B rules-v2 | C rules-v3 | E C + sufficiency | F E + extractive-v2 | G BM25 |
-|---|---:|---:|---:|---:|---:|---:|
-| Recall@4 (n = 100) | 0.791 | 0.828 | **0.953** | 0.953 | 0.953 | 0.824 |
-| Supporting-source precision | 0.306 | 0.343 | 0.424 | 0.952 | 0.952 | 0.300 |
-| Strict correctness (n = 100) | 0.110 | 0.100 | 0.190 | 0.530 | **0.700** | 0.100 |
-| Correct abstention, in-domain | 0/40 | 0/40 | 0/40 | **40/40** | 40/40 | 0/40 |
-| Correct abstention, out-of-domain | 20/20 | 20/20 | 20/20 | 20/20 | 20/20 | 20/20 |
-| False abstention, answerable | 1/100 | 2/100 | 1/100 | **14/100** | 14/100 | 0/100 |
+| | A | B | C | D | E | F | G | H |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Retrieval | vector | rules-v2 | rules-v3 | rules-v2 | rules-v3 | rules-v3 | BM25 | vector |
+| Sufficiency check | — | — | — | ✓ | ✓ | ✓ | — | ✓ |
+| Generator | ext-v1 | ext-v1 | ext-v1 | ext-v1 | ext-v1 | ext-v2 | ext-v1 | ext-v2 |
+| Recall@4 (n = 100) | 0.791 | 0.828 | **0.953** | 0.828 | 0.953 | 0.953 | 0.824 | 0.791 |
+| Supporting-source precision | 0.306 | 0.343 | 0.424 | 0.943 | 0.952 | 0.952 | 0.300 | 0.948 |
+| Strict correctness (n = 100) | 0.110 | 0.100 | 0.190 | 0.350 | 0.530 | **0.700** | 0.100 | 0.480 |
+| Correct abstention, in-domain | 0/40 | 0/40 | 0/40 | 40/40 | 40/40 | 40/40 | 0/40 | 40/40 |
+| Correct abstention, out-of-domain | 20/20 | 20/20 | 20/20 | 20/20 | 20/20 | 20/20 | 20/20 | 20/20 |
+| False abstention, answerable | 1/100 | 2/100 | 1/100 | 22/100 | 14/100 | 14/100 | 0/100 | 24/100 |
+| Unsupported answers (share of ANSWER) | 0.367 | 0.362 | 0.309 | 0.013 | 0.012 | 0.012 | 0.343 | 0.013 |
+
+8 configurations × 160 questions = 1,280 result rows. "rules-v2" is the v2 semantic layer (v2 lexicon and classifier, flat ranking); "rules-v3" is the scoped classifier, v3 parser and topical ranking; ext-v1 quotes the sentence with the most shared words, ext-v2 the sentence the sufficiency check found.
 
 Pre-specified comparisons (paired, per question):
 
 - **Sufficiency (E vs C):** in-domain abstention 0/40 → 40/40, at the cost of 14 false abstentions in 100 answerable questions.
 - **Corrected semantic layer (C vs B):** Recall@4 +0.126 (95 % CI 0.073–0.183; 21 better, 1 worse; sign test p < 0.001), mostly on negated filters (0.579 → 0.933).
-- **Generator (F vs E):** strict correctness +0.106 (0.063–0.156; 17 better, 0 worse).
+- **Generator (F vs E):** strict correctness 0.53 → 0.70 on the 100 answerable questions, **+0.17** (95 % CI 0.10–0.25; 17 better, 0 worse). The stored summary also lists +0.106 for this pair: that figure is the same 17 questions divided by all 160 questions, unanswerable ones included.
 - **BM25 vs hashing (G vs A):** no difference (p = 0.52).
 
 **How to read these numbers:**
 
 - They are **exploratory** results on a **synthetic** corpus written by the author of the system.
-- **The 40/40 in-domain abstention is an optimistic estimate.** The near misses in the corpus (a former contract value, a planned review date, a consulted person) are the kinds of statement the check was designed to reject.
-- **The retrieval gain comes from the scoped labels and the v3 parser.** In the ablation, topical eligibility added nothing measurable (rules-v3 and rules-v3-flat both 0.953).
+- **The 40/40 does not show robust interpretation of scope.** In 29 of the 40 target records there is no value of the requested type at all. With the assertion-scope classification switched off, the check still abstains on 39/40 (on 30/40 if the attribute-word requirement is also removed). Scope changed the outcome of one question. The check's patterns also mirror the corpus generator's templates.
+- **Outside the generator's wording the check often fails.** On 37 adversarial cases written by the auditing agent (not a random sample, not an independent annotation), 12 pass: 6 of the 13 that should be declined are declined, and 7 are answered without support (a rejected budget, a withdrawn approval, savings taken as the budget, contradictory values). See the [audit](docs/audits/v3/README.md) and its [known issues](docs/audits/v3/known-issues.md).
+- **Part of the precision comes from structured metadata.** Without the `subject` and `domain` fields, which also define the gold standard of the filter questions, F's supporting-source precision falls from 0.952 to 0.873 and its strict correctness from 70 to 62 answerable questions.
+- **The holdout is frozen, not independent in form.** 89 of its 140 in-domain questions use a phrasing that also occurs in the dev split, where defects were found and fixed.
+- **Most of the retrieval gain comes from the scoped signal index.** With the v2 parser it raises Recall@4 from 0.828 to 0.913; the v3 parser adds about 0.04; topical ranking adds 0.000–0.005. On 24 new paraphrases the v3 classifier labels 10 correctly (v2: 9), against 28 of the generator's own 33 phrases, so the gain is specific to this corpus.
 - **The false abstentions come from paraphrase gaps.** "Funding" for "budget", "staff" for "employees", and conditions stated without lexicon words: limits of a lexical approach.
 - Correctness uses a lexical proxy, and **no LLM configuration has been run**.
 
@@ -165,6 +174,7 @@ Earlier protocols are historical records ([v2](experiments/v2/README.md), [v1](e
 | [`docs/v3/diagnosis.md`](docs/v3/diagnosis.md) | The v2 failures that motivated v3, reproduced |
 | [`docs/v3/protocol.md`](docs/v3/protocol.md) | Hypotheses, configurations, primary comparisons, sizes, calibration, changes after the data was written |
 | [`experiments/v3/README.md`](experiments/v3/README.md) | Measured results, ablation, failure analysis, threats to validity |
+| [`docs/audits/v3/`](docs/audits/v3/README.md) | Adversarial audit of v3: findings, pre-registered cases, scripts, outputs, [known issues](docs/audits/v3/known-issues.md) |
 | [`docs/architecture.md`](docs/architecture.md) | Components, data flow, offline vs LLM stages, design decisions |
 | [`docs/evaluation.md`](docs/evaluation.md) | Metric formulas and denominators, intervals, what each grounding check shows |
 | [`docs/limitations.md`](docs/limitations.md) | Known failures and threats to validity |
@@ -176,6 +186,8 @@ Earlier protocols are historical records ([v2](experiments/v2/README.md), [v1](e
 - **Synthetic data and one author** for the system, the corpus and the questions. There is no independent annotation.
 - **Lexical everywhere:** cue lexicon, hashing embedder, BM25 and correctness proxy. Paraphrases without known words are missed.
 - **20 holdout questions per category.** Per-category differences are descriptive.
+- **Rules coupled to the corpus generator**, a holdout that shares phrasings with dev, and topicality that relies on structured `subject`/`domain` fields.
+- **Unsupported answers on non-template wording** (rejected, withdrawn or contradictory values), found by the audit.
 - **No LLM results.**
 
 See [`docs/limitations.md`](docs/limitations.md).
@@ -184,9 +196,7 @@ See [`docs/limitations.md`](docs/limitations.md).
 
 - Run configuration L with a provider, in the documented order: dev run, provider freeze, holdout run, judge.
 - Have questions and near misses written by someone who does not know the sufficiency rules, and add human relevance labels.
-- Fix the two general defects found after the v3 holdout, in a new protocol:
-  - an answer-type noun inside a subject name ("budget planning tool") is taken as the requested type;
-  - counterfactual modality ("would breach") is read as hypothetical.
+- Address the defects catalogued in [`docs/audits/v3/known-issues.md`](docs/audits/v3/known-issues.md) in a new protocol, with near misses, paraphrases and question formats that are not shared between dev and holdout.
 - Evaluate a dense embedding model with its own calibration.
 
 ## References

@@ -8,9 +8,30 @@ so that readers can weigh the results, not as a to-do list.
 * **One author for everything.** The sufficiency rules were committed before
   the v3 corpus and questions, but the same person wrote all of them, knowing
   the rules. The corpus' near misses (former contract values, planned review
-  dates, consulted people) are exactly the statements the rules reject, so
-  the 40/40 in-domain abstention is an optimistic estimate. No independent
+  dates, consulted people) are exactly the statements the rules reject, and
+  the person patterns are the generator's own lead sentences. No independent
   human review or annotation exists. Results are exploratory.
+* **The 40/40 in-domain abstention does not show robust scope
+  interpretation.** In 29 of the 40 targets there is no value of the
+  requested type at all; with assertion-scope classification switched off
+  the check still abstains on 39/40. Scope changed one outcome
+  ([audit](audits/v3/README.md), finding 1).
+* **Unsupported answers outside the generator's wording.** On the audit's 37
+  adversarial cases (written by the implementing AI agent to find failures;
+  not a random sample, not an estimate of performance) F passes 12, declines
+  6 of the 13 it should decline and answers 7 without support: rejected,
+  withdrawn or contradictory amounts, savings taken as a budget, a vendor's
+  certificate taken as the decision's framework, an impossible date. See
+  [`audits/v3/known-issues.md`](audits/v3/known-issues.md).
+* **Structured metadata.** Topicality uses the records' `subject` and `domain`
+  fields, which also define the gold standard of the filter questions.
+  Without them F's supporting-source precision is 0.873 (not 0.952) and its
+  strict correctness 62 (not 70) of 100 answerable questions.
+* **Dev and holdout share phrasings**: 89 of 140 in-domain holdout questions,
+  on which dev defects were found and fixed. The holdout does not test new
+  question formats.
+* **The classifier's advantage is corpus-specific**: rules-v3 labels 28 of the
+  generator's 33 phrases correctly but 10 of 24 new paraphrases (rules-v2: 9).
 * **Paraphrase gaps cause false abstentions** (14 of 100 answerable holdout
   questions with the check): the requested attribute in other words
   ("funding", "capped" for budget; "staff" for employees), conditions stated
@@ -19,6 +40,9 @@ so that readers can weigh the results, not as a to-do list.
 * **Known general defects found after the holdout**, not fixed in v3: an
   answer-type noun inside a subject name ("budget planning tool") is taken as
   the requested type; the cue "compliance" also occurs in legal sentences.
+  The audit adds double negation in questions, exceptions, nested subject
+  names, questions without a subject, date formats and impossible dates,
+  among others ([`audits/v3/known-issues.md`](audits/v3/known-issues.md)).
 * **Topical eligibility has no measured effect** on this corpus; it is kept
   as a safeguard, not claimed as an improvement.
 * **The sufficiency check trusts the records.** It decides whether a record

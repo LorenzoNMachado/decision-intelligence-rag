@@ -24,6 +24,7 @@ recomputed with it; see [`v1/README.md`](v1/README.md) and
 | Retrieval ablation (vector, bm25, rules-v2, rules-v3-flat, rules-v3) | dev, holdout | [`v3/results/ablation-holdout.json`](v3/results/ablation-holdout.json) |
 | Configurations A–H, one run each | holdout | [`v3/results/holdout/`](v3/results/holdout/summary.md) |
 | Rule classifiers (rules-v2, rules-v3) vs generator labels | all 180 records | [`v3/results/`](v3/results/) |
+| Adversarial audit (not independent; analysis only, no tuning) | holdout + 37 new cases | [`../docs/audits/v3/`](../docs/audits/v3/README.md) |
 
 Plan, hypotheses and the list of changes made after the data was written:
 [`../docs/v3/protocol.md`](../docs/v3/protocol.md). Results and threats to

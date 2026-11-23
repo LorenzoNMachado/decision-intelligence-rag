@@ -56,6 +56,14 @@ averaged per question first, so they never count as observations). Paired
 comparisons report the exact two-sided sign test and a bootstrap 95 % interval
 of the mean per-question difference.
 
+**Denominators of paired correctness (v3).** In the stored summaries
+(`summary.json`, `paired`), the "correct" comparison is over **all** questions
+of the split, unanswerable ones included (a correct abstention counts as
+correct); "recall_at_k" is over answerable questions only. Strict correctness
+in the results tables, and the pre-registered comparison F vs E, are over
+the answerable questions: F vs E is +0.17 on the 100 answerable holdout
+questions, which the stored summary reports as +0.106 over all 160.
+
 ## What each grounding check shows, and what it does not
 
 | Check | It shows | It does **not** show |

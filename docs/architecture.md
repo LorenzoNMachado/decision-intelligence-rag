@@ -57,7 +57,10 @@ result and the records, never a reference answer or a category:
    HYPOTHETICAL, HISTORICAL or CONTEXTUAL per mention; a named organisation
    after a dependency phrase is a third-party mention.
 4. **Decision per record** (`check.py`): OFF_TOPIC (another decision or
-   subject), SUFFICIENT (a current value of the right type about the requested
+   subject; a referenced decision is matched by its title's words, a named
+   subject or domain by the record's structured `subject`/`domain` fields,
+   which the corpus generator writes and which also define the gold standard
+   of the filter questions), SUFFICIENT (a current value of the right type about the requested
    attribute, or every required condition asserted), PARTIAL, AMBIGUOUS
    (both polarities asserted), INSUFFICIENT. Anything but SUFFICIENT overall
    is ABSTAIN with outcome `INSUFFICIENT_EVIDENCE`.
@@ -138,3 +141,6 @@ signal index byte for byte.
 
 **Topical eligibility is a safeguard, not a measured gain.** In the v3 holdout
 ablation, rules-v3 with and without the topical band reach the same Recall@4.
+Most of the gain over rules-v2 comes from the scoped signal index, then the v3
+parser ([audit](audits/v3/README.md), finding 6). The audit's catalogue of
+known defects is [`audits/v3/known-issues.md`](audits/v3/known-issues.md).
