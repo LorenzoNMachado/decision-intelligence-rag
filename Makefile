@@ -1,10 +1,10 @@
 # Convenience targets. Every target is a thin wrapper around a documented uv command.
 Q ?= What budget was approved for the decision to trial a patient scheduling system?
 
-.PHONY: help install ask app test lint typecheck verify figures check
+.PHONY: help install ask app test lint typecheck verify figures check audit-v3
 
 help:  ## list targets
-	@grep -E "^[a-z]+:.*##" $(MAKEFILE_LIST) | sed "s/:.*##/ -/"
+	@grep -E "^[a-z0-9-]+:.*##" $(MAKEFILE_LIST) | sed "s/:.*##/ -/"
 
 install:  ## install the package, the demo app and the dev tools (locked versions)
 	uv sync --locked --extra app
@@ -35,3 +35,6 @@ figures:  ## regenerate docs/assets/*.svg from the measured results
 	uv run python scripts/make_figures.py
 
 check: lint typecheck test verify  ## everything CI checks locally, except the build
+
+audit-v3:  ## re-run the v3 audit (known failures; not part of check or CI)
+	docs/audits/v3/reproduce.sh

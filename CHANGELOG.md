@@ -3,6 +3,25 @@
 All notable changes to this project. Results are only ever reported for the
 protocol under which they were measured.
 
+## [Unreleased] — v3 audit remediation
+
+Documentation only; protocol v3, its data, code and stored results are unchanged.
+
+### Added
+- `docs/audits/v3/`: the adversarial audit of protocol v3 (not independent:
+  same AI agent as the implementation), with its pre-registered cases,
+  scripts, recorded outputs, `reproduce.sh` (`make audit-v3`, not part of CI)
+  and a catalogue of known issues for a future protocol.
+
+### Changed
+- README and v3 documentation: all eight configurations in the results
+  table; F vs E reported as +0.17 on the 100 answerable questions (the
+  stored +0.106 is over all 160); what the 40/40 in-domain abstention does
+  and does not show; the check's dependence on structured `subject`/`domain`
+  fields; phrasings shared by dev and holdout; the decomposition of the
+  retrieval gain; adversarial results. H's supporting-source precision is
+  0.948 (0.94846), not 0.949.
+
 ## [0.3.0] — protocol v3
 
 ### Added
