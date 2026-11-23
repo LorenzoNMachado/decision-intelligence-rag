@@ -1,0 +1,55 @@
+{
+  "amendments": [],
+  "environment": {
+    "implementation": "CPython",
+    "packages": {
+      "httpx": "0.28.1",
+      "numpy": "2.5.5"
+    },
+    "platform": "linux",
+    "python": "3.12.16",
+    "uv_lock_sha256": "34a93ca17a6324eabcfe830e5e35e1ef191ffb33068445181ed602b9345f702e"
+  },
+  "frozen_at": "2026-11-22T22:53:58+00:00",
+  "git_commit": "6ec3481e64b9bbc4530a4b774d077946249739b8",
+  "inputs": {
+    "evaluation": {
+      "prompt:claim_verification_v1": "6165482b34542fd3719fcde1d5bcc8cd9c51922494da927998a8360cf1370f72",
+      "prompt:judge_correctness_v2": "e5309219705e8130a8e2f9b860cfe993c0ae132eb070339ee5001254a99049b7",
+      "source:evaluation": "a95fcb2724d87e36a3967bbe60c4be5f0b7a3316547b76a1961ffe8b1e5adbab"
+    },
+    "pipeline": {
+      "data/v3/chunks.jsonl": "857e5ca8cdfa6862f7b32424e4a9593e2c7b6ea75242dd320396f4f22f6b28ab",
+      "data/v3/corpus.jsonl": "93761aff057b7eaa9804c6ec3148f49aeb3f5a2f24137cd689d4d315e8c1cb71",
+      "data/v3/question_specs.json": "672eeb67a5ce41b48c000f3205a64a4b5fa9cb6c01514aa23833ee5e87a9b983",
+      "data/v3/questions.json": "576d7c2b2b5c112cab13e1d9dbeb007030347b0582e86e4bd6642c1be612139e",
+      "data/v3/signal_index.rules-v2.json": "8d73f50cc7ea167480e6fb83003cd99b11611f352c531a287de287a5c05fb64c",
+      "data/v3/signal_index.rules-v3.json": "c4bcba4c01b4c0b88f10ccbe66eee50b98fa2728df06a126d7e66d8fc827aece",
+      "experiments/v3/configurations/A.json": "408ce7c8f91cdcf5d67f1a27a688524c3da270b168b4b90580346c42dab139f9",
+      "experiments/v3/configurations/B.json": "c92cb42aded71d009720499f2adaa5966405fab2d71f1d5c6e4ff186cc8bea94",
+      "experiments/v3/configurations/C.json": "0d66e6580e869769175db904f5ca2099da99c3c1516e7b98bca2654e49f459a8",
+      "experiments/v3/configurations/D.json": "995be7cb1e3d23102af57e01753b8a3ccbd08a358679f8898c8b1933009e971c",
+      "experiments/v3/configurations/E.json": "29584675825159323b39edfe53553fe2940d0e68f15148e1f5dfdfb27435e4ee",
+      "experiments/v3/configurations/F.json": "560a2647434e675f1197cecc3bcf225d85d58a3824cbbfee9e94b71e7f81a0c2",
+      "experiments/v3/configurations/G.json": "476aec9ce5c713c9e6cf34f823d9295ef171b0e59c5bd3cb569c4013c2a2d03c",
+      "experiments/v3/configurations/H.json": "4a0d11ca0310cefa64eb03d6ef19b90f1e74ccc635dafd3436f3932d87646f23",
+      "experiments/v3/configurations/L.json": "e8406475309228f6defe2b2e4e88ad12d4d5fb1d381e3d4b76b9c1b75c101739",
+      "experiments/v3/configurations/protocol.json": "878e7de0de9bbe4d3885e64afa7a4e7c556ea04406a9b736443df918a67a3e4f",
+      "prompt:answer_v2": "3a8068cc2357a30b98342534269cf2741a50fcc3ab5f047f8434ddcf4e8595ce",
+      "prompt:intent_v1": "8589390ac5315463e42f4034f1a97d5954f74c24040c29f20768f04048ca73c3",
+      "prompt:signal_classification_v1": "587683fa814f21f8031907b1be3b00eb0456fefb30108a54223064ed909eb972",
+      "source:pipeline": "1d237ccc9a4b912d02a46938e1128bbd9351855384d1f35e10a5ef048deb0840"
+    }
+  },
+  "note": "Protocol v3 frozen after dev-only development and calibration (hashing-v1 gate 0.2115, bm25-v1 gate 7.522, topical band 0.12). Plan registered in docs/v3/protocol.md (beb1c7a) before any run. Same author for system, corpus and questions: results are exploratory. Configuration L (LLM) is not run; no LLM provider configured.",
+  "protocol": "v3",
+  "providers": {
+    "embedding": {
+      "backend": "hashing",
+      "model": ""
+    },
+    "llm": null
+  },
+  "schema": 2,
+  "status": "frozen"
+}

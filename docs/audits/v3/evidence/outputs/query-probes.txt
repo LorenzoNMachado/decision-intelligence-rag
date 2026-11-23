@@ -1,0 +1,5 @@
+generator labels third_party for DEC-001..006: {'DEC-001': 'PRESENT', 'DEC-002': 'ABSENT', 'DEC-003': 'ABSENT', 'DEC-004': 'UNCLEAR', 'DEC-005': 'ABSENT', 'DEC-006': 'UNCLEAR'}
+ANSWER ['DEC-002', 'DEC-003', 'DEC-005'] [('third_party_dependency', 'ABSENT')] | Which decisions about the patient scheduling system involve no external supplier?
+ANSWER ['DEC-002', 'DEC-003', 'DEC-005'] [('third_party_dependency', 'ABSENT')] | Which decisions about the patient scheduling system do not not involve an external supplier?
+ANSWER ['DEC-001'] [('third_party_dependency', 'PRESENT')] | Which decisions about the patient scheduling system involve an external supplier?
+no-subject question -> ANSWER Relevant decisions: / - Introduce a budget planning tool (DEC-097): The project budget is capped at €1.2 million.

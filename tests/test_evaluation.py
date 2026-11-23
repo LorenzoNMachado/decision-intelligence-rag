@@ -119,6 +119,21 @@ def test_offline_run_report_and_resume(workspace: Workspace, offline_env: Enviro
     assert "api_key" not in json.dumps(metadata).replace("llm_api_key_configured", "")
 
 
+def test_configurations_with_sufficiency_run_the_check(
+    workspace: Workspace, offline_env: Environment
+) -> None:
+    # Regression: the runner once ignored ``sufficiency`` in the configuration.
+    run_experiment(workspace, offline_env, "dev", ["C", "E", "F"], name="suff")
+    rows = read_jsonl(workspace.results_dir / "suff" / "rows.jsonl")
+    by_config = {c: [r for r in rows if r["config"] == c] for c in ("C", "E", "F")}
+    assert all(r["sufficiency"] is None for r in by_config["C"])
+    assert all(r["sufficiency"] is not None for r in by_config["E"] + by_config["F"])
+    answered = [r for r in by_config["F"] if r["answer"]["status"] == "ANSWER"]
+    assert answered, "extractive-v2 must answer when the check finds sufficient evidence"
+    insufficient = [r for r in by_config["E"] if r["sufficiency"]["status"] != "SUFFICIENT"]
+    assert all(r["answer"]["outcome"] == "INSUFFICIENT_EVIDENCE" for r in insufficient)
+
+
 def test_deterministic_configurations_run_once_by_default(
     workspace: Workspace, offline_env: Environment
 ) -> None:
@@ -207,11 +222,19 @@ def test_llm_configurations_need_a_frozen_provider(workspace: Workspace, offline
             workspace,
             offline_env,
             "holdout",
-            ["C"],
+            ["L"],
             name="h",
             repetitions=1,
             llm=ScriptedLLM(lambda s, u: {}),
         )
+
+
+def _intent_configs(workspace: Workspace) -> None:
+    """Strategy 3 is not measured in protocol v3; the tests add its configurations locally."""
+
+    for cid, generator in (("Y", "extractive-v1"), ("Z", "llm")):
+        config = {"id": cid, "retrieval": "llm_intent", "generator": generator, "description": "test"}
+        (workspace.config_dir / f"{cid}.json").write_text(json.dumps(config))
 
 
 def test_llm_intents_are_persisted_and_reused_after_resume(
@@ -223,14 +246,15 @@ def test_llm_intents_are_persisted_and_reused_after_resume(
         calls["intent"] += 1
         return {"signals": [], "notes": f"call {calls['intent']}"}
 
-    run_experiment(workspace, offline_env, "dev", ["F"], name="i", repetitions=1, llm=ScriptedLLM(first))
+    _intent_configs(workspace)
+    run_experiment(workspace, offline_env, "dev", ["Y"], name="i", repetitions=1, llm=ScriptedLLM(first))
     assert calls["intent"] == _dev_count(workspace)
 
     def never(system: str, user: str) -> LLMError:
         return LLMError("must not be called for intents", kind="network")
 
     run_experiment(
-        workspace, offline_env, "dev", ["F"], name="i", repetitions=2, llm=ScriptedLLM(never), resume=True
+        workspace, offline_env, "dev", ["Y"], name="i", repetitions=2, llm=ScriptedLLM(never), resume=True
     )
     rows = read_jsonl(workspace.results_dir / "i" / "rows.jsonl")
     second = [r for r in rows if r["rep"] == 2]
@@ -258,17 +282,19 @@ def test_scripted_llm_run_and_judge(workspace: Workspace, offline_env: Environme
         return {"label": "SUPPORTED", "rationale": "scripted"}
 
     llm = ScriptedLLM(responder)
-    run_experiment(workspace, offline_env, "dev", ["C", "E", "F"], name="s", repetitions=1, llm=llm)
+    _intent_configs(workspace)
+    run_experiment(workspace, offline_env, "dev", ["L", "Y", "Z"], name="s", repetitions=1, llm=llm)
     assert (workspace.results_dir / "s" / "intents.jsonl").exists()
     rows = read_jsonl(workspace.results_dir / "s" / "rows.jsonl")
-    e_rows = {r["question_id"]: r for r in rows if r["config"] == "E"}
-    f_rows = {r["question_id"]: r for r in rows if r["config"] == "F"}
+    e_rows = {r["question_id"]: r for r in rows if r["config"] == "Y"}
+    f_rows = {r["question_id"]: r for r in rows if r["config"] == "Z"}
     assert all(f_rows[q]["intent_reused"] and not e_rows[q]["intent_reused"] for q in e_rows)
     judge_run(workspace, offline_env, "s", llm=llm)
     report = report_run(workspace, "s")
-    assert report["configs"]["C"]["llm_judge"]["correctness_partial"] == 1.0
-    assert report["configs"]["C"]["llm_judge"]["faithfulness_llm"] == 1.0
-    assert "quote_enforce_replay" in report["configs"]["C"]
+    assert report["configs"]["Z"]["llm_judge"]["correctness_partial"] == 1.0
+    assert report["configs"]["Z"]["llm_judge"]["faithfulness_llm"] == 1.0
+    assert "quote_enforce_replay" in report["configs"]["Z"]
+    assert "by_category" in report and report["paired"]["L->Y"]["recall_at_k"]["ci95"] is not None
 
 
 def test_cli_offline_commands(workspace: Workspace, capsys: pytest.CaptureFixture[str]) -> None:
@@ -283,13 +309,17 @@ def test_cli_offline_commands(workspace: Workspace, capsys: pytest.CaptureFixtur
                 "ask",
                 "Which decisions about the feature flag service have security dependencies?",
                 "--retrieval",
-                "rules",
+                "rules-v3",
+                "--sufficiency",
+                "--generator",
+                "extractive-v2",
             ]
         )
         == 0
     )
     output = json.loads(capsys.readouterr().out)
-    assert output["strategy"] == "rules" and output["answer"]["status"] in {"ANSWER", "ABSTAIN"}
+    assert output["strategy"] == "rules-v3" and output["answer"]["status"] in {"ANSWER", "ABSTAIN"}
+    assert output["sufficiency"]["need"]["answer_type"] == "DECISIONS"
     assert main(["--root", root, "run", "--split", "holdout", "--configs", "A", "--name", "x"]) == 2
     assert main(["--root", root, "ask", "q", "--generator", "llm"]) == 2  # no credentials configured
     assert main(["--root", root, "ablation", "--split", "dev"]) == 0
@@ -311,7 +341,7 @@ def test_missing_llm_provider_is_reported_clearly_without_side_effects(
     for argv in (
         ["ask", "q", "--generator", "llm"],
         ["ask", "q", "--retrieval", "llm_intent"],
-        ["run", "--split", "dev", "--configs", "C", "--name", "no-llm"],
+        ["run", "--split", "dev", "--configs", "L", "--name", "no-llm"],
         ["ablation", "--split", "dev", "--strategies", "vector,llm_intent"],
         ["judge", "--name", "local"],
     ):

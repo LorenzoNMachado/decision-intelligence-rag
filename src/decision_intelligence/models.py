@@ -32,6 +32,8 @@ class SignalLabel(StrEnum):
     ABSENT = "ABSENT"
     UNCLEAR = "UNCLEAR"
     ERROR = "ERROR"
+    # Protocol v3: the record asserts both polarities as current facts. Neutral in ranking.
+    CONTRADICTORY = "CONTRADICTORY"
 
 
 class Polarity(StrEnum):
@@ -267,6 +269,7 @@ class RetrievedDocument:
     gate_reason: str
     matched_signals: tuple[str, ...] = ()
     contradicted_signals: tuple[str, ...] = ()
+    topical: bool = True  # v3: within the topical band (always True for flat ranking)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -279,6 +282,7 @@ class RetrievedDocument:
             "gate_reason": self.gate_reason,
             "matched_signals": list(self.matched_signals),
             "contradicted_signals": list(self.contradicted_signals),
+            "topical": self.topical,
         }
 
 
@@ -349,6 +353,7 @@ class Outcome(StrEnum):
     PROVIDER_ERROR = "PROVIDER_ERROR"  # timeout, network, HTTP, budget, unparsable response
     SCHEMA_ERROR = "SCHEMA_ERROR"  # parsable response that violates the answer schema
     PIPELINE_ERROR = "PIPELINE_ERROR"  # failure outside the generator (e.g. embedding)
+    INSUFFICIENT_EVIDENCE = "INSUFFICIENT_EVIDENCE"  # v3: no admitted record contains what is asked
 
 
 # Allowed final statuses per outcome. An ANSWER that loses every claim in validation
@@ -361,6 +366,7 @@ TRANSITIONS: dict[Outcome, frozenset[AnswerStatus]] = {
     Outcome.PROVIDER_ERROR: frozenset({AnswerStatus.ERROR}),
     Outcome.SCHEMA_ERROR: frozenset({AnswerStatus.ERROR}),
     Outcome.PIPELINE_ERROR: frozenset({AnswerStatus.ERROR}),
+    Outcome.INSUFFICIENT_EVIDENCE: frozenset({AnswerStatus.ABSTAIN}),
 }
 
 

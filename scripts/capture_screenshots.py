@@ -20,7 +20,7 @@ from pathlib import Path
 from playwright.sync_api import Page, sync_playwright
 
 OUT = Path(__file__).resolve().parents[1] / "docs" / "assets"
-QUESTION = "Which decisions about the feature flag service have security dependencies?"
+QUESTION = "What budget was approved for the decision to trial a patient scheduling system?"
 
 
 def _wait_idle(page: Page) -> None:
@@ -43,10 +43,9 @@ def main() -> None:
         page.get_by_text("Decision Intelligence RAG", exact=True).first.wait_for(timeout=120_000)
         _wait_idle(page)
 
+        # Defaults: rules-v3 retrieval, sufficiency check on, extractive-v2 generator.
         page.get_by_label("Question", exact=True).fill(QUESTION)
         page.get_by_label("Question", exact=True).press("Enter")
-        _wait_idle(page)
-        page.get_by_text("Strategy 2 · Rule-based semantic enrichment").click()
         _wait_idle(page)
         page.get_by_role("button", name="Ask").click()
         page.get_by_text("Retrieved documents").wait_for(timeout=60_000)
@@ -57,12 +56,12 @@ def main() -> None:
         page.screenshot(path=str(OUT / "retrieval-evidence.png"), full_page=True)
 
         # Streamlit scrolls inside its own container, so a taller viewport shows both result tables.
-        page.set_viewport_size({"width": 1400, "height": 1450})
+        page.set_viewport_size({"width": 1400, "height": 1700})
         page.get_by_role("tab", name="Measured results").click()
-        page.get_by_text("Protocol v2 · holdout · A and B").wait_for(timeout=60_000)
+        page.get_by_text("Protocol v3 · holdout").first.wait_for(timeout=60_000)
         _wait_idle(page)
         page.screenshot(
-            path=str(OUT / "experimental-results.png"), clip={"x": 0, "y": 0, "width": 1400, "height": 1000}
+            path=str(OUT / "experimental-results.png"), clip={"x": 0, "y": 0, "width": 1400, "height": 1250}
         )
         browser.close()
     for name in ("demo-overview.png", "retrieval-evidence.png", "experimental-results.png"):

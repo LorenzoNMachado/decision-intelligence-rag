@@ -1,16 +1,16 @@
 # Convenience targets. Every target is a thin wrapper around a documented uv command.
-Q ?= Which decisions about the feature flag service have security dependencies?
+Q ?= What budget was approved for the decision to trial a patient scheduling system?
 
-.PHONY: help install ask app test lint typecheck verify figures check
+.PHONY: help install ask app test lint typecheck verify figures check audit-v3
 
 help:  ## list targets
-	@grep -E "^[a-z]+:.*##" $(MAKEFILE_LIST) | sed "s/:.*##/ -/"
+	@grep -E "^[a-z0-9-]+:.*##" $(MAKEFILE_LIST) | sed "s/:.*##/ -/"
 
 install:  ## install the package, the demo app and the dev tools (locked versions)
 	uv sync --locked --extra app
 
 ask:  ## answer one question offline, e.g. make ask Q="..."
-	uv run dirag ask "$(Q)" --retrieval rules
+	uv run dirag ask "$(Q)" --retrieval rules-v3 --sufficiency --generator extractive-v2
 
 app:  ## start the Streamlit demo on http://localhost:8501
 	uv run streamlit run app/streamlit_app.py
@@ -25,12 +25,16 @@ lint:  ## ruff lint and format check
 typecheck:  ## mypy in strict mode
 	uv run mypy
 
-verify:  ## corpus integrity and both protocol manifests
+verify:  ## corpus integrity, the v3 manifest and the historical v1/v2 records
 	uv run dirag corpus-validate
 	uv run dirag verify-manifest
 	uv run dirag verify-v1
+	uv run dirag verify-v2
 
 figures:  ## regenerate docs/assets/*.svg from the measured results
 	uv run python scripts/make_figures.py
 
 check: lint typecheck test verify  ## everything CI checks locally, except the build
+
+audit-v3:  ## re-run the v3 audit (known failures; not part of check or CI)
+	docs/audits/v3/reproduce.sh

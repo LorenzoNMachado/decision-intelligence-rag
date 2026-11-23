@@ -1,4 +1,4 @@
-"""Freezing the experimental protocol before the holdout split is used (protocol v2).
+"""Freezing the experimental protocol before the holdout split is used (protocols v2 and v3).
 
 ``freeze`` records SHA-256 hashes in two groups:
 
@@ -89,7 +89,8 @@ def tracked_inputs(workspace: Workspace) -> dict[str, dict[str, str]]:
         workspace.chunks_path,
         workspace.questions_path,
         workspace.question_specs_path,
-        workspace.signal_index_path,
+        workspace.signal_index_path("rules-v2"),
+        workspace.signal_index_path("rules-v3"),
         workspace.protocol_path,
         *sorted(workspace.config_dir.glob("[A-Z].json")),
     ]

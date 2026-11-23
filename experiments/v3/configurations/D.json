@@ -1,0 +1,7 @@
+{
+  "id": "D",
+  "retrieval": "rules-v2",
+  "sufficiency": true,
+  "generator": "extractive-v1",
+  "description": "Evidence sufficiency on top of the v2 semantic retrieval (no new re-ranking)."
+}

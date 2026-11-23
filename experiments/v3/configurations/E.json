@@ -1,0 +1,7 @@
+{
+  "id": "E",
+  "retrieval": "rules-v3",
+  "sufficiency": true,
+  "generator": "extractive-v1",
+  "description": "Evidence sufficiency with the corrected semantic retrieval."
+}

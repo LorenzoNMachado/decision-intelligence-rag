@@ -1,0 +1,1505 @@
+{
+  "gate": {
+    "bm25": {
+      "dev_questions": 48,
+      "optimal_range": [
+        5.0825,
+        9.7583
+      ],
+      "scorer": "bm25-v1:k1=1.2:b=0.75",
+      "suggested": {
+        "answerable_with_admission": 1.0,
+        "expected_admitted_rate": 0.823,
+        "out_of_domain_with_admission": 0.0,
+        "value": 7.522,
+        "youden_j": 1.0
+      },
+      "sweep": [
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 1.0,
+          "value": 0.0,
+          "youden_j": 0.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.75,
+          "value": 0.2033,
+          "youden_j": 0.25
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.75,
+          "value": 0.4066,
+          "youden_j": 0.25
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.75,
+          "value": 0.6099,
+          "youden_j": 0.25
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.75,
+          "value": 0.8132,
+          "youden_j": 0.25
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.75,
+          "value": 1.0165,
+          "youden_j": 0.25
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.75,
+          "value": 1.2198,
+          "youden_j": 0.25
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.75,
+          "value": 1.4231,
+          "youden_j": 0.25
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.75,
+          "value": 1.6264,
+          "youden_j": 0.25
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.75,
+          "value": 1.8297,
+          "youden_j": 0.25
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.75,
+          "value": 2.033,
+          "youden_j": 0.25
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.75,
+          "value": 2.2363,
+          "youden_j": 0.25
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.75,
+          "value": 2.4396,
+          "youden_j": 0.25
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.75,
+          "value": 2.6429,
+          "youden_j": 0.25
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.5,
+          "value": 2.8462,
+          "youden_j": 0.5
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.375,
+          "value": 3.0495,
+          "youden_j": 0.625
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.25,
+          "value": 3.2528,
+          "youden_j": 0.75
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.25,
+          "value": 3.4561,
+          "youden_j": 0.75
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.125,
+          "value": 3.6594,
+          "youden_j": 0.875
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.125,
+          "value": 3.8627,
+          "youden_j": 0.875
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.125,
+          "value": 4.066,
+          "youden_j": 0.875
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.125,
+          "value": 4.2693,
+          "youden_j": 0.875
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.125,
+          "value": 4.4726,
+          "youden_j": 0.875
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.125,
+          "value": 4.6759,
+          "youden_j": 0.875
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.125,
+          "value": 4.8792,
+          "youden_j": 0.875
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 5.0825,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 5.2857,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 5.489,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 5.6923,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 5.8956,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 6.0989,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 6.3022,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 6.5055,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 6.7088,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 6.9121,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 7.1154,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 7.3187,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 7.522,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 7.7253,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 7.9286,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 8.1319,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 8.3352,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 8.5385,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 8.7418,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 8.9451,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 9.1484,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 9.3517,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 9.555,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 9.7583,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 0.975,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 9.9616,
+          "youden_j": 0.975
+        },
+        {
+          "answerable_with_admission": 0.975,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 10.1649,
+          "youden_j": 0.975
+        },
+        {
+          "answerable_with_admission": 0.975,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 10.3682,
+          "youden_j": 0.975
+        },
+        {
+          "answerable_with_admission": 0.975,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 10.5715,
+          "youden_j": 0.975
+        },
+        {
+          "answerable_with_admission": 0.975,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 10.7748,
+          "youden_j": 0.975
+        },
+        {
+          "answerable_with_admission": 0.975,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 10.9781,
+          "youden_j": 0.975
+        },
+        {
+          "answerable_with_admission": 0.975,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 11.1814,
+          "youden_j": 0.975
+        },
+        {
+          "answerable_with_admission": 0.975,
+          "expected_admitted_rate": 0.823,
+          "out_of_domain_with_admission": 0.0,
+          "value": 11.3847,
+          "youden_j": 0.975
+        },
+        {
+          "answerable_with_admission": 0.95,
+          "expected_admitted_rate": 0.781,
+          "out_of_domain_with_admission": 0.0,
+          "value": 11.588,
+          "youden_j": 0.95
+        },
+        {
+          "answerable_with_admission": 0.95,
+          "expected_admitted_rate": 0.769,
+          "out_of_domain_with_admission": 0.0,
+          "value": 11.7913,
+          "youden_j": 0.95
+        },
+        {
+          "answerable_with_admission": 0.925,
+          "expected_admitted_rate": 0.769,
+          "out_of_domain_with_admission": 0.0,
+          "value": 11.9946,
+          "youden_j": 0.925
+        },
+        {
+          "answerable_with_admission": 0.925,
+          "expected_admitted_rate": 0.769,
+          "out_of_domain_with_admission": 0.0,
+          "value": 12.1979,
+          "youden_j": 0.925
+        },
+        {
+          "answerable_with_admission": 0.925,
+          "expected_admitted_rate": 0.769,
+          "out_of_domain_with_admission": 0.0,
+          "value": 12.4012,
+          "youden_j": 0.925
+        },
+        {
+          "answerable_with_admission": 0.925,
+          "expected_admitted_rate": 0.769,
+          "out_of_domain_with_admission": 0.0,
+          "value": 12.6045,
+          "youden_j": 0.925
+        },
+        {
+          "answerable_with_admission": 0.825,
+          "expected_admitted_rate": 0.652,
+          "out_of_domain_with_admission": 0.0,
+          "value": 12.8078,
+          "youden_j": 0.825
+        },
+        {
+          "answerable_with_admission": 0.825,
+          "expected_admitted_rate": 0.652,
+          "out_of_domain_with_admission": 0.0,
+          "value": 13.0111,
+          "youden_j": 0.825
+        },
+        {
+          "answerable_with_admission": 0.8,
+          "expected_admitted_rate": 0.652,
+          "out_of_domain_with_admission": 0.0,
+          "value": 13.2144,
+          "youden_j": 0.8
+        },
+        {
+          "answerable_with_admission": 0.8,
+          "expected_admitted_rate": 0.652,
+          "out_of_domain_with_admission": 0.0,
+          "value": 13.4177,
+          "youden_j": 0.8
+        },
+        {
+          "answerable_with_admission": 0.8,
+          "expected_admitted_rate": 0.652,
+          "out_of_domain_with_admission": 0.0,
+          "value": 13.621,
+          "youden_j": 0.8
+        },
+        {
+          "answerable_with_admission": 0.8,
+          "expected_admitted_rate": 0.644,
+          "out_of_domain_with_admission": 0.0,
+          "value": 13.8243,
+          "youden_j": 0.8
+        },
+        {
+          "answerable_with_admission": 0.775,
+          "expected_admitted_rate": 0.631,
+          "out_of_domain_with_admission": 0.0,
+          "value": 14.0276,
+          "youden_j": 0.775
+        },
+        {
+          "answerable_with_admission": 0.775,
+          "expected_admitted_rate": 0.631,
+          "out_of_domain_with_admission": 0.0,
+          "value": 14.2309,
+          "youden_j": 0.775
+        },
+        {
+          "answerable_with_admission": 0.7,
+          "expected_admitted_rate": 0.556,
+          "out_of_domain_with_admission": 0.0,
+          "value": 14.4342,
+          "youden_j": 0.7
+        },
+        {
+          "answerable_with_admission": 0.7,
+          "expected_admitted_rate": 0.544,
+          "out_of_domain_with_admission": 0.0,
+          "value": 14.6375,
+          "youden_j": 0.7
+        },
+        {
+          "answerable_with_admission": 0.675,
+          "expected_admitted_rate": 0.5,
+          "out_of_domain_with_admission": 0.0,
+          "value": 14.8408,
+          "youden_j": 0.675
+        },
+        {
+          "answerable_with_admission": 0.625,
+          "expected_admitted_rate": 0.463,
+          "out_of_domain_with_admission": 0.0,
+          "value": 15.0441,
+          "youden_j": 0.625
+        },
+        {
+          "answerable_with_admission": 0.55,
+          "expected_admitted_rate": 0.383,
+          "out_of_domain_with_admission": 0.0,
+          "value": 15.2474,
+          "youden_j": 0.55
+        },
+        {
+          "answerable_with_admission": 0.475,
+          "expected_admitted_rate": 0.325,
+          "out_of_domain_with_admission": 0.0,
+          "value": 15.4506,
+          "youden_j": 0.475
+        },
+        {
+          "answerable_with_admission": 0.425,
+          "expected_admitted_rate": 0.3,
+          "out_of_domain_with_admission": 0.0,
+          "value": 15.6539,
+          "youden_j": 0.425
+        },
+        {
+          "answerable_with_admission": 0.425,
+          "expected_admitted_rate": 0.3,
+          "out_of_domain_with_admission": 0.0,
+          "value": 15.8572,
+          "youden_j": 0.425
+        },
+        {
+          "answerable_with_admission": 0.4,
+          "expected_admitted_rate": 0.275,
+          "out_of_domain_with_admission": 0.0,
+          "value": 16.0605,
+          "youden_j": 0.4
+        },
+        {
+          "answerable_with_admission": 0.375,
+          "expected_admitted_rate": 0.275,
+          "out_of_domain_with_admission": 0.0,
+          "value": 16.2638,
+          "youden_j": 0.375
+        },
+        {
+          "answerable_with_admission": 0.375,
+          "expected_admitted_rate": 0.275,
+          "out_of_domain_with_admission": 0.0,
+          "value": 16.4671,
+          "youden_j": 0.375
+        },
+        {
+          "answerable_with_admission": 0.35,
+          "expected_admitted_rate": 0.275,
+          "out_of_domain_with_admission": 0.0,
+          "value": 16.6704,
+          "youden_j": 0.35
+        },
+        {
+          "answerable_with_admission": 0.325,
+          "expected_admitted_rate": 0.275,
+          "out_of_domain_with_admission": 0.0,
+          "value": 16.8737,
+          "youden_j": 0.325
+        },
+        {
+          "answerable_with_admission": 0.25,
+          "expected_admitted_rate": 0.2,
+          "out_of_domain_with_admission": 0.0,
+          "value": 17.077,
+          "youden_j": 0.25
+        },
+        {
+          "answerable_with_admission": 0.25,
+          "expected_admitted_rate": 0.2,
+          "out_of_domain_with_admission": 0.0,
+          "value": 17.2803,
+          "youden_j": 0.25
+        },
+        {
+          "answerable_with_admission": 0.2,
+          "expected_admitted_rate": 0.15,
+          "out_of_domain_with_admission": 0.0,
+          "value": 17.4836,
+          "youden_j": 0.2
+        },
+        {
+          "answerable_with_admission": 0.2,
+          "expected_admitted_rate": 0.15,
+          "out_of_domain_with_admission": 0.0,
+          "value": 17.6869,
+          "youden_j": 0.2
+        },
+        {
+          "answerable_with_admission": 0.2,
+          "expected_admitted_rate": 0.15,
+          "out_of_domain_with_admission": 0.0,
+          "value": 17.8902,
+          "youden_j": 0.2
+        },
+        {
+          "answerable_with_admission": 0.125,
+          "expected_admitted_rate": 0.1,
+          "out_of_domain_with_admission": 0.0,
+          "value": 18.0935,
+          "youden_j": 0.125
+        },
+        {
+          "answerable_with_admission": 0.1,
+          "expected_admitted_rate": 0.075,
+          "out_of_domain_with_admission": 0.0,
+          "value": 18.2968,
+          "youden_j": 0.1
+        },
+        {
+          "answerable_with_admission": 0.075,
+          "expected_admitted_rate": 0.05,
+          "out_of_domain_with_admission": 0.0,
+          "value": 18.5001,
+          "youden_j": 0.075
+        },
+        {
+          "answerable_with_admission": 0.075,
+          "expected_admitted_rate": 0.05,
+          "out_of_domain_with_admission": 0.0,
+          "value": 18.7034,
+          "youden_j": 0.075
+        },
+        {
+          "answerable_with_admission": 0.05,
+          "expected_admitted_rate": 0.05,
+          "out_of_domain_with_admission": 0.0,
+          "value": 18.9067,
+          "youden_j": 0.05
+        },
+        {
+          "answerable_with_admission": 0.05,
+          "expected_admitted_rate": 0.05,
+          "out_of_domain_with_admission": 0.0,
+          "value": 19.11,
+          "youden_j": 0.05
+        },
+        {
+          "answerable_with_admission": 0.05,
+          "expected_admitted_rate": 0.05,
+          "out_of_domain_with_admission": 0.0,
+          "value": 19.3133,
+          "youden_j": 0.05
+        },
+        {
+          "answerable_with_admission": 0.05,
+          "expected_admitted_rate": 0.05,
+          "out_of_domain_with_admission": 0.0,
+          "value": 19.5166,
+          "youden_j": 0.05
+        },
+        {
+          "answerable_with_admission": 0.05,
+          "expected_admitted_rate": 0.05,
+          "out_of_domain_with_admission": 0.0,
+          "value": 19.7199,
+          "youden_j": 0.05
+        },
+        {
+          "answerable_with_admission": 0.025,
+          "expected_admitted_rate": 0.025,
+          "out_of_domain_with_admission": 0.0,
+          "value": 19.9232,
+          "youden_j": 0.025
+        },
+        {
+          "answerable_with_admission": 0.025,
+          "expected_admitted_rate": 0.025,
+          "out_of_domain_with_admission": 0.0,
+          "value": 20.1265,
+          "youden_j": 0.025
+        },
+        {
+          "answerable_with_admission": 0.025,
+          "expected_admitted_rate": 0.025,
+          "out_of_domain_with_admission": 0.0,
+          "value": 20.3298,
+          "youden_j": 0.025
+        }
+      ]
+    },
+    "vector": {
+      "dev_questions": 48,
+      "optimal_range": [
+        0.1813,
+        0.2417
+      ],
+      "scorer": "hashing-v1:d2048:uni+bi",
+      "suggested": {
+        "answerable_with_admission": 1.0,
+        "expected_admitted_rate": 0.819,
+        "out_of_domain_with_admission": 0.0,
+        "value": 0.2115,
+        "youden_j": 1.0
+      },
+      "sweep": [
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 1.0,
+          "value": 0.0,
+          "youden_j": 0.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 1.0,
+          "value": 0.006,
+          "youden_j": 0.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 1.0,
+          "value": 0.0121,
+          "youden_j": 0.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 1.0,
+          "value": 0.0181,
+          "youden_j": 0.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 1.0,
+          "value": 0.0242,
+          "youden_j": 0.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 1.0,
+          "value": 0.0302,
+          "youden_j": 0.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 1.0,
+          "value": 0.0363,
+          "youden_j": 0.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 1.0,
+          "value": 0.0423,
+          "youden_j": 0.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 1.0,
+          "value": 0.0483,
+          "youden_j": 0.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 1.0,
+          "value": 0.0544,
+          "youden_j": 0.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 1.0,
+          "value": 0.0604,
+          "youden_j": 0.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 1.0,
+          "value": 0.0665,
+          "youden_j": 0.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 1.0,
+          "value": 0.0725,
+          "youden_j": 0.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.875,
+          "value": 0.0786,
+          "youden_j": 0.125
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.875,
+          "value": 0.0846,
+          "youden_j": 0.125
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.875,
+          "value": 0.0906,
+          "youden_j": 0.125
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.875,
+          "value": 0.0967,
+          "youden_j": 0.125
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.875,
+          "value": 0.1027,
+          "youden_j": 0.125
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.5,
+          "value": 0.1088,
+          "youden_j": 0.5
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.375,
+          "value": 0.1148,
+          "youden_j": 0.625
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.25,
+          "value": 0.1209,
+          "youden_j": 0.75
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.125,
+          "value": 0.1269,
+          "youden_j": 0.875
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.125,
+          "value": 0.1329,
+          "youden_j": 0.875
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.125,
+          "value": 0.139,
+          "youden_j": 0.875
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.125,
+          "value": 0.145,
+          "youden_j": 0.875
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.125,
+          "value": 0.1511,
+          "youden_j": 0.875
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.125,
+          "value": 0.1571,
+          "youden_j": 0.875
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.125,
+          "value": 0.1632,
+          "youden_j": 0.875
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.125,
+          "value": 0.1692,
+          "youden_j": 0.875
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.125,
+          "value": 0.1752,
+          "youden_j": 0.875
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.1813,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.1873,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.1934,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.1994,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.2054,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.2115,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.2175,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.2236,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.2296,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.2357,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 1.0,
+          "expected_admitted_rate": 0.819,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.2417,
+          "youden_j": 1.0
+        },
+        {
+          "answerable_with_admission": 0.975,
+          "expected_admitted_rate": 0.794,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.2477,
+          "youden_j": 0.975
+        },
+        {
+          "answerable_with_admission": 0.95,
+          "expected_admitted_rate": 0.794,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.2538,
+          "youden_j": 0.95
+        },
+        {
+          "answerable_with_admission": 0.95,
+          "expected_admitted_rate": 0.794,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.2598,
+          "youden_j": 0.95
+        },
+        {
+          "answerable_with_admission": 0.95,
+          "expected_admitted_rate": 0.769,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.2659,
+          "youden_j": 0.95
+        },
+        {
+          "answerable_with_admission": 0.925,
+          "expected_admitted_rate": 0.769,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.2719,
+          "youden_j": 0.925
+        },
+        {
+          "answerable_with_admission": 0.925,
+          "expected_admitted_rate": 0.769,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.278,
+          "youden_j": 0.925
+        },
+        {
+          "answerable_with_admission": 0.9,
+          "expected_admitted_rate": 0.769,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.284,
+          "youden_j": 0.9
+        },
+        {
+          "answerable_with_admission": 0.875,
+          "expected_admitted_rate": 0.735,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.29,
+          "youden_j": 0.875
+        },
+        {
+          "answerable_with_admission": 0.825,
+          "expected_admitted_rate": 0.715,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.2961,
+          "youden_j": 0.825
+        },
+        {
+          "answerable_with_admission": 0.8,
+          "expected_admitted_rate": 0.69,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.3021,
+          "youden_j": 0.8
+        },
+        {
+          "answerable_with_admission": 0.75,
+          "expected_admitted_rate": 0.652,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.3082,
+          "youden_j": 0.75
+        },
+        {
+          "answerable_with_admission": 0.725,
+          "expected_admitted_rate": 0.606,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.3142,
+          "youden_j": 0.725
+        },
+        {
+          "answerable_with_admission": 0.7,
+          "expected_admitted_rate": 0.573,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.3203,
+          "youden_j": 0.7
+        },
+        {
+          "answerable_with_admission": 0.65,
+          "expected_admitted_rate": 0.56,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.3263,
+          "youden_j": 0.65
+        },
+        {
+          "answerable_with_admission": 0.65,
+          "expected_admitted_rate": 0.552,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.3323,
+          "youden_j": 0.65
+        },
+        {
+          "answerable_with_admission": 0.575,
+          "expected_admitted_rate": 0.515,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.3384,
+          "youden_j": 0.575
+        },
+        {
+          "answerable_with_admission": 0.525,
+          "expected_admitted_rate": 0.469,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.3444,
+          "youden_j": 0.525
+        },
+        {
+          "answerable_with_admission": 0.5,
+          "expected_admitted_rate": 0.404,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.3505,
+          "youden_j": 0.5
+        },
+        {
+          "answerable_with_admission": 0.475,
+          "expected_admitted_rate": 0.381,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.3565,
+          "youden_j": 0.475
+        },
+        {
+          "answerable_with_admission": 0.375,
+          "expected_admitted_rate": 0.375,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.3626,
+          "youden_j": 0.375
+        },
+        {
+          "answerable_with_admission": 0.375,
+          "expected_admitted_rate": 0.375,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.3686,
+          "youden_j": 0.375
+        },
+        {
+          "answerable_with_admission": 0.35,
+          "expected_admitted_rate": 0.35,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.3746,
+          "youden_j": 0.35
+        },
+        {
+          "answerable_with_admission": 0.325,
+          "expected_admitted_rate": 0.325,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.3807,
+          "youden_j": 0.325
+        },
+        {
+          "answerable_with_admission": 0.325,
+          "expected_admitted_rate": 0.325,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.3867,
+          "youden_j": 0.325
+        },
+        {
+          "answerable_with_admission": 0.3,
+          "expected_admitted_rate": 0.3,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.3928,
+          "youden_j": 0.3
+        },
+        {
+          "answerable_with_admission": 0.3,
+          "expected_admitted_rate": 0.3,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.3988,
+          "youden_j": 0.3
+        },
+        {
+          "answerable_with_admission": 0.275,
+          "expected_admitted_rate": 0.275,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.4049,
+          "youden_j": 0.275
+        },
+        {
+          "answerable_with_admission": 0.25,
+          "expected_admitted_rate": 0.25,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.4109,
+          "youden_j": 0.25
+        },
+        {
+          "answerable_with_admission": 0.225,
+          "expected_admitted_rate": 0.225,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.4169,
+          "youden_j": 0.225
+        },
+        {
+          "answerable_with_admission": 0.2,
+          "expected_admitted_rate": 0.2,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.423,
+          "youden_j": 0.2
+        },
+        {
+          "answerable_with_admission": 0.2,
+          "expected_admitted_rate": 0.2,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.429,
+          "youden_j": 0.2
+        },
+        {
+          "answerable_with_admission": 0.2,
+          "expected_admitted_rate": 0.2,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.4351,
+          "youden_j": 0.2
+        },
+        {
+          "answerable_with_admission": 0.2,
+          "expected_admitted_rate": 0.2,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.4411,
+          "youden_j": 0.2
+        },
+        {
+          "answerable_with_admission": 0.175,
+          "expected_admitted_rate": 0.175,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.4472,
+          "youden_j": 0.175
+        },
+        {
+          "answerable_with_admission": 0.175,
+          "expected_admitted_rate": 0.175,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.4532,
+          "youden_j": 0.175
+        },
+        {
+          "answerable_with_admission": 0.15,
+          "expected_admitted_rate": 0.15,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.4592,
+          "youden_j": 0.15
+        },
+        {
+          "answerable_with_admission": 0.15,
+          "expected_admitted_rate": 0.15,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.4653,
+          "youden_j": 0.15
+        },
+        {
+          "answerable_with_admission": 0.1,
+          "expected_admitted_rate": 0.1,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.4713,
+          "youden_j": 0.1
+        },
+        {
+          "answerable_with_admission": 0.1,
+          "expected_admitted_rate": 0.1,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.4774,
+          "youden_j": 0.1
+        },
+        {
+          "answerable_with_admission": 0.075,
+          "expected_admitted_rate": 0.075,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.4834,
+          "youden_j": 0.075
+        },
+        {
+          "answerable_with_admission": 0.075,
+          "expected_admitted_rate": 0.075,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.4895,
+          "youden_j": 0.075
+        },
+        {
+          "answerable_with_admission": 0.075,
+          "expected_admitted_rate": 0.075,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.4955,
+          "youden_j": 0.075
+        },
+        {
+          "answerable_with_admission": 0.075,
+          "expected_admitted_rate": 0.075,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.5015,
+          "youden_j": 0.075
+        },
+        {
+          "answerable_with_admission": 0.075,
+          "expected_admitted_rate": 0.075,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.5076,
+          "youden_j": 0.075
+        },
+        {
+          "answerable_with_admission": 0.075,
+          "expected_admitted_rate": 0.075,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.5136,
+          "youden_j": 0.075
+        },
+        {
+          "answerable_with_admission": 0.075,
+          "expected_admitted_rate": 0.075,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.5197,
+          "youden_j": 0.075
+        },
+        {
+          "answerable_with_admission": 0.075,
+          "expected_admitted_rate": 0.075,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.5257,
+          "youden_j": 0.075
+        },
+        {
+          "answerable_with_admission": 0.075,
+          "expected_admitted_rate": 0.075,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.5317,
+          "youden_j": 0.075
+        },
+        {
+          "answerable_with_admission": 0.075,
+          "expected_admitted_rate": 0.075,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.5378,
+          "youden_j": 0.075
+        },
+        {
+          "answerable_with_admission": 0.075,
+          "expected_admitted_rate": 0.075,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.5438,
+          "youden_j": 0.075
+        },
+        {
+          "answerable_with_admission": 0.075,
+          "expected_admitted_rate": 0.075,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.5499,
+          "youden_j": 0.075
+        },
+        {
+          "answerable_with_admission": 0.05,
+          "expected_admitted_rate": 0.05,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.5559,
+          "youden_j": 0.05
+        },
+        {
+          "answerable_with_admission": 0.025,
+          "expected_admitted_rate": 0.025,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.562,
+          "youden_j": 0.025
+        },
+        {
+          "answerable_with_admission": 0.025,
+          "expected_admitted_rate": 0.025,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.568,
+          "youden_j": 0.025
+        },
+        {
+          "answerable_with_admission": 0.025,
+          "expected_admitted_rate": 0.025,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.574,
+          "youden_j": 0.025
+        },
+        {
+          "answerable_with_admission": 0.025,
+          "expected_admitted_rate": 0.025,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.5801,
+          "youden_j": 0.025
+        },
+        {
+          "answerable_with_admission": 0.025,
+          "expected_admitted_rate": 0.025,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.5861,
+          "youden_j": 0.025
+        },
+        {
+          "answerable_with_admission": 0.025,
+          "expected_admitted_rate": 0.025,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.5922,
+          "youden_j": 0.025
+        },
+        {
+          "answerable_with_admission": 0.025,
+          "expected_admitted_rate": 0.025,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.5982,
+          "youden_j": 0.025
+        },
+        {
+          "answerable_with_admission": 0.0,
+          "expected_admitted_rate": 0.0,
+          "out_of_domain_with_admission": 0.0,
+          "value": 0.6043,
+          "youden_j": 0.0
+        }
+      ]
+    }
+  },
+  "topical_band": {
+    "dev_questions": 40,
+    "optimal_range": [
+      0.04,
+      0.2
+    ],
+    "suggested": {
+      "recall_at_k": 0.9167,
+      "value": 0.12
+    },
+    "sweep": [
+      {
+        "recall_at_k": 0.8667,
+        "value": 0.02
+      },
+      {
+        "recall_at_k": 0.9167,
+        "value": 0.04
+      },
+      {
+        "recall_at_k": 0.9167,
+        "value": 0.06
+      },
+      {
+        "recall_at_k": 0.9167,
+        "value": 0.08
+      },
+      {
+        "recall_at_k": 0.9167,
+        "value": 0.1
+      },
+      {
+        "recall_at_k": 0.9167,
+        "value": 0.12
+      },
+      {
+        "recall_at_k": 0.9167,
+        "value": 0.14
+      },
+      {
+        "recall_at_k": 0.9167,
+        "value": 0.16
+      },
+      {
+        "recall_at_k": 0.9167,
+        "value": 0.18
+      },
+      {
+        "recall_at_k": 0.9167,
+        "value": 0.2
+      }
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+B01   exp=ANSWER  | iso=ABSTAIN FAIL | F=ABSTAIN FAIL cited=[] | no admitted record contains the requested MONEY
+B02   exp=ANSWER  | iso=ABSTAIN FAIL | F=ABSTAIN FAIL cited=[] | no admitted record contains the requested PERSON/ORGANIZATION
+B03a  exp=ANSWER  | iso=ABSTAIN FAIL | F=ABSTAIN FAIL cited=[] | no admitted record contains the requested DATE
+B03b  exp=ANSWER  | iso=ABSTAIN FAIL | F=ABSTAIN FAIL cited=[] | no admitted record contains the requested DATE
+B03c  exp=ANSWER  | iso=ABSTAIN FAIL | F=ABSTAIN FAIL cited=[] | no admitted record contains the requested DATE
+B04   exp=ABSTAIN | iso=ANSWER  FAIL | F=ANSWER  FAIL cited=['ADV-06'] | at least one admitted record contains the requested information
+B05   exp=ABSTAIN | iso=ABSTAIN PASS | F=ABSTAIN PASS cited=[] | no admitted record contains the requested ORGANIZATION
+B06   exp=ANSWER  | iso=ABSTAIN FAIL | F=ABSTAIN FAIL cited=[] | no admitted record contains the requested ORGANIZATION
+B07   exp=ABSTAIN | iso=ABSTAIN PASS | F=ABSTAIN PASS cited=[] | no admitted record contains the requested MONEY
+B08a  exp=ABSTAIN | iso=ABSTAIN PASS | F=ABSTAIN PASS cited=[] | no admitted record contains the requested REGULATION
+B08b  exp=ABSTAIN | iso=ABSTAIN PASS | F=ABSTAIN PASS cited=[] | no admitted record asserts the question's conditions
+B09a  exp=ABSTAIN | iso=ANSWER  FAIL | F=ANSWER  FAIL cited=['ADV-11'] | at least one admitted record contains the requested information
+B09b  exp=ABSTAIN | iso=ANSWER  FAIL | F=ANSWER  FAIL cited=['ADV-11'] | at least one admitted record contains the requested information
+B10a  exp=ANSWER  | iso=ANSWER  PASS | F=ANSWER  PASS cited=['ADV-12'] | at least one admitted record contains the requested information
+B10b  exp=ANSWER  | iso=ANSWER  PASS | F=ANSWER  PASS cited=['ADV-12'] | at least one admitted record contains the requested information
+B11a  exp=ANSWER  | iso=ANSWER  PASS | F=ANSWER  PASS cited=['ADV-13'] | at least one admitted record contains the requested information
+B11b  exp=ANSWER  | iso=ANSWER  FAIL | F=ANSWER  FAIL cited=['ADV-13'] | at least one admitted record contains the requested information
+B12   exp=ABSTAIN | iso=ANSWER  FAIL | F=ANSWER  FAIL cited=['ADV-14'] | at least one admitted record contains the requested information
+B13   exp=ABSTAIN | iso=ABSTAIN PASS | F=ABSTAIN PASS cited=[] | no admitted record contains the requested MONEY
+B14   exp=ABSTAIN | iso=ANSWER  FAIL | F=ANSWER  FAIL cited=['ADV-16'] | at least one admitted record contains the requested information
+B15a  exp=ANSWER  | iso=ABSTAIN FAIL | F=ABSTAIN FAIL cited=[] | no admitted record contains the requested MONEY
+B15b  exp=ANSWER  | iso=-       -    | F=ABSTAIN FAIL cited=[] | no admitted record contains the requested MONEY
+B16   exp=ANSWER  | iso=ANSWER  PASS | F=ANSWER  PASS cited=['ADV-18'] | at least one admitted record contains the requested information
+B17   exp=ANSWER  | iso=ABSTAIN FAIL | F=ABSTAIN FAIL cited=[] | no admitted record contains the requested REGULATION
+B18   exp=ANSWER  | iso=ANSWER  FAIL | F=ANSWER  FAIL cited=['ADV-20'] | at least one admitted record contains the requested information
+B19   exp=ABSTAIN | iso=ABSTAIN PASS | F=ABSTAIN PASS cited=[] | no admitted record contains the requested MONEY
+B20   exp=ABSTAIN | iso=ANSWER  FAIL | F=ANSWER  FAIL cited=['ADV-22'] | at least one admitted record contains the requested information
+B21   exp=ANSWER  | iso=ABSTAIN FAIL | F=ABSTAIN FAIL cited=[] | no admitted record contains the requested MONEY
+B22a  exp=ANSWER  | iso=ANSWER  PASS | F=ANSWER  PASS cited=['ADV-24'] | at least one admitted record contains the requested information
+B22b  exp=ANSWER  | iso=ANSWER  PASS | F=ANSWER  PASS cited=['ADV-24'] | at least one admitted record contains the requested information
+B23   exp=ANSWER  | iso=ANSWER  FAIL | F=ANSWER  FAIL cited=['ADV-25'] | at least one admitted record contains the requested information
+B24   exp=ABSTAIN | iso=ANSWER  FAIL | F=ANSWER  FAIL cited=['ADV-26'] | at least one admitted record contains the requested information
+C01   exp=ANSWER  | iso=-       -    | F=ABSTAIN FAIL cited=[] | no admitted record asserts the question's conditions
+C02   exp=ANSWER  | iso=-       -    | F=ANSWER  FAIL cited=['ADV-32', 'ADV-35'] | at least one admitted record contains the requested information
+C03   exp=ANSWER  | iso=-       -    | F=ANSWER  FAIL cited=['ADV-41'] | at least one admitted record contains the requested information
+C04   exp=ANSWER  | iso=-       -    | F=ABSTAIN FAIL cited=[] | no admitted record asserts the question's conditions
+C05   exp=ANSWER  | iso=-       -    | F=ABSTAIN FAIL cited=[] | no admitted record asserts the question's conditions

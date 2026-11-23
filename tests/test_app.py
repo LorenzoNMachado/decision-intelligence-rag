@@ -27,31 +27,55 @@ def test_app_runs_offline_and_explains_missing_provider() -> None:
     # LLM-only options are hidden when no provider is configured.
     retrieval_options = list(at.radio[0].options)
     generator_options = list(at.radio[1].options)
-    assert any("Strategy 1" in o for o in retrieval_options)
-    assert not any("Strategy 3" in o for o in retrieval_options)
+    assert any("Vector baseline" in o for o in retrieval_options)
+    assert not any("LLM" in o for o in retrieval_options)
     assert not any("LLM" in o for o in generator_options)
 
 
-def test_app_answers_and_abstains_offline() -> None:
-    at = AppTest.from_file(str(APP), default_timeout=120).run()
-    at.text_input[0].input("Which decisions about the feature flag service have security dependencies?").run()
-    at.radio[0].set_value("rules").run()
-    at.button[0].click().run()
-    assert not at.exception
-    assert "ANSWER" in _all_text(at)
+def _budget_questions() -> tuple[str, str, str]:
+    """A budget question the corpus answers, its value, and the same question for a record without one."""
 
-    at.text_input[0].input("Which catering company was selected for the staff cafeteria contract?").run()
+    from decision_intelligence.corpus.io import load_documents
+
+    docs = load_documents(APP.parents[1] / "data" / "v3" / "corpus.jsonl")
+    with_budget = next(d for d in docs if d.metadata.get("budget"))
+    without = next(d for d in docs if not d.metadata.get("budget"))
+
+    def ask(title: str) -> str:
+        return f"What budget was approved for the decision to {title[:1].lower() + title[1:]}?"
+
+    return ask(with_budget.title), with_budget.metadata["budget"], ask(without.title)
+
+
+def test_app_answers_and_abstains_offline() -> None:
+    answerable, value, missing = _budget_questions()
+    at = AppTest.from_file(str(APP), default_timeout=120).run()
+    at.text_input[0].input(answerable).run()
     at.button[0].click().run()
     assert not at.exception
     text = _all_text(at)
-    assert "ABSTAIN" in text and "This is not an abstention" not in text
-    assert "no document passed the evidence gate" in text
+    assert 'status-ANSWER">ANSWER' in text
+    assert value.replace(".", "\\.") in text
+    assert "Live demonstration" in text and "Evidence sufficiency (v3 mechanism)" in text
+
+    at.text_input[0].input(missing).run()
+    at.button[0].click().run()
+    assert not at.exception
+    text = _all_text(at)
+    assert 'status-ABSTAIN">ABSTAIN' in text and "INSUFFICIENT" in text
+
+    at.text_input[0].input("Which architect designed the new headquarters atrium?").run()
+    at.button[0].click().run()
+    assert not at.exception
+    assert "no record passed the evidence gate" in _all_text(at)
 
 
 def test_app_labels_results_by_protocol_and_hides_unmeasured_llm_results() -> None:
     at = AppTest.from_file(str(APP), default_timeout=120).run()
     assert not at.exception
     text = _all_text(at)
-    assert "Protocol v2 · holdout" in text and "Protocol v1 · holdout · A and B (historical)" in text
+    assert "Protocol v3 · holdout" in text
+    assert "Protocol v2 · holdout · A and B (historical)" in text
+    assert "Protocol v1 · holdout · A and B (historical)" in text
     assert "have not been executed" in text
     assert "sign test" in text

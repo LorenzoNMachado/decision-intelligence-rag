@@ -1,6 +1,6 @@
 [project]
 name = "decision-intelligence-rag"
-version = "0.2.0"
+version = "0.3.0"
 description = "An independent research implementation for evaluating evidence-grounded RAG architectures, semantic retrieval strategies, answer correctness, and citation faithfulness."
 readme = "README.md"
 license = "MIT"
@@ -47,6 +47,8 @@ module-name = "decision_intelligence"
 
 [tool.ruff]
 line-length = 110
+# Audit evidence is kept byte-for-byte as it was produced (docs/audits/v3/README.md).
+extend-exclude = ["docs/audits/v3/evidence"]
 target-version = "py312"
 
 [tool.ruff.lint]

@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import re
+import re as _re
 from dataclasses import dataclass, field
 
-from decision_intelligence.corpus.questions import CATEGORIES
+from decision_intelligence.corpus.questions import CATEGORIES, MISSING
 from decision_intelligence.models import Chunk, DecisionDocument, Question, Signal, SignalLabel
 
 _ID_PATTERN = re.compile(r"^DEC-\d{3}$")
@@ -78,6 +79,14 @@ def validate_corpus(
                 report.errors.append(f"{q.id}: answerable question without expected documents")
             if not q.answerable and q.expected_doc_ids:
                 report.errors.append(f"{q.id}: unanswerable question with expected documents")
+            # In-domain unanswerables: the target record must really lack the attribute (gold audit,
+            # from the generator's fact table only).
+            if q.category in MISSING:
+                target = _re.match(r"ABSTAIN: (DEC-\d+) states no (\w+)\.", q.reference_answer)
+                if target is None or target.group(1) not in by_id:
+                    report.errors.append(f"{q.id}: missing-information question without a valid target")
+                elif by_id[target.group(1)].metadata.get(target.group(2)):
+                    report.errors.append(f"{q.id}: target {target.group(1)} does state {target.group(2)}")
             # Every key fact must be literally recoverable from the expected evidence,
             # otherwise the reference cannot be reached by any grounded system.
             evidence = " ".join(by_id[d].full_text() for d in q.expected_doc_ids if d in by_id).lower()

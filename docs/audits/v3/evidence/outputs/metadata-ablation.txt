@@ -1,0 +1,2 @@
+F with subject/domain fields (frozen): precision 0.952, strict correct 70/100, false abstention 14/100
+F without them (scopes=()): precision 0.873, strict correct 62/100, false abstention 12/100

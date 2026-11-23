@@ -19,7 +19,7 @@ from decision_intelligence.corpus.io import read_json, read_jsonl, write_json
 from decision_intelligence.evaluation import manifest as manifest_mod
 from decision_intelligence.evaluation.judges import LexicalJudge
 from decision_intelligence.evaluation.metrics import Row, compute_metrics, enforce_quotes
-from decision_intelligence.evaluation.statistics import paired_comparison
+from decision_intelligence.evaluation.statistics import paired_comparison, paired_difference
 from decision_intelligence.models import Question
 
 SUMMARY_COLUMNS = [
@@ -31,7 +31,10 @@ SUMMARY_COLUMNS = [
     "faithfulness_quote",
     "faithfulness_llm",
     "correct_abstention_rate",
+    "correct_abstention_in_domain",
+    "correct_abstention_out_of_domain",
     "false_answer_rate",
+    "unsupported_answer_rate",
     "false_abstention_rate",
     "operational_failures",
     "intent_failures",
@@ -142,10 +145,35 @@ def build_summary(
     per_question = _per_question(rows, questions, top_k)
     for first, second in itertools.combinations(sorted(per_question), 2):
         summary["paired"][f"{first}->{second}"] = {
-            metric: paired_comparison(per_question[first][metric], per_question[second][metric])
+            metric: {
+                **paired_comparison(per_question[first][metric], per_question[second][metric]),
+                **paired_difference(per_question[first][metric], per_question[second][metric]),
+            }
             for metric in ("recall_at_k", "correct")
         }
+    summary["by_category"] = _by_category(rows, questions, top_k)
     return summary
+
+
+def _by_category(rows: list[Row], questions: dict[str, Question], top_k: int) -> dict[str, Any]:
+    """config → category → {questions, recall_at_k, correct, abstained, answered}."""
+
+    table: dict[str, dict[str, dict[str, Any]]] = {}
+    for config in sorted({r["config"] for r in rows}):
+        subset = [r for r in rows if r["config"] == config]
+        for category in sorted({questions[r["question_id"]].category for r in subset}):
+            members = [r for r in subset if questions[r["question_id"]].category == category]
+            metrics = compute_metrics(members, questions, top_k=top_k)
+            table.setdefault(config, {})[category] = {
+                "questions": len({r["question_id"] for r in members}),
+                "recall_at_k": metrics["recall_at_k"],
+                "correct": metrics["correctness"],
+                "abstained": round(
+                    sum(r["answer"]["status"] == "ABSTAIN" for r in members) / len(members), 4
+                ),
+                "answered": round(sum(r["answer"]["status"] == "ANSWER" for r in members) / len(members), 4),
+            }
+    return table
 
 
 def report_run(workspace: Workspace, name: str) -> dict[str, Any]:
@@ -219,17 +247,40 @@ def render_markdown(summary: dict[str, Any]) -> str:
     if summary["paired"]:
         lines += [
             "",
-            "## Paired comparisons (per question, exact two-sided sign test)",
+            "## Paired comparisons (per question; exact sign test; bootstrap 95 % CI of the mean difference)",
             "",
-            "| Pair | Metric | Questions | Second better | First better | Ties | p |",
-            "|---|---|---:|---:|---:|---:|---:|",
+            "| Pair | Metric | Questions | Second better | First better | Ties | p | Mean diff. | 95 % CI |",
+            "|---|---|---:|---:|---:|---:|---:|---:|---|",
         ]
         for pair, metrics in summary["paired"].items():
             for metric, c in metrics.items():
+                ci = c.get("ci95")
                 lines.append(
                     f"| {pair} | {metric} | {c['questions']} | {c['second_better']} | {c['first_better']} | "
-                    f"{c['ties']} | {_fmt(c['sign_test_p'])} |"
+                    f"{c['ties']} | {_fmt(c['sign_test_p'])} | {_fmt(c.get('mean_difference'))} | "
+                    f"{'—' if ci is None else f'[{ci[0]:.3f}, {ci[1]:.3f}]'} |"
                 )
+    by_category = summary.get("by_category", {})
+    if by_category:
+        categories = sorted({c for table in by_category.values() for c in table})
+        lines += [
+            "",
+            "## By category (recall@k / strictly correct / abstained)",
+            "",
+            "| Category | n | " + " | ".join(by_category) + " |",
+            "|---|---:|" + "---|" * len(by_category),
+        ]
+        for category in categories:
+            n = next(t[category]["questions"] for t in by_category.values() if category in t)
+            cells = []
+            for table in by_category.values():
+                c = table.get(category)
+                cells.append(
+                    "—"
+                    if c is None
+                    else f"{_fmt(c['recall_at_k'])} / {_fmt(c['correct'])} / {_fmt(c['abstained'])}"
+                )
+            lines.append(f"| {category} | {n} | " + " | ".join(cells) + " |")
     judged = {c: e for c, e in configs.items() if "llm_judge" in e}
     if judged:
         lines += [

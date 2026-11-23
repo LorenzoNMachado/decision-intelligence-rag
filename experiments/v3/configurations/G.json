@@ -1,0 +1,7 @@
+{
+  "id": "G",
+  "retrieval": "bm25",
+  "sufficiency": false,
+  "generator": "extractive-v1",
+  "description": "BM25 lexical baseline, no sufficiency check, extractive generator v1."
+}

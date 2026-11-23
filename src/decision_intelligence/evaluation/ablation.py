@@ -5,12 +5,14 @@ questions and embeddings, with no generator, and reports how the semantic
 signals change ranking and evidence-gate admission relative to the vector
 baseline.
 
-``calibrate_threshold`` sweeps the evidence-gate threshold for the vector
-baseline on the *dev* split only, so the holdout split never influences it.
+``calibrate_gate`` and ``calibrate_band`` sweep the evidence-gate threshold
+(per scorer) and the topical band on the *dev* split only, so the holdout
+never influences them.
 """
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Any
 
 import numpy as np
@@ -19,6 +21,7 @@ from decision_intelligence.config import Components, make_retriever
 from decision_intelligence.evaluation.statistics import paired_comparison
 from decision_intelligence.llm.client import LLMClient
 from decision_intelligence.models import Question, RetrievalResult
+from decision_intelligence.retrieval.retriever import Retriever
 
 
 def _retrieval_metrics(results: list[tuple[Question, RetrievalResult]]) -> dict[str, Any]:
@@ -108,57 +111,107 @@ def retrieval_ablation(
     return report
 
 
-def calibrate_threshold(components: Components, questions: list[Question]) -> dict[str, Any]:
+def _median_of_optimal(
+    rows: list[dict[str, Any]], key: tuple[str, ...]
+) -> tuple[dict[str, Any], list[float]]:
+    top = max(tuple(r[k] for k in key) for r in rows)
+    optimal = [r for r in rows if tuple(r[k] for k in key) == top]
+    return optimal[len(optimal) // 2], [optimal[0]["value"], optimal[-1]["value"]]
+
+
+def calibrate_gate(
+    components: Components, questions: list[Question], strategy: str = "vector"
+) -> dict[str, Any]:
+    """Evidence-gate threshold for one scorer, on dev questions only (pre-declared in docs/v3/protocol.md).
+
+    The gate decides topical relevance, so it is calibrated to separate answerable
+    questions from *out-of-domain* ones. In-domain unanswerable questions name real
+    records and are the sufficiency check's job, not the gate's. Objective: Youden's J
+    of "some evidence admitted", ties broken by the share of expected records
+    admitted; the suggestion is the median of the optimal set.
+    """
+
     if any(q.split != "dev" for q in questions):
         raise ValueError("calibration must use dev questions only")
-    retriever = make_retriever(components, "vector")
+    retriever = make_retriever(components, strategy)
+    top_k = int(components.protocol.data["retrieval"]["top_k"])
     sims = []
     for question in questions:
+        if not question.answerable and "out_of_domain" not in question.category:
+            continue
         best = retriever.similarities(question.text)
-        ranked = sorted(best.items(), key=lambda kv: (-kv[1][0], kv[0]))[
-            : components.protocol.data["retrieval"]["top_k"]
-        ]
+        ranked = sorted(best.items(), key=lambda kv: (-kv[1][0], kv[0]))[:top_k]
         sims.append((question, [(doc_id, score) for doc_id, (score, _) in ranked]))
+    ceiling = max((s for _, top in sims for _, s in top), default=1.0)
     rows = []
     for step in range(0, 101):
-        threshold = step / 100
-        answerable_hit = []
-        unanswerable_hit = []
-        expected_admitted = []
-        non_expected = 0
+        threshold = round(ceiling * step / 100, 4)
+        answerable_hit, ood_hit, expected_admitted = [], [], []
         for question, top_docs in sims:
             admitted = {d for d, s in top_docs if s >= threshold}
             if question.answerable:
                 answerable_hit.append(bool(admitted))
                 expected = set(question.expected_doc_ids)
                 expected_admitted.append(len(expected & admitted) / len(expected))
-                non_expected += len(admitted - expected)
             else:
-                unanswerable_hit.append(bool(admitted))
-                non_expected += len(admitted)
+                ood_hit.append(bool(admitted))
         tpr = float(np.mean(answerable_hit)) if answerable_hit else 0.0
-        fpr = float(np.mean(unanswerable_hit)) if unanswerable_hit else 0.0
+        fpr = float(np.mean(ood_hit)) if ood_hit else 0.0
         rows.append(
             {
-                "threshold": threshold,
+                "value": threshold,
                 "answerable_with_admission": round(tpr, 3),
-                "unanswerable_with_admission": round(fpr, 3),
+                "out_of_domain_with_admission": round(fpr, 3),
                 "expected_admitted_rate": round(float(np.mean(expected_admitted)), 3)
                 if expected_admitted
                 else 0.0,
-                "non_expected_admitted": non_expected,
                 "youden_j": round(tpr - fpr, 3),
             }
         )
-    # Optimal set: highest Youden J, then highest expected-evidence admission. The suggestion
-    # is the median of that set, i.e. the threshold with the largest margin on both sides.
-    top = max((r["youden_j"], r["expected_admitted_rate"]) for r in rows)
-    optimal = [r for r in rows if (r["youden_j"], r["expected_admitted_rate"]) == top]
-    suggested = optimal[len(optimal) // 2]
+    suggested, optimal_range = _median_of_optimal(rows, ("youden_j", "expected_admitted_rate"))
     return {
-        "embedder": components.embedder.name,
-        "dev_questions": len(questions),
+        "scorer": retriever.scorer.name if retriever.scorer is not None else components.embedder.name,
+        "dev_questions": len(sims),
         "suggested": suggested,
-        "optimal_range": [optimal[0]["threshold"], optimal[-1]["threshold"]],
-        "sweep": [r for r in rows if r["answerable_with_admission"] > 0],
+        "optimal_range": optimal_range,
+        "sweep": rows,
+    }
+
+
+BAND_GRID = tuple(round(0.02 * i, 2) for i in range(1, 11))
+
+
+def calibrate_band(components: Components, questions: list[Question]) -> dict[str, Any]:
+    """Topical band of the rules-v3 ranking, on dev questions only (pre-declared).
+
+    Objective: mean Recall@4 of rules-v3 over the answerable dev questions; the
+    suggestion is the median of the bands that reach the maximum.
+    """
+
+    if any(q.split != "dev" for q in questions):
+        raise ValueError("calibration must use dev questions only")
+    answerable = [q for q in questions if q.answerable]
+    base = make_retriever(components, "rules-v3")
+    rows = []
+    for band in BAND_GRID:
+        retriever = Retriever(
+            strategy="rules-v3",
+            chunks=components.chunks,
+            embedder=components.embedder,
+            params=replace(base.params, topical_band=band),
+            intent_parser=base.intent_parser,
+            signal_index=base.signal_index,
+            index=base.index,
+        )
+        recalls = [
+            len(set(q.expected_doc_ids) & set(retriever.retrieve(q.text).top_ids())) / len(q.expected_doc_ids)
+            for q in answerable
+        ]
+        rows.append({"value": band, "recall_at_k": round(float(np.mean(recalls)), 4)})
+    suggested, optimal_range = _median_of_optimal(rows, ("recall_at_k",))
+    return {
+        "dev_questions": len(answerable),
+        "suggested": suggested,
+        "optimal_range": optimal_range,
+        "sweep": rows,
     }

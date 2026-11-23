@@ -1,0 +1,7 @@
+{
+  "id": "C",
+  "retrieval": "rules-v3",
+  "sufficiency": false,
+  "generator": "extractive-v1",
+  "description": "Corrected semantic retrieval (rules-v3 parser, scoped classifier, topical ranking)."
+}

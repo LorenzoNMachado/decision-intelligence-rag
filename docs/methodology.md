@@ -1,4 +1,6 @@
-# Methodology (protocol v2)
+# Methodology (protocol v2, historical)
+
+> This document describes protocol v2, now historical. The current protocol is v3: [`docs/v3/protocol.md`](v3/protocol.md). The research-method section below (DSRM and the relation to the earlier study) applies unchanged to v3.
 
 Protocol v1 is historical (see `experiments/v1/README.md`). This document
 describes protocol v2, which is the only protocol the current code runs.

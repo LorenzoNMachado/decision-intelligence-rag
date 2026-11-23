@@ -1,0 +1,38 @@
+A {'n_ans': 100, 'n_ind': 40, 'n_ood': 20, 'recall': 0.7908, 'precision': 0.3064, 'n_prec': 99, 'strict': 0.11, 'partial_or_better': 0.64, 'abst_ind': '0/40', 'abst_ood': '20/20', 'false_abst': '1/100', 'unsupported': '51/139', 'errors': 0}
+B {'n_ans': 100, 'n_ind': 40, 'n_ood': 20, 'recall': 0.8275, 'precision': 0.3427, 'n_prec': 98, 'strict': 0.1, 'partial_or_better': 0.64, 'abst_ind': '0/40', 'abst_ood': '20/20', 'false_abst': '2/100', 'unsupported': '50/138', 'errors': 0}
+C {'n_ans': 100, 'n_ind': 40, 'n_ood': 20, 'recall': 0.9533, 'precision': 0.4242, 'n_prec': 99, 'strict': 0.19, 'partial_or_better': 0.72, 'abst_ind': '0/40', 'abst_ood': '20/20', 'false_abst': '1/100', 'unsupported': '43/139', 'errors': 0}
+D {'n_ans': 100, 'n_ind': 40, 'n_ood': 20, 'recall': 0.8275, 'precision': 0.9434, 'n_prec': 78, 'strict': 0.35, 'partial_or_better': 0.6, 'abst_ind': '40/40', 'abst_ood': '20/20', 'false_abst': '22/100', 'unsupported': '1/78', 'errors': 0}
+E {'n_ans': 100, 'n_ind': 40, 'n_ood': 20, 'recall': 0.9533, 'precision': 0.9516, 'n_prec': 86, 'strict': 0.53, 'partial_or_better': 0.68, 'abst_ind': '40/40', 'abst_ood': '20/20', 'false_abst': '14/100', 'unsupported': '1/86', 'errors': 0}
+F {'n_ans': 100, 'n_ind': 40, 'n_ood': 20, 'recall': 0.9533, 'precision': 0.9516, 'n_prec': 86, 'strict': 0.7, 'partial_or_better': 0.85, 'abst_ind': '40/40', 'abst_ood': '20/20', 'false_abst': '14/100', 'unsupported': '1/86', 'errors': 0}
+G {'n_ans': 100, 'n_ind': 40, 'n_ood': 20, 'recall': 0.8242, 'precision': 0.3, 'n_prec': 100, 'strict': 0.1, 'partial_or_better': 0.69, 'abst_ind': '0/40', 'abst_ood': '20/20', 'false_abst': '0/100', 'unsupported': '48/140', 'errors': 0}
+H {'n_ans': 100, 'n_ind': 40, 'n_ood': 20, 'recall': 0.7908, 'precision': 0.9485, 'n_prec': 76, 'strict': 0.48, 'partial_or_better': 0.75, 'abst_ind': '40/40', 'abst_ood': '20/20', 'false_abst': '24/100', 'unsupported': '1/76', 'errors': 0}
+
+reported vs recomputed (recall, precision, strict):
+A 0.7908 0.7908 | 0.3064 0.3064 | 0.11 0.11
+B 0.8275 0.8275 | 0.3427 0.3427 | 0.1 0.1
+C 0.9533 0.9533 | 0.4242 0.4242 | 0.19 0.19
+D 0.8275 0.8275 | 0.9434 0.9434 | 0.35 0.35
+E 0.9533 0.9533 | 0.9516 0.9516 | 0.53 0.53
+F 0.9533 0.9533 | 0.9516 0.9516 | 0.7 0.7
+G 0.8242 0.8242 | 0.3 0.3 | 0.1 0.1
+H 0.7908 0.7908 | 0.9485 0.9485 | 0.48 0.48
+
+paired:
+B->C recall {'better': 21, 'worse': 1, 'ties': 78, 'p': 1.0967254638671875e-05, 'mean': 0.126, 'ci': (0.072, 0.182)}
+A->G recall {'better': 13, 'worse': 9, 'ties': 78, 'p': 0.5234670639038086, 'mean': 0.033, 'ci': (-0.03, 0.1)}
+E->F strict {'better': 17, 'worse': 0, 'ties': 83, 'p': 1.52587890625e-05, 'mean': 0.17, 'ci': (0.1, 0.25)}
+C->E strict {'better': 35, 'worse': 1, 'ties': 64, 'p': 1.076841726899147e-09, 'mean': 0.34, 'ci': (0.25, 0.44)}
+B->D strict {'better': 25, 'worse': 0, 'ties': 75, 'p': 5.960464477539063e-08, 'mean': 0.25, 'ci': (0.17, 0.34)}
+H->F recall {'better': 28, 'worse': 4, 'ties': 68, 'p': 1.9301194697618484e-05, 'mean': 0.163, 'ci': (0.092, 0.236)}
+
+Wilson in-domain 40/40 (0.912, 1.0)  false abst 14/100 (0.085, 0.221)  strict F 70/100 (0.604, 0.781)
+
+per-category (holdout): recall B/C | strict E/F | abstain E
+entity_lookup    n=20 recall B=1.0 C=1.0 | correct E=4 F=19 | ABSTAIN E=1
+entity_missing   n=20 recall B=None C=None | correct E=20 F=20 | ABSTAIN E=20
+fact_lookup      n=20 recall B=1.0 C=1.0 | correct E=12 F=14 | ABSTAIN E=6
+fact_missing     n=20 recall B=None C=None | correct E=20 F=20 | ABSTAIN E=20
+multi_condition  n=20 recall B=0.7 C=0.875 | correct E=14 F=14 | ABSTAIN E=3
+negated_filter   n=20 recall B=0.579 C=0.933 | correct E=15 F=15 | ABSTAIN E=2
+out_of_domain    n=20 recall B=None C=None | correct E=20 F=20 | ABSTAIN E=20
+signal_filter    n=20 recall B=0.858 C=0.958 | correct E=8 F=8 | ABSTAIN E=2
