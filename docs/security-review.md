@@ -32,9 +32,10 @@ a new, separately registered protocol with independent adversarial cases.
 
 The security workflow scans full Git history with redacted Gitleaks output,
 audits the locked Python dependencies with pip-audit and runs Bandit. CodeQL
-runs on pushes to `main` and on a schedule with `contents: read` and
-`security-events: write` limited to its analysis job. These scanners have
-different coverage and can miss vulnerabilities.
+runs on pull requests without uploading results or receiving write permission;
+on pushes to `main` and on a schedule, only its analysis job receives
+`security-events: write` to upload results. These scanners have different
+coverage and can miss vulnerabilities.
 
 ## Static-analysis scope
 
