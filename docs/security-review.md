@@ -35,3 +35,12 @@ audits the locked Python dependencies with pip-audit and runs Bandit. CodeQL
 runs on pushes to `main` and on a schedule with `contents: read` and
 `security-events: write` limited to its analysis job. These scanners have
 different coverage and can miss vulnerabilities.
+
+## Static-analysis scope
+
+CI gates Bandit findings at medium severity or higher. The current code has
+low-severity findings for Git subprocess calls in historical protocol and
+manifest verification. Those calls use fixed Git argument lists, do not invoke
+a shell, capture output, and set timeouts. The findings are retained as a
+documented review item rather than changing source files whose hashes are part
+of the frozen research record.

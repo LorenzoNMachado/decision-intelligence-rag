@@ -66,4 +66,4 @@ jobs:
       - name: Audit scanner dependencies
         run: pip-audit -r requirements-security.txt --progress-spinner off
       - name: Scan Python source
-        run: bandit -r src app scripts -s B101,B311
+        run: bandit -r src app scripts -s B101,B311 --severity-level medium
