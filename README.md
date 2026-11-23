@@ -165,7 +165,7 @@ Earlier protocols are historical records ([v2](experiments/v2/README.md), [v1](e
 - **Data.** `uv run dirag corpus-generate --out /tmp/regen` regenerates `data/v3` byte for byte; CI diffs it on every pull request.
 - **Results.** `uv run dirag run --split holdout --configs A,B,C,D,E,F,G,H --name my-run` reproduces the committed holdout rows, apart from latency. Runs never overwrite results.
 - **Protocol.** `uv run dirag verify-manifest` checks the v3 freeze. `uv run dirag verify-v2` and `verify-v1` check the historical protocols against the git commits that published them, recomputing their manifest inputs.
-- **CI** (Python 3.12 and 3.13) runs lint, strict type checking, the tests, a package build, data regeneration and all three protocol checks. A security workflow scans the full history for secrets (gitleaks) and audits the locked dependencies (pip-audit).
+- **CI** (Python 3.12 and 3.13) runs lint, strict type checking, tests, a package build, data regeneration and all three protocol checks. Security workflows scan full history (gitleaks), audit locked dependencies (pip-audit), run Bandit and CodeQL.
 
 ## Technical documentation
 
@@ -175,6 +175,7 @@ Earlier protocols are historical records ([v2](experiments/v2/README.md), [v1](e
 | [`docs/v3/protocol.md`](docs/v3/protocol.md) | Hypotheses, configurations, primary comparisons, sizes, calibration, changes after the data was written |
 | [`experiments/v3/README.md`](experiments/v3/README.md) | Measured results, ablation, failure analysis, threats to validity |
 | [`docs/audits/v3/`](docs/audits/v3/README.md) | Adversarial audit of v3: findings, pre-registered cases, scripts, outputs, [known issues](docs/audits/v3/known-issues.md) |
+| [`docs/security-review.md`](docs/security-review.md) | Security boundaries, current controls and open prompt-injection and evidence-poisoning risks |
 | [`docs/architecture.md`](docs/architecture.md) | Components, data flow, offline vs LLM stages, design decisions |
 | [`docs/evaluation.md`](docs/evaluation.md) | Metric formulas and denominators, intervals, what each grounding check shows |
 | [`docs/limitations.md`](docs/limitations.md) | Known failures and threats to validity |
